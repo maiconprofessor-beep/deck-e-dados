@@ -157,7 +157,9 @@
     pickMode: null, // 'partida' | 'loja'
     pickedLatLng: null,
     showAdminPanel: false,
-    allProfiles: []
+    allProfiles: [],
+    bannedEmails: [],
+    banEmailInput: ""
   };
 
   const root = document.getElementById("app-root");
@@ -233,6 +235,11 @@
     if (!d.email.trim() || !d.password || !d.name.trim()) { showAuthError("Preencha e-mail, senha e nome."); return; }
     if (d.password.length < 6) { showAuthError("A senha precisa ter pelo menos 6 caracteres."); return; }
     if (d.isLojista && !d.lojaNome.trim()) { showAuthError("Informe o nome da sua loja."); return; }
+    const emailLower = d.email.trim().toLowerCase();
+    try {
+      const { data: banned } = await supabase.rpc("is_email_banned", { check_email: emailLower });
+      if (banned) { showAuthError("Esse e-mail foi bloqueado pela administração da comunidade."); return; }
+    } catch(e) { console.error("Erro ao checar bloqueio:", e); }
     const { data, error } = await supabase.auth.signUp({ email: d.email.trim(), password: d.password });
     if (error) { showAuthError(traduzErro(error.message)); return; }
     if (!data.session) {
@@ -245,6 +252,7 @@
     const { error: perr } = await supabase.from("profiles").insert({
       id: data.session.user.id,
       name: d.name.trim(),
+      email: emailLower,
       avatar: d.avatar || null,
       games: d.games,
       role: d.isLojista ? "lojista" : "jogador",
@@ -284,6 +292,7 @@
     const { error } = await supabase.from("profiles").insert({
       id: state.session.user.id,
       name: d.name.trim(),
+      email: (state.session.user.email || "").toLowerCase(),
       avatar: d.avatar || null,
       games: d.games,
       role: d.isLojista ? "lojista" : "jogador",
@@ -407,10 +416,31 @@
   async function loadAllProfiles(){
     const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending:true });
     if (!error) state.allProfiles = data || [];
+    const { data: banned, error: berr } = await supabase.from("banned_emails").select("*").order("banned_at", { ascending:false });
+    if (!berr) state.bannedEmails = banned || [];
     render();
   }
   window.__deckChangeRole = async function(id, role){
     await supabase.from("profiles").update({ role }).eq("id", id);
+    await loadAllProfiles();
+  };
+  window.__deckRemoveProfile = async function(id, name){
+    if (!confirm(`Remover ${name} da comunidade? A pessoa continua conseguindo entrar com o login dela, mas vai precisar completar o perfil de novo.`)) return;
+    const { error } = await supabase.from("profiles").delete().eq("id", id);
+    if (error) { alert("Erro ao remover: " + error.message); return; }
+    await loadAllProfiles();
+  };
+  window.__deckBanEmail = async function(email){
+    if (!email) return;
+    const clean = email.trim().toLowerCase();
+    if (!confirm(`Bloquear o e-mail ${clean}? A pessoa não vai conseguir criar uma conta nova com esse e-mail até você desbloquear.`)) return;
+    const { error } = await supabase.from("banned_emails").insert({ email: clean, banned_by: state.session.user.id });
+    if (error) { alert("Erro ao bloquear: " + error.message); return; }
+    await loadAllProfiles();
+  };
+  window.__deckUnbanEmail = async function(email){
+    const { error } = await supabase.from("banned_emails").delete().eq("email", email);
+    if (error) { alert("Erro ao desbloquear: " + error.message); return; }
     await loadAllProfiles();
   };
 
@@ -654,20 +684,38 @@
   function renderAdminPanel(){
     return `
       <div class="overlay" id="overlay-admin">
-        <div class="modal" style="max-width:520px;">
+        <div class="modal" style="max-width:560px;">
           <button class="close-x" id="close-admin">&times;</button>
           <h3 class="display">Painel admin</h3>
-          <p class="sub">Altere o papel de qualquer usuário da comunidade.</p>
+          <p class="sub">Altere o papel, remova ou bloqueie o e-mail de qualquer usuário.</p>
           ${state.allProfiles.map(p => `
-            <div class="admin-row">
-              <span>${p.name} ${p.id === state.session.user.id ? '(você)' : ''}</span>
-              <select onchange="window.__deckChangeRole('${p.id}', this.value)">
-                <option value="jogador" ${p.role==='jogador'?'selected':''}>Jogador</option>
-                <option value="lojista" ${p.role==='lojista'?'selected':''}>Lojista</option>
-                <option value="admin" ${p.role==='admin'?'selected':''}>Admin</option>
-              </select>
+            <div class="admin-row" style="flex-wrap:wrap;">
+              <span>${p.name} ${p.id === state.session.user.id ? '(você)' : ''}<br/><span style="color:var(--muted);font-size:11px;">${p.email || ''}</span></span>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <select onchange="window.__deckChangeRole('${p.id}', this.value)">
+                  <option value="jogador" ${p.role==='jogador'?'selected':''}>Jogador</option>
+                  <option value="lojista" ${p.role==='lojista'?'selected':''}>Lojista</option>
+                  <option value="admin" ${p.role==='admin'?'selected':''}>Admin</option>
+                </select>
+                ${p.id !== state.session.user.id ? `
+                  <button class="del-btn" style="color:var(--red);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline;" onclick="window.__deckRemoveProfile('${p.id}', '${p.name.replace(/'/g,"\\'")}')">Remover</button>
+                  ${p.email ? `<button class="del-btn" style="color:var(--gold);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline;" onclick="window.__deckBanEmail('${p.email}')">Bloquear e-mail</button>` : ''}
+                ` : ''}
+              </div>
             </div>
           `).join("") || '<div class="empty">Nenhum perfil encontrado.</div>'}
+
+          <div class="list-title" style="margin-top:24px;">E-mails bloqueados</div>
+          <div class="field" style="display:flex;gap:8px;">
+            <input id="ban-email-input" type="email" placeholder="email@exemplo.com" style="flex:1;" value="${state.banEmailInput.replace(/"/g,'&quot;')}" />
+            <button class="btn small" id="btn-ban-manual">Bloquear</button>
+          </div>
+          ${state.bannedEmails.length === 0 ? `<div class="empty">Nenhum e-mail bloqueado.</div>` : state.bannedEmails.map(b => `
+            <div class="admin-row">
+              <span>${b.email}</span>
+              <button class="del-btn" style="color:var(--gold);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline;" onclick="window.__deckUnbanEmail('${b.email}')">Desbloquear</button>
+            </div>
+          `).join("")}
         </div>
       </div>
     `;
@@ -689,6 +737,12 @@
     if ($("btn-admin")) $("btn-admin").onclick = async () => { state.showAdminPanel = true; render(); await loadAllProfiles(); };
     if ($("close-admin")) $("close-admin").onclick = () => { state.showAdminPanel = false; render(); };
     if ($("overlay-admin")) $("overlay-admin").onclick = (e) => { if(e.target.id==="overlay-admin"){ state.showAdminPanel=false; render(); } };
+    if ($("ban-email-input")) $("ban-email-input").oninput = (e) => { state.banEmailInput = e.target.value; };
+    if ($("btn-ban-manual")) $("btn-ban-manual").onclick = async () => {
+      if (!state.banEmailInput.trim()) return;
+      await window.__deckBanEmail(state.banEmailInput.trim());
+      state.banEmailInput = "";
+    };
 
     if ($("close-auth")) $("close-auth").onclick = () => { state.showAuthModal = false; state.completingProfile=false; render(); };
     if ($("overlay-auth")) $("overlay-auth").onclick = (e) => { if(e.target.id==="overlay-auth" && !state.completingProfile){ state.showAuthModal=false; render(); } };
