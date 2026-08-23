@@ -794,7 +794,13 @@
   function attachEvents(){
     const $ = (id) => document.getElementById(id);
 
-    if ($("search-input")) $("search-input").oninput = (e) => { state.query = e.target.value; render(); };
+    if ($("search-input")) $("search-input").oninput = (e) => {
+      state.query = e.target.value;
+      const cursorPos = e.target.selectionStart;
+      render();
+      const newInput = document.getElementById("search-input");
+      if (newInput) { newInput.focus(); newInput.setSelectionRange(cursorPos, cursorPos); }
+    };
 
     if ($("btn-login")) $("btn-login").onclick = () => { state.showAuthModal = true; state.authMode = "login"; state.authError=""; state.authNotice=""; render(); };
     if ($("btn-signup")) $("btn-signup").onclick = () => { state.showAuthModal = true; state.authMode = "signup"; state.authError=""; state.authNotice=""; render(); };
