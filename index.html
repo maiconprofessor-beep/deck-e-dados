@@ -151,6 +151,8 @@
     checkins: [],
     lojas: [],
     query: "",
+    citySearch: "",
+    citySearchError: "",
     showAuthModal: false,
     authMode: "login", // 'login' | 'signup'
     authError: "",
@@ -397,6 +399,23 @@
     img.src = avatarUrl;
   }
 
+  function goToCitySearch(){
+    const q = (state.citySearch || "").trim();
+    state.citySearchError = "";
+    if (!q) return;
+    if (!gmap || typeof google === "undefined") { state.citySearchError = "Mapa ainda carregando, tente de novo em instantes."; render(); return; }
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ address: q }, (results, status) => {
+      if (status === "OK" && results[0]) {
+        gmap.setCenter(results[0].geometry.location);
+        gmap.setZoom(12);
+      } else {
+        state.citySearchError = "Não encontrei esse local. Tente ser mais específico (ex: cidade, estado).";
+      }
+      render();
+    });
+  }
+
   function syncMapMarkers(){
     if (!gmap) return;
     checkinMarkers.forEach(m => m.setMap(null)); checkinMarkers = [];
@@ -579,7 +598,10 @@
           ` : `
             <div class="map-toolbar">
               <input id="search-input" type="text" placeholder="Buscar por jogo ou local..." value="${state.query||''}" />
+              <input id="city-search-input" type="text" placeholder="Ir para cidade ou endereço..." value="${state.citySearch||''}" />
+              <button class="btn small" id="btn-city-search">Ir pro local</button>
             </div>
+            ${state.citySearchError ? `<div class="error-text" style="text-align:center;margin-top:6px;">${state.citySearchError}</div>` : ''}
             <div id="gmap"></div>
             ${MAPS_NOT_CONFIGURED ? `<div class="empty" style="margin-top:14px;">Mapa do Google não configurado. Cole a GOOGLE_MAPS_API_KEY no início do arquivo.</div>` : ''}
 
@@ -801,6 +823,11 @@
       const newInput = document.getElementById("search-input");
       if (newInput) { newInput.focus(); newInput.setSelectionRange(cursorPos, cursorPos); }
     };
+    if ($("city-search-input")) {
+      $("city-search-input").oninput = (e) => { state.citySearch = e.target.value; };
+      $("city-search-input").onkeydown = (e) => { if (e.key === "Enter") goToCitySearch(); };
+    }
+    if ($("btn-city-search")) $("btn-city-search").onclick = goToCitySearch;
 
     if ($("btn-login")) $("btn-login").onclick = () => { state.showAuthModal = true; state.authMode = "login"; state.authError=""; state.authNotice=""; render(); };
     if ($("btn-signup")) $("btn-signup").onclick = () => { state.showAuthModal = true; state.authMode = "signup"; state.authError=""; state.authNotice=""; render(); };
