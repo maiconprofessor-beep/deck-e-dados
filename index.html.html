@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Deck e Dados — encontre sua próxima partida</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root {
+    --felt: #132c2a; --felt-2: #1b3a37; --felt-3: #234845;
+    --gold: #c9a24b; --gold-dim: #8a7134; --red: #b33a3a;
+    --chalk: #f1ede2; --muted: #a9bab5; --line: rgba(241,237,226,0.14);
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--felt); color:var(--chalk); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; line-height:1.5; }
+  .display { font-family: Georgia,'Times New Roman',serif; font-weight:700; }
+  .mono { font-family:"Courier New",monospace; }
+  .pips { display:inline-flex; gap:4px; }
+  .pip { width:6px; height:6px; border-radius:50%; background:var(--gold); }
+  .btn { display:inline-block; background:var(--gold); color:var(--felt); border:none; padding:13px 26px; border-radius:6px; font-weight:700; font-size:15px; cursor:pointer; text-decoration:none; }
+  .btn.ghost { background:transparent; border:1px solid var(--gold-dim); color:var(--chalk); }
+  .btn.small { padding:8px 16px; font-size:13px; }
+  .btn:hover { filter:brightness(1.1); }
+  .btn:disabled { opacity:0.5; cursor:not-allowed; }
+  section { padding:70px 24px; }
+  .wrap { max-width:1040px; margin:0 auto; }
+
+  nav { position:sticky; top:0; z-index:20; background:rgba(19,44,42,0.94); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between; padding:14px 24px; flex-wrap:wrap; gap:10px; }
+  nav .brand { display:flex; align-items:center; gap:10px; font-size:18px; }
+  nav .navlinks { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  nav .navlinks a { color:var(--muted); text-decoration:none; font-size:14px; }
+  .role-badge { font-size:10px; padding:2px 8px; border-radius:10px; background:var(--gold-dim); color:var(--felt); text-transform:uppercase; font-weight:700; margin-left:4px; }
+
+  .hero { padding:80px 24px 60px; text-align:center;
+    background: radial-gradient(circle at 20% 20%, rgba(201,162,75,0.10), transparent 40%), radial-gradient(circle at 80% 0%, rgba(179,58,58,0.10), transparent 40%); }
+  .hero .eyebrow { text-transform:uppercase; font-size:12px; letter-spacing:0.18em; color:var(--gold); margin-bottom:16px; display:flex; align-items:center; justify-content:center; gap:10px; }
+  .hero h1 { font-size:46px; margin:0 0 16px; line-height:1.12; }
+  .hero h1 span { color:var(--gold); }
+  .hero p.lead { max-width:560px; margin:0 auto 30px; color:var(--muted); font-size:17px; }
+  .hero .ctas { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+
+  .intro { text-align:center; }
+  .intro h2 { font-size:30px; margin:0 0 14px; }
+  .intro p { max-width:600px; margin:0 auto; color:var(--muted); font-size:15px; }
+  .duo { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:40px; }
+  @media (max-width:720px){ .duo{ grid-template-columns:1fr; } }
+  .duo-card { background:var(--felt-2); border:1px solid var(--line); border-radius:14px; padding:28px; border-top:3px solid var(--red); }
+  .duo-card.mini { border-top-color:var(--gold); }
+  .duo-card h3 { font-size:20px; margin:0 0 8px; }
+  .duo-card p { color:var(--muted); font-size:14px; margin:0 0 14px; }
+  .duo-card .games { display:flex; flex-wrap:wrap; gap:8px; }
+  .duo-card .games span { font-size:12px; padding:5px 12px; border-radius:20px; border:1px solid var(--line); color:var(--muted); }
+
+  #mapa-section { background:var(--felt-2); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .map-toolbar { display:flex; gap:10px; flex-wrap:wrap; margin:24px 0; align-items:center; justify-content:space-between; }
+  .map-toolbar input { flex:1; min-width:200px; background:var(--felt); border:1px solid var(--line); color:var(--chalk); padding:11px 14px; border-radius:6px; font-size:14px; }
+  #leaflet-map { width:100%; height:440px; border-radius:12px; border:1px solid var(--line); }
+  .map-hint { font-size:12px; color:var(--muted); margin-top:10px; text-align:center; }
+  .leaflet-popup-content-wrapper { background:var(--felt-2); color:var(--chalk); border-radius:8px; }
+  .leaflet-popup-tip { background:var(--felt-2); }
+  .pin-avatar { width:38px; height:38px; border-radius:50%; object-fit:cover; border:2px solid var(--gold); }
+  .popup-inner { display:flex; gap:10px; align-items:flex-start; min-width:180px; }
+  .popup-inner .txt h4 { margin:0 0 2px; font-size:14px; }
+  .popup-inner .txt .g { font-size:12px; color:var(--gold); }
+  .popup-inner .txt .d { font-size:11px; color:var(--muted); }
+  .popup-inner .del-btn { margin-top:6px; font-size:11px; color:var(--red); background:none; border:none; cursor:pointer; text-decoration:underline; padding:0; display:block; }
+
+  .list-title { font-size:13px; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold); margin:26px 0 12px; }
+  .checkin-row { background:var(--felt); border:1px solid var(--line); border-radius:8px; padding:12px 16px; display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+  .checkin-row img { width:32px; height:32px; border-radius:50%; object-fit:cover; border:2px solid var(--gold); }
+  .checkin-row .meta { font-size:13px; color:var(--muted); }
+  .checkin-row .meta strong { color:var(--chalk); }
+  .empty { text-align:center; padding:30px 20px; color:var(--muted); border:1px dashed var(--line); border-radius:10px; }
+
+  .gate { text-align:center; padding:60px 20px; border:1px dashed var(--line); border-radius:12px; }
+  .gate .icon { font-size:36px; margin-bottom:14px; }
+  .gate h3 { margin:0 0 10px; font-size:20px; }
+  .gate p { color:var(--muted); margin:0 0 22px; }
+  .gate .ctas { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+
+  .fabs { position:fixed; bottom:24px; right:24px; display:flex; flex-direction:column; gap:10px; z-index:50; align-items:flex-end; }
+  .fab { background:var(--gold); color:var(--felt); border:none; border-radius:30px; padding:14px 22px; font-weight:700; font-size:14px; cursor:pointer; box-shadow:0 6px 18px rgba(0,0,0,0.4); }
+  .fab.secondary { background:var(--felt-3); color:var(--chalk); border:1px solid var(--gold-dim); }
+
+  .overlay { position:fixed; inset:0; background:rgba(6,14,13,0.75); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px; overflow-y:auto; }
+  .modal { background:var(--felt-2); border:1px solid var(--line); border-radius:12px; padding:26px; width:100%; max-width:440px; max-height:88vh; overflow-y:auto; position:relative; margin:auto; }
+  .modal h3 { margin:0 0 4px; font-size:20px; }
+  .modal .sub { color:var(--muted); font-size:13px; margin:0 0 18px; }
+  .tabs { display:flex; gap:8px; margin-bottom:18px; }
+  .tabs button { flex:1; background:var(--felt); border:1px solid var(--line); color:var(--muted); padding:9px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:700; }
+  .tabs button.active { background:var(--gold); color:var(--felt); border-color:var(--gold); }
+  .field { margin-bottom:14px; }
+  .field label { display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin-bottom:6px; }
+  .field input, .field select, .field textarea { width:100%; background:var(--felt); border:1px solid var(--line); color:var(--chalk); padding:10px 12px; border-radius:6px; font-size:14px; font-family:inherit; }
+  .field textarea { resize:vertical; min-height:56px; }
+  .field.checkbox { display:flex; align-items:center; gap:8px; }
+  .field.checkbox input { width:auto; }
+  .chip-group { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { border:1px solid var(--line); padding:6px 12px; border-radius:20px; font-size:12px; cursor:pointer; color:var(--muted); }
+  .chip.selected { background:var(--gold); border-color:var(--gold); color:var(--felt); font-weight:700; }
+  .modal-actions { display:flex; gap:10px; margin-top:18px; }
+  .modal-actions .btn { flex:1; }
+  .close-x { position:absolute; top:16px; right:16px; background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; }
+  .avatar-upload { display:flex; align-items:center; gap:14px; }
+  .avatar-preview { width:56px; height:56px; border-radius:50%; object-fit:cover; border:2px solid var(--gold); background:var(--felt); }
+  .error-text { color:var(--red); font-size:12px; margin-top:6px; }
+  .notice-text { color:var(--gold); font-size:12px; margin-top:6px; }
+  .pick-hint { font-size:12px; color:var(--gold); margin-bottom:10px; }
+
+  .admin-row { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--line); font-size:13px; gap:10px; }
+  .admin-row select { background:var(--felt); color:var(--chalk); border:1px solid var(--line); border-radius:4px; padding:5px 8px; font-size:12px; }
+
+  footer { padding:26px 24px; text-align:center; color:var(--muted); font-size:13px; border-top:1px solid var(--line); }
+</style>
+</head>
+<body>
+<div id="app-root"></div>
+
+<script>
+(function(){
+  // ===== CONFIGURAR: cole aqui a URL e a chave "anon public" do seu projeto Supabase =====
+  const SUPABASE_URL = "https://baoquuhwoqftboziight.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhb3F1dWh3b3FmdGJvemlpZ2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0NTE1MjcsImV4cCI6MjEwMzAyNzUyN30.5ut-Gd9OWdy99sX2YnUQPimssfYCbtn0cLjBRERXO-w";
+  // =======================================================================================
+  const NOT_CONFIGURED = SUPABASE_URL.includes("COLE_AQUI") || SUPABASE_ANON_KEY.includes("COLE_AQUI");
+  let supabase = null;
+  if (!NOT_CONFIGURED) {
+    try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+    catch(e) { console.error("Erro ao criar cliente Supabase:", e); }
+  }
+
+  const CARD_GAMES = ["Magic: The Gathering","Pokémon TCG","Yu-Gi-Oh!","Digimon TCG","One Piece TCG","Outro"];
+  const MINI_GAMES = ["Warhammer 40.000","Age of Sigmar","Star Wars: Legion","Kill Team","Bolt Action","HeroClix","Outro"];
+  const ALL_GAMES = [...CARD_GAMES.slice(0,-1), ...MINI_GAMES.slice(0,-1)];
+
+  let state = {
+    loading: true,
+    session: null,
+    profile: null,
+    completingProfile: false,
+    checkins: [],
+    lojas: [],
+    query: "",
+    showAuthModal: false,
+    authMode: "login", // 'login' | 'signup'
+    authError: "",
+    authNotice: "",
+    loginDraft: { email:"", password:"" },
+    signupDraft: { email:"", password:"", name:"", avatar:"", games:[], isLojista:false, lojaNome:"" },
+    showPost: false,
+    postDraft: { tipo:"Card Game", jogo:CARD_GAMES[0], local:"", data:"", notas:"" },
+    showLoja: false,
+    lojaDraft: { nome:"", endereco:"", descricao:"" },
+    pickMode: null, // 'partida' | 'loja'
+    pickedLatLng: null,
+    showAdminPanel: false,
+    allProfiles: []
+  };
+
+  const root = document.getElementById("app-root");
+  let map = null, markersLayer = null, pickMarker = null;
+
+  function svgLogo(size){
+    return `<svg viewBox="0 0 44 44" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="dd-g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#e2c579"/><stop offset="1" stop-color="#8a7134"/>
+      </linearGradient></defs>
+      <g transform="rotate(-10 7 13)">
+        <rect x="1" y="4" width="13" height="18" rx="2" fill="#1b3a37" stroke="#c9a24b" stroke-width="1"/>
+        <text x="7.5" y="16" text-anchor="middle" font-family="Georgia,serif" font-size="9" fill="#c9a24b">&#9830;</text>
+      </g>
+      <polygon points="24,4 40,13 40,29 24,38 8,29 8,13" fill="url(#dd-g)" stroke="#132c2a" stroke-width="1.4"/>
+      <text x="24" y="26" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="13" fill="#132c2a">20</text>
+    </svg>`;
+  }
+
+  function fallbackAvatar(name){
+    const letter = (name||"?").trim().charAt(0).toUpperCase();
+    return `data:image/svg+xml;utf8,` + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" rx="20" fill="#8a7134"/><text x="20" y="26" font-size="16" text-anchor="middle" fill="#132c2a" font-family="Georgia,serif" font-weight="700">${letter}</text></svg>`
+    );
+  }
+
+  function fmtDate(d){
+    if(!d) return "Data a combinar";
+    const dt = new Date(d + "T00:00:00");
+    if (isNaN(dt)) return d;
+    return dt.toLocaleDateString('pt-BR', { day:'2-digit', month:'short' });
+  }
+
+  // ===================== AUTENTICAÇÃO =====================
+  async function initAuth(){
+    if (NOT_CONFIGURED || !supabase) { state.loading = false; render(); return; }
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        state.session = session;
+        await loadProfile();
+      }
+    } catch(e){ console.error(e); }
+    state.loading = false;
+    render();
+    if (state.session && state.profile) await loadMapData();
+  }
+
+  async function loadProfile(){
+    const { data, error } = await supabase.from("profiles").select("*").eq("id", state.session.user.id).maybeSingle();
+    if (error) { console.error("Erro ao carregar perfil:", error); return; }
+    state.profile = data || null;
+  }
+
+  async function loadMapData(){
+    try {
+      const [{ data: checkins, error: e1 }, { data: lojas, error: e2 }] = await Promise.all([
+        supabase.from("checkins").select("*").order("data", { ascending: true }),
+        supabase.from("lojas").select("*")
+      ]);
+      state.checkins = e1 ? [] : (checkins || []);
+      state.lojas = e2 ? [] : (lojas || []);
+    } catch(e){ console.error(e); }
+    render();
+    syncMapMarkers();
+  }
+
+  function showAuthError(msg){ state.authError = msg; render(); }
+
+  async function doSignUp(){
+    const d = state.signupDraft;
+    state.authError = ""; state.authNotice = "";
+    if (!d.email.trim() || !d.password || !d.name.trim()) { showAuthError("Preencha e-mail, senha e nome."); return; }
+    if (d.password.length < 6) { showAuthError("A senha precisa ter pelo menos 6 caracteres."); return; }
+    if (d.isLojista && !d.lojaNome.trim()) { showAuthError("Informe o nome da sua loja."); return; }
+    const { data, error } = await supabase.auth.signUp({ email: d.email.trim(), password: d.password });
+    if (error) { showAuthError(traduzErro(error.message)); return; }
+    if (!data.session) {
+      state.authNotice = "Conta criada! Confira seu e-mail pra confirmar o cadastro e depois faça login.";
+      state.authMode = "login";
+      render();
+      return;
+    }
+    state.session = data.session;
+    const { error: perr } = await supabase.from("profiles").insert({
+      id: data.session.user.id,
+      name: d.name.trim(),
+      avatar: d.avatar || null,
+      games: d.games,
+      role: d.isLojista ? "lojista" : "jogador",
+      loja_nome: d.isLojista ? d.lojaNome.trim() : null
+    });
+    if (perr) { showAuthError("Erro ao criar perfil: " + perr.message); return; }
+    await loadProfile();
+    state.showAuthModal = false;
+    render();
+    await loadMapData();
+  }
+
+  async function doSignIn(){
+    const d = state.loginDraft;
+    state.authError = "";
+    if (!d.email.trim() || !d.password) { showAuthError("Preencha e-mail e senha."); return; }
+    const { data, error } = await supabase.auth.signInWithPassword({ email: d.email.trim(), password: d.password });
+    if (error) { showAuthError(traduzErro(error.message)); return; }
+    state.session = data.session;
+    await loadProfile();
+    if (!state.profile) {
+      state.completingProfile = true;
+      state.showAuthModal = true;
+      render();
+      return;
+    }
+    state.showAuthModal = false;
+    render();
+    await loadMapData();
+  }
+
+  async function doCompleteProfile(){
+    const d = state.signupDraft;
+    state.authError = "";
+    if (!d.name.trim()) { showAuthError("Preencha seu nome."); return; }
+    if (d.isLojista && !d.lojaNome.trim()) { showAuthError("Informe o nome da sua loja."); return; }
+    const { error } = await supabase.from("profiles").insert({
+      id: state.session.user.id,
+      name: d.name.trim(),
+      avatar: d.avatar || null,
+      games: d.games,
+      role: d.isLojista ? "lojista" : "jogador",
+      loja_nome: d.isLojista ? d.lojaNome.trim() : null
+    });
+    if (error) { showAuthError("Erro ao criar perfil: " + error.message); return; }
+    await loadProfile();
+    state.completingProfile = false;
+    state.showAuthModal = false;
+    render();
+    await loadMapData();
+  }
+
+  async function doSignOut(){
+    await supabase.auth.signOut();
+    state.session = null; state.profile = null; state.checkins = []; state.lojas = [];
+    render();
+  }
+
+  function traduzErro(msg){
+    if (/already registered/i.test(msg)) return "Esse e-mail já tem cadastro. Tente entrar.";
+    if (/Invalid login credentials/i.test(msg)) return "E-mail ou senha incorretos.";
+    if (/Email not confirmed/i.test(msg)) return "Confirme seu e-mail antes de entrar.";
+    return msg;
+  }
+
+  // ===================== MAPA =====================
+  function initMap(){
+    const el = document.getElementById("leaflet-map");
+    if (!el || typeof L === "undefined") return;
+    if (!map) {
+      map = L.map(el).setView([-14.235, -51.9253], 4);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'&copy; OpenStreetMap contributors', maxZoom:18 }).addTo(map);
+      markersLayer = L.layerGroup().addTo(map);
+      map.on('click', (e) => {
+        if (!state.pickMode) return;
+        state.pickedLatLng = { lat: e.latlng.lat, lng: e.latlng.lng };
+        if (pickMarker) map.removeLayer(pickMarker);
+        pickMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
+        const hint = document.getElementById("pick-status");
+        if (hint) hint.textContent = "Local selecionado! Agora preencha os dados abaixo.";
+      });
+    } else {
+      map.invalidateSize();
+    }
+    syncMapMarkers();
+  }
+
+  function syncMapMarkers(){
+    if (!markersLayer) return;
+    markersLayer.clearLayers();
+
+    visibleCheckins().forEach(c => {
+      const avatarUrl = c.avatar || fallbackAvatar(c.user_name || "?");
+      const icon = L.divIcon({
+        html: `<img src="${avatarUrl}" style="width:40px;height:40px;border-radius:50%;border:3px solid #c9a24b;object-fit:cover;box-shadow:0 2px 6px rgba(0,0,0,0.5);" />`,
+        className: "", iconSize:[40,40], iconAnchor:[20,20]
+      });
+      const marker = L.marker([c.lat, c.lng], { icon }).addTo(markersLayer);
+      const canDelete = state.profile && (state.profile.role === "admin" || c.user_id === state.session.user.id);
+      marker.bindPopup(`
+        <div class="popup-inner">
+          <img class="pin-avatar" src="${avatarUrl}" alt="" />
+          <div class="txt">
+            <h4>${nomeDoUsuario(c.user_id)}</h4>
+            <div class="g">${c.jogo}</div>
+            <div class="d">${c.local ? c.local+' &middot; ' : ''}${fmtDate(c.data)}</div>
+            ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteCheckin('${c.id}')">Excluir</button>` : ''}
+          </div>
+        </div>
+      `);
+    });
+
+    state.lojas.forEach(l => {
+      const icon = L.divIcon({
+        html: `<div style="width:36px;height:36px;border-radius:50%;background:#c9a24b;border:3px solid #132c2a;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 6px rgba(0,0,0,0.5);">🎲</div>`,
+        className: "", iconSize:[36,36], iconAnchor:[18,18]
+      });
+      const marker = L.marker([l.lat, l.lng], { icon }).addTo(markersLayer);
+      const canDelete = state.profile && (state.profile.role === "admin" || l.user_id === state.session.user.id);
+      marker.bindPopup(`
+        <div class="popup-inner">
+          <div class="txt">
+            <h4>${l.nome}</h4>
+            <div class="d">${l.endereco || ''}</div>
+            ${l.descricao ? `<div class="d">${l.descricao}</div>` : ''}
+            ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteLoja('${l.id}')">Excluir</button>` : ''}
+          </div>
+        </div>
+      `);
+    });
+  }
+
+  function nomeDoUsuario(userId){
+    // usa o próprio perfil se for o dono, senão mostra genérico (nomes de outros usuários
+    // não ficam guardados localmente — o ideal é a política de leitura de "profiles" te dar isso;
+    // aqui simplificamos mostrando o profile carregado quando é o dono).
+    if (state.profile && state.session && userId === state.session.user.id) return state.profile.name;
+    return "Jogador da comunidade";
+  }
+
+  function visibleCheckins(){
+    let list = state.checkins.slice().sort((a,b)=>(a.data||"9999").localeCompare(b.data||"9999"));
+    if (state.query && state.query.trim()){
+      const q = state.query.trim().toLowerCase();
+      list = list.filter(c => (c.jogo||"").toLowerCase().includes(q) || (c.local||"").toLowerCase().includes(q));
+    }
+    return list;
+  }
+
+  window.__deckDeleteCheckin = async function(id){
+    await supabase.from("checkins").delete().eq("id", id);
+    await loadMapData();
+  };
+  window.__deckDeleteLoja = async function(id){
+    await supabase.from("lojas").delete().eq("id", id);
+    await loadMapData();
+  };
+
+  // ===================== PAINEL ADMIN =====================
+  async function loadAllProfiles(){
+    const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending:true });
+    if (!error) state.allProfiles = data || [];
+    render();
+  }
+  window.__deckChangeRole = async function(id, role){
+    await supabase.from("profiles").update({ role }).eq("id", id);
+    await loadAllProfiles();
+  };
+
+  // ===================== RENDER =====================
+  function render(){
+    const logged = !!(state.session && state.profile);
+
+    root.innerHTML = `
+      <nav>
+        <div class="brand display">${svgLogo(30)} Deck e Dados</div>
+        <div class="navlinks">
+          ${logged ? `<a href="#mapa-section">Mapa</a>` : ''}
+          ${logged ? `
+            <img src="${state.profile.avatar || fallbackAvatar(state.profile.name)}" alt="" style="width:26px;height:26px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);vertical-align:middle;" />
+            <span style="font-size:13px;">${state.profile.name}</span>
+            <span class="role-badge">${state.profile.role}</span>
+            ${state.profile.role === "admin" ? `<button class="btn ghost small" id="btn-admin">Painel admin</button>` : ''}
+            <button class="btn ghost small" id="btn-logout">Sair</button>
+          ` : `
+            <button class="btn ghost small" id="btn-login">Entrar</button>
+            <button class="btn small" id="btn-signup">Cadastrar</button>
+          `}
+        </div>
+      </nav>
+
+      <div class="hero">
+        <div class="eyebrow"><span class="pips"><span class="pip"></span><span class="pip"></span><span class="pip"></span></span> comunidade brasileira de mesa</div>
+        <h1 class="display">Todo card game, toda miniatura,<br/><span>um mapa só</span></h1>
+        <p class="lead">Cadastre-se, diga o que você joga e marque no mapa onde vai estar. Só quem é da comunidade vê o mapa e quem tá jogando.</p>
+        <div class="ctas">
+          ${logged ? `<a href="#mapa-section" class="btn">Ver o mapa</a>` : `<button class="btn" id="btn-hero-cadastro">Fazer cadastro</button>`}
+        </div>
+      </div>
+
+      <section>
+        <div class="wrap intro">
+          <h2 class="display">Duas paixões, uma mesa</h2>
+          <p>Seja com um baralho na mão ou um exército de miniaturas pintadas, o Deck e Dados existe pra facilitar o encontro.</p>
+          <div class="duo">
+            <div class="duo-card">
+              <h3>Card Games</h3>
+              <p>Encontre gente pra jogar os TCGs mais populares do momento.</p>
+              <div class="games">${CARD_GAMES.slice(0,-1).map(g=>`<span>${g}</span>`).join("")}</div>
+            </div>
+            <div class="duo-card mini">
+              <h3>Miniaturas</h3>
+              <p>Exércitos pintados, mesas de guerra e campanhas épicas.</p>
+              <div class="games">${MINI_GAMES.slice(0,-1).map(g=>`<span>${g}</span>`).join("")}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="mapa-section">
+        <div class="wrap">
+          <div class="intro"><h2 class="display">Mapa da comunidade</h2><p>Veja quem vai jogar, onde e o quê — em tempo real.</p></div>
+
+          ${NOT_CONFIGURED ? `
+            <div class="gate">
+              <div class="icon">⚙️</div>
+              <h3>Banco de dados não configurado</h3>
+              <p>Cole a SUPABASE_URL e a SUPABASE_ANON_KEY no início do arquivo pra ativar o login e o mapa.</p>
+            </div>
+          ` : !logged ? `
+            <div class="gate">
+              <div class="icon">🔒</div>
+              <h3>O mapa é exclusivo pra quem é da comunidade</h3>
+              <p>Faça seu cadastro (ou entre, se já tiver conta) pra ver quem está jogando e marcar sua própria partida.</p>
+              <div class="ctas">
+                <button class="btn" id="btn-gate-signup">Fazer cadastro</button>
+                <button class="btn ghost" id="btn-gate-login">Já tenho conta</button>
+              </div>
+            </div>
+          ` : `
+            <div class="map-toolbar">
+              <input id="search-input" type="text" placeholder="Buscar por jogo ou local..." value="${state.query||''}" />
+            </div>
+            <div id="leaflet-map"></div>
+            <div class="map-hint">Clique em "Marcar partida" (ou "Cadastrar loja", se você é lojista) e depois clique no mapa no local certo.</div>
+
+            <div class="list-title">${'\u25CF'} Próximas partidas marcadas</div>
+            ${state.loading ? `<div class="empty">Carregando...</div>` : ''}
+            ${(!state.loading && visibleCheckins().length===0) ? `<div class="empty">Ninguém marcou partida ainda. Seja o primeiro!</div>` : ''}
+            ${visibleCheckins().map(c => `
+              <div class="checkin-row">
+                <img src="${c.avatar || fallbackAvatar(nomeDoUsuario(c.user_id))}" alt="" />
+                <div class="meta">
+                  <strong>${nomeDoUsuario(c.user_id)}</strong> vai jogar <strong>${c.jogo}</strong>
+                  ${c.local ? ' em <strong>'+c.local+'</strong>' : ''} &middot; ${fmtDate(c.data)}
+                </div>
+              </div>
+            `).join("")}
+          `}
+        </div>
+      </section>
+
+      ${logged ? `
+        <div class="fabs">
+          ${(state.profile.role === "lojista" || state.profile.role === "admin") ? `<button class="fab secondary" id="btn-fab-loja">+ Cadastrar loja</button>` : ''}
+          <button class="fab" id="btn-fab-partida">+ Marcar partida</button>
+        </div>
+      ` : ''}
+
+      ${state.showAuthModal ? renderAuthModal() : ''}
+      ${state.showPost ? renderPostModal() : ''}
+      ${state.showLoja ? renderLojaModal() : ''}
+      ${state.showAdminPanel ? renderAdminPanel() : ''}
+
+      <footer>Deck e Dados &middot; feito por jogadores, pra jogadores</footer>
+    `;
+    attachEvents();
+    if (logged) setTimeout(initMap, 0);
+  }
+
+  function renderAuthModal(){
+    if (state.completingProfile) return renderCompleteProfileModal();
+    const mode = state.authMode;
+    return `
+      <div class="overlay" id="overlay-auth">
+        <div class="modal">
+          <button class="close-x" id="close-auth">&times;</button>
+          <div class="tabs">
+            <button class="${mode==='login'?'active':''}" id="tab-login">Entrar</button>
+            <button class="${mode==='signup'?'active':''}" id="tab-signup">Cadastrar</button>
+          </div>
+          ${mode === "login" ? renderLoginFields() : renderSignupFields()}
+          ${state.authNotice ? `<div class="notice-text">${state.authNotice}</div>` : ''}
+          ${state.authError ? `<div class="error-text">${state.authError}</div>` : ''}
+          <div class="modal-actions">
+            <button class="btn" id="btn-auth-submit">${mode==='login' ? 'Entrar' : 'Criar conta'}</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderLoginFields(){
+    const d = state.loginDraft;
+    return `
+      <h3 class="display">Bem-vindo de volta</h3>
+      <p class="sub">Entre com seu e-mail e senha.</p>
+      <div class="field"><label>E-mail</label><input id="auth-email" type="email" value="${d.email.replace(/"/g,'&quot;')}" placeholder="voce@email.com" /></div>
+      <div class="field"><label>Senha</label><input id="auth-password" type="password" value="${d.password.replace(/"/g,'&quot;')}" /></div>
+    `;
+  }
+
+  function renderSignupFields(){
+    const d = state.signupDraft;
+    return `
+      <h3 class="display">Criar sua conta</h3>
+      <p class="sub">Sua foto e seu nome aparecem no mapa pra galera te reconhecer.</p>
+      <div class="field"><label>E-mail</label><input id="auth-email" type="email" value="${d.email.replace(/"/g,'&quot;')}" placeholder="voce@email.com" /></div>
+      <div class="field"><label>Senha</label><input id="auth-password" type="password" value="${d.password.replace(/"/g,'&quot;')}" placeholder="mínimo 6 caracteres" /></div>
+      ${renderProfileFieldsBlock(d)}
+    `;
+  }
+
+  function renderCompleteProfileModal(){
+    const d = state.signupDraft;
+    return `
+      <div class="overlay" id="overlay-auth">
+        <div class="modal">
+          <h3 class="display">Só falta completar seu perfil</h3>
+          <p class="sub">Seu login já está confirmado. Agora conte um pouco sobre você.</p>
+          ${renderProfileFieldsBlock(d)}
+          ${state.authError ? `<div class="error-text">${state.authError}</div>` : ''}
+          <div class="modal-actions"><button class="btn" id="btn-complete-submit">Concluir cadastro</button></div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderProfileFieldsBlock(d){
+    return `
+      <div class="field">
+        <label>Sua foto</label>
+        <div class="avatar-upload">
+          <img class="avatar-preview" id="avatar-preview" src="${d.avatar || fallbackAvatar(d.name)}" />
+          <input type="file" id="avatar-file" accept="image/*" />
+        </div>
+      </div>
+      <div class="field"><label>Seu nome ou apelido</label><input id="signup-name" type="text" value="${d.name.replace(/"/g,'&quot;')}" placeholder="Ex: Rafa" /></div>
+      <div class="field">
+        <label>Você joga...</label>
+        <div class="chip-group">${ALL_GAMES.map(g => `<div class="chip ${d.games.includes(g)?'selected':''}" data-game="${g}">${g}</div>`).join("")}</div>
+      </div>
+      <div class="field checkbox">
+        <input type="checkbox" id="signup-lojista" ${d.isLojista?'checked':''} />
+        <label style="margin:0;" for="signup-lojista">Sou lojista (tenho uma loja física)</label>
+      </div>
+      ${d.isLojista ? `<div class="field"><label>Nome da loja</label><input id="signup-loja-nome" type="text" value="${d.lojaNome.replace(/"/g,'&quot;')}" placeholder="Ex: Clube do Dado" /></div>` : ''}
+    `;
+  }
+
+  function renderPostModal(){
+    const d = state.postDraft;
+    const games = d.tipo === "Card Game" ? CARD_GAMES : MINI_GAMES;
+    return `
+      <div class="overlay" id="overlay-post">
+        <div class="modal">
+          <button class="close-x" id="close-post">&times;</button>
+          <h3 class="display">Marcar partida</h3>
+          <p class="sub" id="pick-status">${state.pickedLatLng ? 'Local selecionado! Preencha os dados abaixo.' : 'Clique no mapa (atrás deste card) pra escolher o local do jogo.'}</p>
+          <div class="field"><label>Tipo</label>
+            <select id="post-tipo">
+              <option value="Card Game" ${d.tipo==='Card Game'?'selected':''}>Card Game</option>
+              <option value="Miniaturas" ${d.tipo==='Miniaturas'?'selected':''}>Miniaturas</option>
+            </select>
+          </div>
+          <div class="field"><label>Jogo</label>
+            <select id="post-jogo">${games.map(g=>`<option value="${g}" ${d.jogo===g?'selected':''}>${g}</option>`).join("")}</select>
+          </div>
+          <div class="field"><label>Nome do local (loja, clube...)</label><input id="post-local" type="text" value="${d.local.replace(/"/g,'&quot;')}" placeholder="Ex: Clube do Dado" /></div>
+          <div class="field"><label>Data</label><input id="post-data" type="date" value="${d.data}" /></div>
+          <div class="field"><label>Observações (opcional)</label><textarea id="post-notas">${d.notas}</textarea></div>
+          <div id="post-error" class="error-text"></div>
+          <div class="modal-actions"><button class="btn" id="save-post">Publicar no mapa</button></div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderLojaModal(){
+    const d = state.lojaDraft;
+    return `
+      <div class="overlay" id="overlay-loja">
+        <div class="modal">
+          <button class="close-x" id="close-loja">&times;</button>
+          <h3 class="display">Cadastrar loja</h3>
+          <p class="sub" id="pick-status">${state.pickedLatLng ? 'Local selecionado! Preencha os dados abaixo.' : 'Clique no mapa (atrás deste card) pra marcar onde fica a loja.'}</p>
+          <div class="field"><label>Nome da loja</label><input id="loja-nome" type="text" value="${d.nome.replace(/"/g,'&quot;')}" /></div>
+          <div class="field"><label>Endereço</label><input id="loja-endereco" type="text" value="${d.endereco.replace(/"/g,'&quot;')}" placeholder="Rua, número, bairro, cidade" /></div>
+          <div class="field"><label>Descrição (opcional)</label><textarea id="loja-descricao">${d.descricao}</textarea></div>
+          <div id="loja-error" class="error-text"></div>
+          <div class="modal-actions"><button class="btn" id="save-loja">Publicar loja no mapa</button></div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderAdminPanel(){
+    return `
+      <div class="overlay" id="overlay-admin">
+        <div class="modal" style="max-width:520px;">
+          <button class="close-x" id="close-admin">&times;</button>
+          <h3 class="display">Painel admin</h3>
+          <p class="sub">Altere o papel de qualquer usuário da comunidade.</p>
+          ${state.allProfiles.map(p => `
+            <div class="admin-row">
+              <span>${p.name} ${p.id === state.session.user.id ? '(você)' : ''}</span>
+              <select onchange="window.__deckChangeRole('${p.id}', this.value)">
+                <option value="jogador" ${p.role==='jogador'?'selected':''}>Jogador</option>
+                <option value="lojista" ${p.role==='lojista'?'selected':''}>Lojista</option>
+                <option value="admin" ${p.role==='admin'?'selected':''}>Admin</option>
+              </select>
+            </div>
+          `).join("") || '<div class="empty">Nenhum perfil encontrado.</div>'}
+        </div>
+      </div>
+    `;
+  }
+
+  // ===================== EVENTOS =====================
+  function attachEvents(){
+    const $ = (id) => document.getElementById(id);
+
+    if ($("search-input")) $("search-input").oninput = (e) => { state.query = e.target.value; render(); };
+
+    if ($("btn-login")) $("btn-login").onclick = () => { state.showAuthModal = true; state.authMode = "login"; state.authError=""; state.authNotice=""; render(); };
+    if ($("btn-signup")) $("btn-signup").onclick = () => { state.showAuthModal = true; state.authMode = "signup"; state.authError=""; state.authNotice=""; render(); };
+    if ($("btn-hero-cadastro")) $("btn-hero-cadastro").onclick = () => { state.showAuthModal = true; state.authMode = "signup"; render(); };
+    if ($("btn-gate-signup")) $("btn-gate-signup").onclick = () => { state.showAuthModal = true; state.authMode = "signup"; render(); };
+    if ($("btn-gate-login")) $("btn-gate-login").onclick = () => { state.showAuthModal = true; state.authMode = "login"; render(); };
+    if ($("btn-logout")) $("btn-logout").onclick = doSignOut;
+
+    if ($("btn-admin")) $("btn-admin").onclick = async () => { state.showAdminPanel = true; render(); await loadAllProfiles(); };
+    if ($("close-admin")) $("close-admin").onclick = () => { state.showAdminPanel = false; render(); };
+    if ($("overlay-admin")) $("overlay-admin").onclick = (e) => { if(e.target.id==="overlay-admin"){ state.showAdminPanel=false; render(); } };
+
+    if ($("close-auth")) $("close-auth").onclick = () => { state.showAuthModal = false; state.completingProfile=false; render(); };
+    if ($("overlay-auth")) $("overlay-auth").onclick = (e) => { if(e.target.id==="overlay-auth" && !state.completingProfile){ state.showAuthModal=false; render(); } };
+    if ($("tab-login")) $("tab-login").onclick = () => { state.authMode="login"; state.authError=""; render(); };
+    if ($("tab-signup")) $("tab-signup").onclick = () => { state.authMode="signup"; state.authError=""; render(); };
+
+    if ($("auth-email")) $("auth-email").oninput = (e) => {
+      if (state.authMode==="login") state.loginDraft.email = e.target.value; else state.signupDraft.email = e.target.value;
+    };
+    if ($("auth-password")) $("auth-password").oninput = (e) => {
+      if (state.authMode==="login") state.loginDraft.password = e.target.value; else state.signupDraft.password = e.target.value;
+    };
+    if ($("signup-name")) $("signup-name").oninput = (e) => { state.signupDraft.name = e.target.value; };
+    if ($("signup-lojista")) $("signup-lojista").onchange = (e) => { state.signupDraft.isLojista = e.target.checked; render(); state.showAuthModal = true; };
+    if ($("signup-loja-nome")) $("signup-loja-nome").oninput = (e) => { state.signupDraft.lojaNome = e.target.value; };
+    if ($("avatar-file")) $("avatar-file").onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const size = 120;
+          canvas.width = size; canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          const minSide = Math.min(img.width, img.height);
+          const sx = (img.width - minSide)/2, sy = (img.height - minSide)/2;
+          ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+          state.signupDraft.avatar = canvas.toDataURL("image/jpeg", 0.75);
+          render();
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+    document.querySelectorAll("[data-game]").forEach(el => {
+      el.onclick = () => {
+        const g = el.getAttribute("data-game");
+        const idx = state.signupDraft.games.indexOf(g);
+        if (idx>-1) state.signupDraft.games.splice(idx,1); else state.signupDraft.games.push(g);
+        render();
+      };
+    });
+    if ($("btn-auth-submit")) $("btn-auth-submit").onclick = () => { state.authMode === "login" ? doSignIn() : doSignUp(); };
+    if ($("btn-complete-submit")) $("btn-complete-submit").onclick = doCompleteProfile;
+
+    if ($("btn-fab-partida")) $("btn-fab-partida").onclick = () => { state.showPost = true; state.pickMode = "partida"; state.pickedLatLng = null; render(); };
+    if ($("btn-fab-loja")) $("btn-fab-loja").onclick = () => { state.showLoja = true; state.pickMode = "loja"; state.pickedLatLng = null; render(); };
+
+    if ($("close-post")) $("close-post").onclick = () => { closePickModal("post"); };
+    if ($("overlay-post")) $("overlay-post").onclick = (e) => { if(e.target.id==="overlay-post") closePickModal("post"); };
+    if ($("post-tipo")) $("post-tipo").onchange = (e) => { state.postDraft.tipo = e.target.value; state.postDraft.jogo = (e.target.value==="Card Game"?CARD_GAMES:MINI_GAMES)[0]; render(); };
+    if ($("post-jogo")) $("post-jogo").onchange = (e) => { state.postDraft.jogo = e.target.value; };
+    if ($("post-local")) $("post-local").oninput = (e) => { state.postDraft.local = e.target.value; };
+    if ($("post-data")) $("post-data").oninput = (e) => { state.postDraft.data = e.target.value; };
+    if ($("post-notas")) $("post-notas").oninput = (e) => { state.postDraft.notas = e.target.value; };
+    if ($("save-post")) $("save-post").onclick = async () => {
+      if (!state.pickedLatLng) { $("post-error").textContent = "Clique no mapa pra escolher o local antes de publicar."; return; }
+      const d = state.postDraft;
+      const { error } = await supabase.from("checkins").insert({
+        user_id: state.session.user.id, tipo: d.tipo, jogo: d.jogo, local: d.local.trim(),
+        data: d.data || null, notas: d.notas.trim(), lat: state.pickedLatLng.lat, lng: state.pickedLatLng.lng
+      });
+      if (error) { $("post-error").textContent = "Erro ao publicar: " + error.message; return; }
+      closePickModal("post");
+      await loadMapData();
+    };
+
+    if ($("close-loja")) $("close-loja").onclick = () => { closePickModal("loja"); };
+    if ($("overlay-loja")) $("overlay-loja").onclick = (e) => { if(e.target.id==="overlay-loja") closePickModal("loja"); };
+    if ($("loja-nome")) $("loja-nome").oninput = (e) => { state.lojaDraft.nome = e.target.value; };
+    if ($("loja-endereco")) $("loja-endereco").oninput = (e) => { state.lojaDraft.endereco = e.target.value; };
+    if ($("loja-descricao")) $("loja-descricao").oninput = (e) => { state.lojaDraft.descricao = e.target.value; };
+    if ($("save-loja")) $("save-loja").onclick = async () => {
+      if (!state.pickedLatLng) { $("loja-error").textContent = "Clique no mapa pra marcar onde fica a loja."; return; }
+      const d = state.lojaDraft;
+      if (!d.nome.trim()) { $("loja-error").textContent = "Informe o nome da loja."; return; }
+      const { error } = await supabase.from("lojas").insert({
+        user_id: state.session.user.id, nome: d.nome.trim(), endereco: d.endereco.trim(),
+        descricao: d.descricao.trim(), lat: state.pickedLatLng.lat, lng: state.pickedLatLng.lng
+      });
+      if (error) { $("loja-error").textContent = "Erro ao publicar: " + error.message; return; }
+      closePickModal("loja");
+      await loadMapData();
+    };
+  }
+
+  function closePickModal(which){
+    if (which === "post") state.showPost = false; else state.showLoja = false;
+    state.pickMode = null; state.pickedLatLng = null;
+    if (pickMarker && map) { map.removeLayer(pickMarker); pickMarker = null; }
+    render();
+  }
+
+  render();
+  initAuth();
+})();
+</script>
+</body>
+</html>
