@@ -4,8 +4,6 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Deck e Dados — encontre sua próxima partida</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   :root {
@@ -57,16 +55,20 @@
   #mapa-section { background:var(--felt-2); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
   .map-toolbar { display:flex; gap:10px; flex-wrap:wrap; margin:24px 0; align-items:center; justify-content:space-between; }
   .map-toolbar input { flex:1; min-width:200px; background:var(--felt); border:1px solid var(--line); color:var(--chalk); padding:11px 14px; border-radius:6px; font-size:14px; }
-  #leaflet-map { width:100%; height:440px; border-radius:12px; border:1px solid var(--line); }
-  .map-hint { font-size:12px; color:var(--muted); margin-top:10px; text-align:center; }
-  .leaflet-popup-content-wrapper { background:var(--felt-2); color:var(--chalk); border-radius:8px; }
-  .leaflet-popup-tip { background:var(--felt-2); }
-  .pin-avatar { width:38px; height:38px; border-radius:50%; object-fit:cover; border:2px solid var(--gold); }
-  .popup-inner { display:flex; gap:10px; align-items:flex-start; min-width:180px; }
-  .popup-inner .txt h4 { margin:0 0 2px; font-size:14px; }
-  .popup-inner .txt .g { font-size:12px; color:var(--gold); }
-  .popup-inner .txt .d { font-size:11px; color:var(--muted); }
-  .popup-inner .del-btn { margin-top:6px; font-size:11px; color:var(--red); background:none; border:none; cursor:pointer; text-decoration:underline; padding:0; display:block; }
+  #gmap { width:100%; height:440px; border-radius:12px; border:1px solid var(--line); background:var(--felt); }
+  .map-pick-bar {
+    position: fixed; left:50%; transform:translateX(-50%); bottom:24px; z-index:60;
+    background: var(--felt-2); border:1px solid var(--gold); border-radius:30px;
+    padding:12px 20px; display:flex; align-items:center; gap:14px; box-shadow:0 6px 18px rgba(0,0,0,0.5);
+    font-size:14px; max-width:90vw;
+  }
+  .map-pick-bar button { background:none; border:none; color:var(--red); cursor:pointer; font-size:13px; text-decoration:underline; }
+  .gm-popup { display:flex; gap:10px; align-items:flex-start; min-width:160px; font-family:-apple-system,sans-serif; }
+  .gm-popup img.pin-avatar { width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid #c9a24b; }
+  .gm-popup h4 { margin:0 0 2px; font-size:14px; color:#132c2a; }
+  .gm-popup .g { font-size:12px; color:#8a7134; }
+  .gm-popup .d { font-size:11px; color:#555; }
+  .gm-popup .del-btn { margin-top:6px; font-size:11px; color:#b33a3a; background:none; border:none; cursor:pointer; text-decoration:underline; padding:0; display:block; }
 
   .list-title { font-size:13px; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold); margin:26px 0 12px; }
   .checkin-row { background:var(--felt); border:1px solid var(--line); border-radius:8px; padding:12px 16px; display:flex; align-items:center; gap:12px; margin-bottom:8px; }
@@ -132,6 +134,11 @@
     catch(e) { console.error("Erro ao criar cliente Supabase:", e); }
   }
 
+  // ===== CONFIGURAR: cole aqui sua chave de API do Google Maps =====
+  const GOOGLE_MAPS_API_KEY = "AIzaSyCMfvW5WRM5l3pShMYtCd2HzgT1pEjLTgA";
+  const MAPS_NOT_CONFIGURED = GOOGLE_MAPS_API_KEY.includes("COLE_AQUI");
+  // ===================================================================
+
   const CARD_GAMES = ["Magic: The Gathering","Pokémon TCG","Yu-Gi-Oh!","Digimon TCG","One Piece TCG","Outro"];
   const MINI_GAMES = ["Warhammer 40.000","Age of Sigmar","Star Wars: Legion","Kill Team","Bolt Action","HeroClix","Outro"];
   const ALL_GAMES = [...CARD_GAMES.slice(0,-1), ...MINI_GAMES.slice(0,-1)];
@@ -163,7 +170,8 @@
   };
 
   const root = document.getElementById("app-root");
-  let map = null, markersLayer = null, pickMarker = null;
+  let gmap = null, gmapsReady = false, gmapsLoading = false;
+  let checkinMarkers = [], lojaMarkers = [], pickMarker = null, activeInfoWindow = null;
 
   function svgLogo(size){
     return `<svg viewBox="0 0 44 44" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
@@ -319,77 +327,124 @@
     return msg;
   }
 
-  // ===================== MAPA =====================
+  // ===================== MAPA (Google Maps) =====================
+  function loadGoogleMaps(cb){
+    if (MAPS_NOT_CONFIGURED) return;
+    if (gmapsReady) { cb(); return; }
+    if (gmapsLoading) { window.__deckOnGmapsReady = cb; return; }
+    gmapsLoading = true;
+    window.__deckOnGmapsReady = cb;
+    window.__deckGmapCallback = function(){
+      gmapsReady = true; gmapsLoading = false;
+      if (window.__deckOnGmapsReady) window.__deckOnGmapsReady();
+    };
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=__deckGmapCallback`;
+    script.async = true;
+    document.head.appendChild(script);
+  }
+
   function initMap(){
-    const el = document.getElementById("leaflet-map");
-    if (!el || typeof L === "undefined") return;
-    if (!map) {
-      map = L.map(el).setView([-14.235, -51.9253], 4);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'&copy; OpenStreetMap contributors', maxZoom:18 }).addTo(map);
-      markersLayer = L.layerGroup().addTo(map);
-      map.on('click', (e) => {
-        if (!state.pickMode) return;
-        state.pickedLatLng = { lat: e.latlng.lat, lng: e.latlng.lng };
-        if (pickMarker) map.removeLayer(pickMarker);
-        pickMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
-        const hint = document.getElementById("pick-status");
-        if (hint) hint.textContent = "Local selecionado! Agora preencha os dados abaixo.";
-      });
-    } else {
-      // a cada render() o innerHTML é reconstruído, então o <div id="leaflet-map">
-      // atual é um elemento novo. Reencaixa o mapa já existente (com os tiles
-      // carregados) no lugar do placeholder novo, em vez de recriar tudo.
-      const container = map.getContainer();
-      if (container !== el && el.parentNode) {
-        el.parentNode.replaceChild(container, el);
+    if (MAPS_NOT_CONFIGURED) return;
+    loadGoogleMaps(() => {
+      const el = document.getElementById("gmap");
+      if (!el) return;
+      if (!gmap) {
+        gmap = new google.maps.Map(el, {
+          center: { lat: -14.235, lng: -51.9253 }, zoom: 4,
+          mapId: "DEMO_MAP_ID",
+          streetViewControl: false, mapTypeControl: false, fullscreenControl: false
+        });
+        gmap.addListener("click", (e) => {
+          if (!state.pickMode) return;
+          const lat = e.latLng.lat(), lng = e.latLng.lng();
+          state.pickedLatLng = { lat, lng };
+          if (pickMarker) pickMarker.setMap(null);
+          pickMarker = new google.maps.Marker({ position:{lat,lng}, map: gmap });
+          // agora que o local foi escolhido, abre o formulário
+          if (state.pickMode === "partida") state.showPost = true; else state.showLoja = true;
+          render();
+        });
+      } else {
+        // a cada render() o innerHTML é reconstruído, então o <div id="gmap">
+        // atual é um elemento novo. Reencaixa o mapa já existente no lugar do
+        // placeholder novo, em vez de recriar tudo (evita sumir/piscar).
+        const container = gmap.getDiv();
+        if (container !== el && el.parentNode) {
+          el.parentNode.replaceChild(container, el);
+          google.maps.event.trigger(gmap, "resize");
+        }
       }
-      map.invalidateSize();
-    }
-    syncMapMarkers();
+      syncMapMarkers();
+    });
+  }
+
+  function makeAvatarIcon(avatarUrl, border, cb){
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const size = 44;
+      const canvas = document.createElement("canvas");
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext("2d");
+      ctx.beginPath(); ctx.arc(size/2, size/2, size/2 - 2, 0, Math.PI*2); ctx.closePath(); ctx.clip();
+      ctx.drawImage(img, 0, 0, size, size);
+      ctx.beginPath(); ctx.arc(size/2, size/2, size/2 - 2, 0, Math.PI*2);
+      ctx.lineWidth = 3; ctx.strokeStyle = border; ctx.stroke();
+      cb(canvas.toDataURL("image/png"));
+    };
+    img.onerror = () => cb(null);
+    img.src = avatarUrl;
   }
 
   function syncMapMarkers(){
-    if (!markersLayer) return;
-    markersLayer.clearLayers();
+    if (!gmap) return;
+    checkinMarkers.forEach(m => m.setMap(null)); checkinMarkers = [];
+    lojaMarkers.forEach(m => m.setMap(null)); lojaMarkers = [];
 
     visibleCheckins().forEach(c => {
-      const avatarUrl = c.avatar || fallbackAvatar(c.user_name || "?");
-      const icon = L.divIcon({
-        html: `<img src="${avatarUrl}" style="width:40px;height:40px;border-radius:50%;border:3px solid #c9a24b;object-fit:cover;box-shadow:0 2px 6px rgba(0,0,0,0.5);" />`,
-        className: "", iconSize:[40,40], iconAnchor:[20,20]
-      });
-      const marker = L.marker([c.lat, c.lng], { icon }).addTo(markersLayer);
-      const canDelete = state.profile && (state.profile.role === "admin" || c.user_id === state.session.user.id);
-      marker.bindPopup(`
-        <div class="popup-inner">
-          <img class="pin-avatar" src="${avatarUrl}" alt="" />
-          <div class="txt">
-            <h4>${nomeDoUsuario(c.user_id)}</h4>
-            <div class="g">${c.jogo}</div>
-            <div class="d">${c.local ? c.local+' &middot; ' : ''}${fmtDate(c.data)}</div>
-            ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteCheckin('${c.id}')">Excluir</button>` : ''}
+      const avatarUrl = c.avatar || fallbackAvatar(nomeDoUsuario(c.user_id));
+      makeAvatarIcon(avatarUrl, "#c9a24b", (iconUrl) => {
+        const marker = new google.maps.Marker({
+          position: { lat: c.lat, lng: c.lng }, map: gmap,
+          icon: iconUrl ? { url: iconUrl, scaledSize: new google.maps.Size(44,44), anchor: new google.maps.Point(22,22) } : undefined
+        });
+        const canDelete = state.profile && (state.profile.role === "admin" || c.user_id === state.session.user.id);
+        const info = new google.maps.InfoWindow({ content: `
+          <div class="gm-popup">
+            <img class="pin-avatar" src="${avatarUrl}" alt="" />
+            <div>
+              <h4>${nomeDoUsuario(c.user_id)}</h4>
+              <div class="g">${c.jogo}</div>
+              <div class="d">${c.local ? c.local+' &middot; ' : ''}${fmtDate(c.data)}</div>
+              ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteCheckin('${c.id}')">Excluir</button>` : ''}
+            </div>
           </div>
-        </div>
-      `);
+        `});
+        marker.addListener("click", () => { if (activeInfoWindow) activeInfoWindow.close(); info.open(gmap, marker); activeInfoWindow = info; });
+        checkinMarkers.push(marker);
+      });
     });
 
     state.lojas.forEach(l => {
-      const icon = L.divIcon({
-        html: `<div style="width:36px;height:36px;border-radius:50%;background:#c9a24b;border:3px solid #132c2a;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 6px rgba(0,0,0,0.5);">🎲</div>`,
-        className: "", iconSize:[36,36], iconAnchor:[18,18]
+      const marker = new google.maps.Marker({
+        position: { lat: l.lat, lng: l.lng }, map: gmap,
+        icon: { path: google.maps.SymbolPath.CIRCLE, fillColor:"#c9a24b", fillOpacity:1, strokeColor:"#132c2a", strokeWeight:2, scale:12 },
+        label: { text: "🎲", fontSize: "14px" }
       });
-      const marker = L.marker([l.lat, l.lng], { icon }).addTo(markersLayer);
       const canDelete = state.profile && (state.profile.role === "admin" || l.user_id === state.session.user.id);
-      marker.bindPopup(`
-        <div class="popup-inner">
-          <div class="txt">
+      const info = new google.maps.InfoWindow({ content: `
+        <div class="gm-popup">
+          <div>
             <h4>${l.nome}</h4>
             <div class="d">${l.endereco || ''}</div>
             ${l.descricao ? `<div class="d">${l.descricao}</div>` : ''}
             ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteLoja('${l.id}')">Excluir</button>` : ''}
           </div>
         </div>
-      `);
+      `});
+      marker.addListener("click", () => { if (activeInfoWindow) activeInfoWindow.close(); info.open(gmap, marker); activeInfoWindow = info; });
+      lojaMarkers.push(marker);
     });
   }
 
@@ -525,8 +580,8 @@
             <div class="map-toolbar">
               <input id="search-input" type="text" placeholder="Buscar por jogo ou local..." value="${state.query||''}" />
             </div>
-            <div id="leaflet-map"></div>
-            <div class="map-hint">Clique em "Marcar partida" (ou "Cadastrar loja", se você é lojista) e depois clique no mapa no local certo.</div>
+            <div id="gmap"></div>
+            ${MAPS_NOT_CONFIGURED ? `<div class="empty" style="margin-top:14px;">Mapa do Google não configurado. Cole a GOOGLE_MAPS_API_KEY no início do arquivo.</div>` : ''}
 
             <div class="list-title">${'\u25CF'} Próximas partidas marcadas</div>
             ${state.loading ? `<div class="empty">Carregando...</div>` : ''}
@@ -544,10 +599,17 @@
         </div>
       </section>
 
-      ${logged ? `
+      ${logged && !state.pickMode ? `
         <div class="fabs">
           ${(state.profile.role === "lojista" || state.profile.role === "admin") ? `<button class="fab secondary" id="btn-fab-loja">+ Cadastrar loja</button>` : ''}
           <button class="fab" id="btn-fab-partida">+ Marcar partida</button>
+        </div>
+      ` : ''}
+
+      ${logged && state.pickMode && !state.showPost && !state.showLoja ? `
+        <div class="map-pick-bar">
+          <span>📍 Clique no mapa pra escolher o local ${state.pickMode === "partida" ? "da partida" : "da loja"}</span>
+          <button id="btn-cancel-pick">Cancelar</button>
         </div>
       ` : ''}
 
@@ -650,7 +712,7 @@
         <div class="modal">
           <button class="close-x" id="close-post">&times;</button>
           <h3 class="display">Marcar partida</h3>
-          <p class="sub" id="pick-status">${state.pickedLatLng ? 'Local selecionado! Preencha os dados abaixo.' : 'Clique no mapa (atrás deste card) pra escolher o local do jogo.'}</p>
+          <p class="sub" id="pick-status">📍 Local selecionado no mapa. Preencha os dados da partida.</p>
           <div class="field"><label>Tipo</label>
             <select id="post-tipo">
               <option value="Card Game" ${d.tipo==='Card Game'?'selected':''}>Card Game</option>
@@ -677,7 +739,7 @@
         <div class="modal">
           <button class="close-x" id="close-loja">&times;</button>
           <h3 class="display">Cadastrar loja</h3>
-          <p class="sub" id="pick-status">${state.pickedLatLng ? 'Local selecionado! Preencha os dados abaixo.' : 'Clique no mapa (atrás deste card) pra marcar onde fica a loja.'}</p>
+          <p class="sub" id="pick-status">📍 Local selecionado no mapa. Preencha os dados da loja.</p>
           <div class="field"><label>Nome da loja</label><input id="loja-nome" type="text" value="${d.nome.replace(/"/g,'&quot;')}" /></div>
           <div class="field"><label>Endereço</label><input id="loja-endereco" type="text" value="${d.endereco.replace(/"/g,'&quot;')}" placeholder="Rua, número, bairro, cidade" /></div>
           <div class="field"><label>Descrição (opcional)</label><textarea id="loja-descricao">${d.descricao}</textarea></div>
@@ -797,8 +859,9 @@
     if ($("btn-auth-submit")) $("btn-auth-submit").onclick = () => { state.authMode === "login" ? doSignIn() : doSignUp(); };
     if ($("btn-complete-submit")) $("btn-complete-submit").onclick = doCompleteProfile;
 
-    if ($("btn-fab-partida")) $("btn-fab-partida").onclick = () => { state.showPost = true; state.pickMode = "partida"; state.pickedLatLng = null; render(); };
-    if ($("btn-fab-loja")) $("btn-fab-loja").onclick = () => { state.showLoja = true; state.pickMode = "loja"; state.pickedLatLng = null; render(); };
+    if ($("btn-fab-partida")) $("btn-fab-partida").onclick = () => { state.pickMode = "partida"; state.pickedLatLng = null; render(); };
+    if ($("btn-fab-loja")) $("btn-fab-loja").onclick = () => { state.pickMode = "loja"; state.pickedLatLng = null; render(); };
+    if ($("btn-cancel-pick")) $("btn-cancel-pick").onclick = () => { state.pickMode = null; state.pickedLatLng = null; if (pickMarker) { pickMarker.setMap(null); pickMarker = null; } render(); };
 
     if ($("close-post")) $("close-post").onclick = () => { closePickModal("post"); };
     if ($("overlay-post")) $("overlay-post").onclick = (e) => { if(e.target.id==="overlay-post") closePickModal("post"); };
@@ -841,7 +904,7 @@
   function closePickModal(which){
     if (which === "post") state.showPost = false; else state.showLoja = false;
     state.pickMode = null; state.pickedLatLng = null;
-    if (pickMarker && map) { map.removeLayer(pickMarker); pickMarker = null; }
+    if (pickMarker) { pickMarker.setMap(null); pickMarker = null; }
     render();
   }
 
