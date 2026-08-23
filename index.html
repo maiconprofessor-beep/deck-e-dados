@@ -336,6 +336,13 @@
         if (hint) hint.textContent = "Local selecionado! Agora preencha os dados abaixo.";
       });
     } else {
+      // a cada render() o innerHTML é reconstruído, então o <div id="leaflet-map">
+      // atual é um elemento novo. Reencaixa o mapa já existente (com os tiles
+      // carregados) no lugar do placeholder novo, em vez de recriar tudo.
+      const container = map.getContainer();
+      if (container !== el && el.parentNode) {
+        el.parentNode.replaceChild(container, el);
+      }
       map.invalidateSize();
     }
     syncMapMarkers();
