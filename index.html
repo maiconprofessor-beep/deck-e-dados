@@ -199,7 +199,7 @@
     loginDraft: { email:"", password:"" },
     signupDraft: { email:"", password:"", name:"", avatar:"", games:[], isLojista:false, lojaNome:"" },
     showPost: false,
-    postDraft: { tipo:"Card Game", jogo:CARD_GAMES[0], local:"", data:"", notas:"" },
+    postDraft: { tipo:"Card Game", jogo:CARD_GAMES[0], local:"", lojaId:"", qtdJogadores:1, data:"", notas:"" },
     showLoja: false,
     lojaDraft: { nome:"", endereco:"", descricao:"" },
     pickMode: null, // 'partida' | 'loja'
@@ -545,6 +545,7 @@
           icon: iconUrl ? { url: iconUrl, scaledSize: new google.maps.Size(44,44), anchor: new google.maps.Point(22,22) } : undefined
         });
         const canDelete = state.profile && (state.profile.role === "admin" || c.user_id === state.session.user.id);
+        const qtd = c.qtd_jogadores || 1;
         const info = new google.maps.InfoWindow({ content: `
           <div class="gm-popup">
             <img class="pin-avatar" src="${avatarUrl}" alt="" />
@@ -552,6 +553,7 @@
               <h4>${nomeDoUsuario(c.user_id)}</h4>
               <div class="g">${c.jogo}</div>
               <div class="d">${c.local ? c.local+' &middot; ' : ''}${fmtDate(c.data)}</div>
+              <div class="d">👥 ${qtd} jogador${qtd===1?'':'es'}</div>
               ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteCheckin('${c.id}')">Excluir</button>` : ''}
             </div>
           </div>
@@ -568,12 +570,15 @@
         label: { text: "🎲", fontSize: "14px" }
       });
       const canDelete = state.profile && (state.profile.role === "admin" || l.user_id === state.session.user.id);
+      const partidasNaLoja = state.checkins.filter(c => c.loja_id === l.id);
+      const totalJogadores = partidasNaLoja.reduce((soma, c) => soma + (c.qtd_jogadores || 1), 0);
       const info = new google.maps.InfoWindow({ content: `
         <div class="gm-popup">
           <div>
             <h4>${l.nome}</h4>
             <div class="d">${l.endereco || ''}</div>
             ${l.descricao ? `<div class="d">${l.descricao}</div>` : ''}
+            ${partidasNaLoja.length > 0 ? `<div class="d">👥 <strong>${totalJogadores}</strong> jogador${totalJogadores===1?'':'es'} confirmado${totalJogadores===1?'':'s'} em ${partidasNaLoja.length} partida${partidasNaLoja.length===1?'':'s'}</div>` : `<div class="d">Nenhuma partida marcada aqui ainda</div>`}
             ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteLoja('${l.id}')">Excluir</button>` : ''}
           </div>
         </div>
@@ -729,7 +734,7 @@
                 <img src="${c.avatar || fallbackAvatar(nomeDoUsuario(c.user_id))}" alt="" />
                 <div class="meta">
                   <strong>${nomeDoUsuario(c.user_id)}</strong> vai jogar <strong>${c.jogo}</strong>
-                  ${c.local ? ' em <strong>'+c.local+'</strong>' : ''} &middot; ${fmtDate(c.data)}
+                  ${c.local ? ' em <strong>'+c.local+'</strong>' : ''} &middot; ${fmtDate(c.data)} &middot; 👥 ${c.qtd_jogadores || 1}
                   ${gameRuleUrl(c.jogo) ? ` &middot; <a href="${gameRuleUrl(c.jogo)}" target="_blank" rel="noopener" style="color:var(--gold);">📖 regras</a>` : ''}
                 </div>
               </div>
@@ -892,7 +897,14 @@
             <select id="post-jogo">${games.map(g=>`<option value="${g}" ${d.jogo===g?'selected':''}>${g}</option>`).join("")}</select>
             ${gameRuleUrl(d.jogo) ? `<a href="${gameRuleUrl(d.jogo)}" target="_blank" rel="noopener" style="font-size:12px;color:var(--gold);display:inline-block;margin-top:6px;">📖 Ver regras oficiais de ${d.jogo}</a>` : ''}
           </div>
+          <div class="field"><label>Está em uma loja cadastrada? (opcional)</label>
+            <select id="post-loja-id">
+              <option value="">Não / outro local</option>
+              ${state.lojas.map(l => `<option value="${l.id}" ${d.lojaId===l.id?'selected':''}>${l.nome}</option>`).join("")}
+            </select>
+          </div>
           <div class="field"><label>Nome do local (loja, clube...)</label><input id="post-local" type="text" value="${d.local.replace(/"/g,'&quot;')}" placeholder="Ex: Clube do Dado" /></div>
+          <div class="field"><label>Quantos jogadores vão jogar</label><input id="post-qtd" type="number" min="1" value="${d.qtdJogadores}" /></div>
           <div class="field"><label>Data</label><input id="post-data" type="date" value="${d.data}" /></div>
           <div class="field"><label>Observações (opcional)</label><textarea id="post-notas">${d.notas}</textarea></div>
           <div id="post-error" class="error-text"></div>
@@ -1051,14 +1063,23 @@
     if ($("overlay-post")) $("overlay-post").onclick = (e) => { if(e.target.id==="overlay-post") closePickModal("post"); };
     if ($("post-tipo")) $("post-tipo").onchange = (e) => { state.postDraft.tipo = e.target.value; state.postDraft.jogo = (e.target.value==="Card Game"?CARD_GAMES:MINI_GAMES)[0]; render(); };
     if ($("post-jogo")) $("post-jogo").onchange = (e) => { state.postDraft.jogo = e.target.value; render(); };
+    if ($("post-loja-id")) $("post-loja-id").onchange = (e) => {
+      state.postDraft.lojaId = e.target.value;
+      const loja = state.lojas.find(l => l.id === e.target.value);
+      if (loja) state.postDraft.local = loja.nome;
+      render();
+    };
     if ($("post-local")) $("post-local").oninput = (e) => { state.postDraft.local = e.target.value; };
+    if ($("post-qtd")) $("post-qtd").oninput = (e) => { state.postDraft.qtdJogadores = e.target.value; };
     if ($("post-data")) $("post-data").oninput = (e) => { state.postDraft.data = e.target.value; };
     if ($("post-notas")) $("post-notas").oninput = (e) => { state.postDraft.notas = e.target.value; };
     if ($("save-post")) $("save-post").onclick = async () => {
       if (!state.pickedLatLng) { $("post-error").textContent = "Clique no mapa pra escolher o local antes de publicar."; return; }
       const d = state.postDraft;
+      const qtd = parseInt(d.qtdJogadores, 10) || 1;
       const { error } = await supabase.from("checkins").insert({
         user_id: state.session.user.id, tipo: d.tipo, jogo: d.jogo, local: d.local.trim(),
+        loja_id: d.lojaId || null, qtd_jogadores: qtd,
         data: d.data || null, notas: d.notas.trim(), lat: state.pickedLatLng.lat, lng: state.pickedLatLng.lng
       });
       if (error) { $("post-error").textContent = "Erro ao publicar: " + error.message; return; }
