@@ -54,6 +54,22 @@
   .duo-card .games a:hover { border-color:var(--gold); color:var(--gold); }
 
   #mapa-section { background:var(--felt-2); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  #chat-section { background:var(--felt); }
+  .chat-box {
+    height:360px; overflow-y:auto; background:var(--felt-2); border:1px solid var(--line);
+    border-radius:12px; padding:16px; margin-top:24px; display:flex; flex-direction:column; gap:10px;
+  }
+  .chat-msg { max-width:80%; background:var(--felt-3); border-radius:10px; padding:8px 12px; align-self:flex-start; }
+  .chat-msg.mine { align-self:flex-end; background:var(--gold-dim); }
+  .chat-msg .who { display:block; font-size:11px; color:var(--gold); font-weight:700; margin-bottom:2px; }
+  .chat-msg.mine .who { color:var(--felt); }
+  .chat-msg .txt { font-size:14px; word-break:break-word; }
+  .chat-msg .time { display:block; font-size:10px; color:var(--muted); margin-top:4px; text-align:right; }
+  .chat-input-row { display:flex; gap:10px; margin-top:14px; }
+  .chat-input-row input {
+    flex:1; background:var(--felt-2); border:1px solid var(--line); color:var(--chalk);
+    padding:11px 14px; border-radius:6px; font-size:14px;
+  }
   .map-toolbar { display:flex; gap:10px; flex-wrap:wrap; margin:24px 0; align-items:center; justify-content:space-between; }
   .map-toolbar input { flex:1; min-width:200px; background:var(--felt); border:1px solid var(--line); color:var(--chalk); padding:11px 14px; border-radius:6px; font-size:14px; }
   #gmap { width:100%; height:440px; border-radius:12px; border:1px solid var(--line); background:var(--felt); }
@@ -191,11 +207,13 @@
     showAdminPanel: false,
     allProfiles: [],
     bannedEmails: [],
-    banEmailInput: ""
+    banEmailInput: "",
+    chatMessages: []
   };
 
   const root = document.getElementById("app-root");
   let gmap = null, gmapsReady = false, gmapsLoading = false;
+  let chatChannel = null;
   let searchResultMarker = null;
   let checkinMarkers = [], lojaMarkers = [], pickMarker = null, activeInfoWindow = null;
 
@@ -259,6 +277,49 @@
     } catch(e){ console.error(e); }
     render();
     syncMapMarkers();
+    await loadChatMessages();
+    subscribeChat();
+  }
+
+  // ===================== CHAT AO VIVO =====================
+  async function loadChatMessages(){
+    try {
+      const { data, error } = await supabase.from("chat_messages").select("*").order("created_at", { ascending: true }).limit(100);
+      if (!error) state.chatMessages = data || [];
+    } catch(e){ console.error(e); }
+    render();
+    scrollChatToBottom();
+  }
+
+  function subscribeChat(){
+    if (chatChannel) return;
+    chatChannel = supabase.channel("chat-room")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages" }, (payload) => {
+        state.chatMessages.push(payload.new);
+        if (state.chatMessages.length > 150) state.chatMessages.shift();
+        render();
+        scrollChatToBottom();
+      })
+      .subscribe();
+  }
+
+  function scrollChatToBottom(){
+    setTimeout(() => {
+      const el = document.getElementById("chat-messages");
+      if (el) el.scrollTop = el.scrollHeight;
+    }, 0);
+  }
+
+  async function sendChatMessage(){
+    const input = document.getElementById("chat-input");
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = "";
+    const { error } = await supabase.from("chat_messages").insert({
+      user_id: state.session.user.id, user_name: state.profile.name, message: text
+    });
+    if (error) { console.error("Erro ao enviar mensagem:", error); }
   }
 
   function showAuthError(msg){ state.authError = msg; render(); }
@@ -588,7 +649,7 @@
       <nav>
         <div class="brand display">${svgLogo(30)} Deck e Dados</div>
         <div class="navlinks">
-          ${logged ? `<a href="#mapa-section">Mapa</a>` : ''}
+          ${logged ? `<a href="#mapa-section">Mapa</a> <a href="#chat-section">Chat</a>` : ''}
           ${logged ? `
             <img src="${state.profile.avatar || fallbackAvatar(state.profile.name)}" alt="" style="width:26px;height:26px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);vertical-align:middle;" />
             <span style="font-size:13px;">${state.profile.name}</span>
@@ -673,6 +734,36 @@
                 </div>
               </div>
             `).join("")}
+          `}
+        </div>
+      </section>
+
+      <section id="chat-section">
+        <div class="wrap">
+          <div class="intro"><h2 class="display">Chat da comunidade</h2><p>Bate-papo em tempo real, só pra quem é cadastrado.</p></div>
+          ${NOT_CONFIGURED ? `
+            <div class="gate"><div class="icon">⚙️</div><h3>Banco de dados não configurado</h3></div>
+          ` : !logged ? `
+            <div class="gate">
+              <div class="icon">🔒</div>
+              <h3>O chat é exclusivo pra quem é da comunidade</h3>
+              <p>Faça login ou cadastro pra participar da conversa.</p>
+            </div>
+          ` : `
+            <div id="chat-messages" class="chat-box">
+              ${state.chatMessages.length === 0 ? `<div class="empty">Nenhuma mensagem ainda. Diga oi! 👋</div>` : ''}
+              ${state.chatMessages.map(m => `
+                <div class="chat-msg ${state.session && m.user_id === state.session.user.id ? 'mine' : ''}">
+                  <span class="who">${m.user_name}</span>
+                  <span class="txt">${(m.message||'').replace(/</g,'&lt;')}</span>
+                  <span class="time">${new Date(m.created_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span>
+                </div>
+              `).join("")}
+            </div>
+            <div class="chat-input-row">
+              <input id="chat-input" type="text" placeholder="Escreva uma mensagem..." maxlength="500" />
+              <button class="btn" id="btn-chat-send">Enviar</button>
+            </div>
           `}
         </div>
       </section>
@@ -872,6 +963,9 @@
   // ===================== EVENTOS =====================
   function attachEvents(){
     const $ = (id) => document.getElementById(id);
+
+    if ($("btn-chat-send")) $("btn-chat-send").onclick = sendChatMessage;
+    if ($("chat-input")) $("chat-input").onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); sendChatMessage(); } };
 
     if ($("search-input")) $("search-input").oninput = (e) => {
       state.query = e.target.value;
