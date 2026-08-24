@@ -410,7 +410,8 @@
         gmap.setCenter(results[0].geometry.location);
         gmap.setZoom(12);
       } else {
-        state.citySearchError = "Não encontrei esse local. Tente ser mais específico (ex: cidade, estado).";
+        console.error("Geocode falhou, status:", status);
+        state.citySearchError = `Não encontrei esse local (motivo técnico: ${status}). Tente de novo em alguns minutos.`;
       }
       render();
     });
