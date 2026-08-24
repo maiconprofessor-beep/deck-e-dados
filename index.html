@@ -182,6 +182,12 @@
   };
   function gameRuleUrl(name){ return GAME_RULES_URL[name] || null; }
 
+  // Material extra da comunidade (não-oficial), por jogo
+  const GAME_EXTRA_URL = {
+    "HeroClix": { url: "PAC-TRADUZIDO%202026v1.pdf", label: "📥 Poderes e Habilidades (PT-BR, tradução da comunidade)" }
+  };
+  function gameExtraUrl(name){ return GAME_EXTRA_URL[name] || null; }
+
   let state = {
     loading: true,
     session: null,
@@ -703,6 +709,7 @@
               <h3>Miniaturas</h3>
               <p>Exércitos pintados, mesas de guerra e campanhas épicas.</p>
               <div class="games">${MINI_GAMES.slice(0,-1).map(g=> gameRuleUrl(g) ? `<a href="${gameRuleUrl(g)}" target="_blank" rel="noopener" style="text-decoration:none;">${g} 📖</a>` : `<span>${g}</span>`).join("")}</div>
+              ${MINI_GAMES.slice(0,-1).filter(g => gameExtraUrl(g)).map(g => `<div style="margin-top:10px;"><a href="${gameExtraUrl(g).url}" target="_blank" rel="noopener" style="font-size:12px;color:var(--gold);">${gameExtraUrl(g).label}</a></div>`).join("")}
             </div>
           </div>
         </div>
@@ -908,6 +915,7 @@
           <div class="field"><label>Jogo</label>
             <select id="post-jogo">${games.map(g=>`<option value="${g}" ${d.jogo===g?'selected':''}>${g}</option>`).join("")}</select>
             ${gameRuleUrl(d.jogo) ? `<a href="${gameRuleUrl(d.jogo)}" target="_blank" rel="noopener" style="font-size:12px;color:var(--gold);display:inline-block;margin-top:6px;">📖 Ver regras oficiais de ${d.jogo}</a>` : ''}
+            ${gameExtraUrl(d.jogo) ? `<br/><a href="${gameExtraUrl(d.jogo).url}" target="_blank" rel="noopener" style="font-size:12px;color:var(--gold);display:inline-block;margin-top:4px;">${gameExtraUrl(d.jogo).label}</a>` : ''}
           </div>
           <div class="field"><label>Está em uma loja cadastrada? (opcional)</label>
             <select id="post-loja-id">
