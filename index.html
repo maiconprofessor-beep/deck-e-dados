@@ -583,7 +583,19 @@
           </div>
         </div>
       `});
-      marker.addListener("click", () => { if (activeInfoWindow) activeInfoWindow.close(); info.open(gmap, marker); activeInfoWindow = info; });
+      marker.addListener("click", () => {
+        if (state.pickMode === "partida") {
+          state.pickedLatLng = { lat: l.lat, lng: l.lng };
+          state.postDraft.lojaId = l.id;
+          state.postDraft.local = l.nome;
+          state.showPost = true;
+          render();
+          return;
+        }
+        if (activeInfoWindow) activeInfoWindow.close();
+        info.open(gmap, marker);
+        activeInfoWindow = info;
+      });
       lojaMarkers.push(marker);
     });
   }
@@ -782,7 +794,7 @@
 
       ${logged && state.pickMode && !state.showPost && !state.showLoja ? `
         <div class="map-pick-bar">
-          <span>📍 Clique no mapa pra escolher o local ${state.pickMode === "partida" ? "da partida" : "da loja"}</span>
+          <span>📍 ${state.pickMode === "partida" ? 'Clique numa loja já cadastrada (pin 🎲) pra jogar lá, ou clique em qualquer ponto do mapa pra outro local' : 'Clique no mapa pra escolher o local da loja'}</span>
           <button id="btn-cancel-pick">Cancelar</button>
         </div>
       ` : ''}
