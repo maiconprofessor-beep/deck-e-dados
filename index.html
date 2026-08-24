@@ -341,7 +341,7 @@
       if (window.__deckOnGmapsReady) window.__deckOnGmapsReady();
     };
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=__deckGmapCallback`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=__deckGmapCallback`;
     script.async = true;
     document.head.appendChild(script);
   }
@@ -404,17 +404,36 @@
     state.citySearchError = "";
     if (!q) return;
     if (!gmap || typeof google === "undefined") { state.citySearchError = "Mapa ainda carregando, tente de novo em instantes."; render(); return; }
-    const geocoder = new google.maps.Geocoder();
-    geocoder.geocode({ address: q }, (results, status) => {
-      if (status === "OK" && results[0]) {
-        gmap.setCenter(results[0].geometry.location);
-        gmap.setZoom(12);
-      } else {
-        console.error("Geocode falhou, status:", status);
-        state.citySearchError = `Não encontrei esse local (motivo técnico: ${status}). Tente de novo em alguns minutos.`;
-      }
-      render();
-    });
+
+    function tryGeocoder(){
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address: q }, (results, status) => {
+        if (status === "OK" && results[0]) {
+          gmap.setCenter(results[0].geometry.location);
+          gmap.setZoom(12);
+        } else {
+          console.error("Geocode falhou, status:", status);
+          state.citySearchError = `Não encontrei esse local (motivo técnico: ${status}). Tente de novo em alguns minutos.`;
+        }
+        render();
+      });
+    }
+
+    if (google.maps.places) {
+      const service = new google.maps.places.PlacesService(gmap);
+      service.textSearch({ query: q }, (results, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK && results && results[0]) {
+          gmap.setCenter(results[0].geometry.location);
+          gmap.setZoom(16);
+          render();
+        } else {
+          // não achou como estabelecimento, tenta como cidade/endereço
+          tryGeocoder();
+        }
+      });
+    } else {
+      tryGeocoder();
+    }
   }
 
   function syncMapMarkers(){
@@ -599,7 +618,7 @@
           ` : `
             <div class="map-toolbar">
               <input id="search-input" type="text" placeholder="Buscar por jogo ou local..." value="${state.query||''}" />
-              <input id="city-search-input" type="text" placeholder="Ir para cidade ou endereço..." value="${state.citySearch||''}" />
+              <input id="city-search-input" type="text" placeholder="Ir para cidade, endereço ou nome de loja..." value="${state.citySearch||''}" />
               <button class="btn small" id="btn-city-search">Ir pro local</button>
             </div>
             ${state.citySearchError ? `<div class="error-text" style="text-align:center;margin-top:6px;">${state.citySearchError}</div>` : ''}
