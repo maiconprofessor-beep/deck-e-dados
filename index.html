@@ -133,6 +133,10 @@
   .admin-row select { background:var(--felt); color:var(--chalk); border:1px solid var(--line); border-radius:4px; padding:5px 8px; font-size:12px; }
 
   footer { padding:26px 24px; text-align:center; color:var(--muted); font-size:13px; border-top:1px solid var(--line); }
+  .social-links { margin-top:10px; display:flex; gap:10px; justify-content:center; align-items:center; }
+  .social-links a { color:var(--gold); text-decoration:none; }
+  .social-links a:hover { text-decoration:underline; }
+  .social-links span { color:var(--muted); }
 </style>
 </head>
 <body>
@@ -811,7 +815,14 @@
       ${state.showLoja ? renderLojaModal() : ''}
       ${state.showAdminPanel ? renderAdminPanel() : ''}
 
-      <footer>Deck e Dados &middot; feito por jogadores, pra jogadores</footer>
+      <footer>
+        Deck e Dados &middot; feito por jogadores, pra jogadores
+        <div class="social-links">
+          <a href="https://www.instagram.com/deckedados/" target="_blank" rel="noopener">Instagram</a>
+          <span>&middot;</span>
+          <a href="https://www.threads.com/@deckedados" target="_blank" rel="noopener">Threads</a>
+        </div>
+      </footer>
     `;
     attachEvents();
     if (logged) setTimeout(initMap, 0);
