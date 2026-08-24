@@ -173,6 +173,7 @@
 
   const root = document.getElementById("app-root");
   let gmap = null, gmapsReady = false, gmapsLoading = false;
+  let searchResultMarker = null;
   let checkinMarkers = [], lojaMarkers = [], pickMarker = null, activeInfoWindow = null;
 
   function svgLogo(size){
@@ -399,21 +400,31 @@
     img.src = avatarUrl;
   }
 
+  function dropSearchMarker(position, title){
+    if (searchResultMarker) searchResultMarker.setMap(null);
+    searchResultMarker = new google.maps.Marker({
+      position, map: gmap, title: title || "",
+      icon: { path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW, scale:6, fillColor:"#b33a3a", fillOpacity:1, strokeColor:"#132c2a", strokeWeight:2, rotation:180 },
+      animation: google.maps.Animation.DROP
+    });
+  }
+
   function goToCitySearch(){
     const q = (state.citySearch || "").trim();
     state.citySearchError = "";
     if (!q) return;
     if (!gmap || typeof google === "undefined") { state.citySearchError = "Mapa ainda carregando, tente de novo em instantes."; render(); return; }
 
-    function tryGeocoder(){
+    function tryGeocoder(placesStatus){
       const geocoder = new google.maps.Geocoder();
       geocoder.geocode({ address: q }, (results, status) => {
         if (status === "OK" && results[0]) {
           gmap.setCenter(results[0].geometry.location);
           gmap.setZoom(12);
+          dropSearchMarker(results[0].geometry.location, results[0].formatted_address);
         } else {
-          console.error("Geocode falhou, status:", status);
-          state.citySearchError = `Não encontrei esse local (motivo técnico: ${status}). Tente de novo em alguns minutos.`;
+          console.error("Geocode falhou, status:", status, "| Places falhou, status:", placesStatus);
+          state.citySearchError = `Não encontrei esse local (Places: ${placesStatus||'n/d'} · Geocoder: ${status}). Tente de novo em alguns minutos.`;
         }
         render();
       });
@@ -425,14 +436,15 @@
         if (status === google.maps.places.PlacesServiceStatus.OK && results && results[0]) {
           gmap.setCenter(results[0].geometry.location);
           gmap.setZoom(16);
+          dropSearchMarker(results[0].geometry.location, results[0].name);
           render();
         } else {
-          // não achou como estabelecimento, tenta como cidade/endereço
-          tryGeocoder();
+          console.error("Places falhou, status:", status);
+          tryGeocoder(status);
         }
       });
     } else {
-      tryGeocoder();
+      tryGeocoder("places indisponível");
     }
   }
 
