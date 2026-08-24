@@ -50,7 +50,8 @@
   .duo-card h3 { font-size:20px; margin:0 0 8px; }
   .duo-card p { color:var(--muted); font-size:14px; margin:0 0 14px; }
   .duo-card .games { display:flex; flex-wrap:wrap; gap:8px; }
-  .duo-card .games span { font-size:12px; padding:5px 12px; border-radius:20px; border:1px solid var(--line); color:var(--muted); }
+  .duo-card .games span, .duo-card .games a { font-size:12px; padding:5px 12px; border-radius:20px; border:1px solid var(--line); color:var(--muted); }
+  .duo-card .games a:hover { border-color:var(--gold); color:var(--gold); }
 
   #mapa-section { background:var(--felt-2); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
   .map-toolbar { display:flex; gap:10px; flex-wrap:wrap; margin:24px 0; align-items:center; justify-content:space-between; }
@@ -142,6 +143,28 @@
   const CARD_GAMES = ["Magic: The Gathering","Pokémon TCG","Yu-Gi-Oh!","Digimon TCG","One Piece TCG","Flesh and Blood","Cardfight!! Vanguard","Dragon Ball Super Card Game","Disney Lorcana","Union Arena","Marvel Champions (LCG)","Outro"];
   const MINI_GAMES = ["Warhammer 40.000","Age of Sigmar","Star Wars: Legion","Kill Team","Bolt Action","HeroClix","X-Wing","Outro"];
   const ALL_GAMES = [...CARD_GAMES.slice(0,-1), ...MINI_GAMES.slice(0,-1)];
+
+  const GAME_RULES_URL = {
+    "Magic: The Gathering": "https://magic.wizards.com/en/rules",
+    "Pokémon TCG": "https://www.pokemon.com/us/pokemon-tcg/play-pokemon/rules-and-regulations/",
+    "Yu-Gi-Oh!": "https://www.yugioh-card.com/en/rulebook/",
+    "Digimon TCG": "https://world.digimoncard.com/rule/",
+    "One Piece TCG": "https://en.onepiece-cardgame.com/rules/",
+    "Flesh and Blood": "https://fabtcg.com/resources/rules/",
+    "Cardfight!! Vanguard": "https://cardfight.com/rules/",
+    "Dragon Ball Super Card Game": "https://www.dbs-cardgame.com/en-us/rules/",
+    "Disney Lorcana": "https://www.disneylorcana.com/en-US/rules/",
+    "Union Arena": "https://en.unionarena-tcg.com/rule/",
+    "Marvel Champions (LCG)": "https://www.fantasyflightgames.com/en/products/marvel-champions-the-card-game/",
+    "Warhammer 40.000": "https://www.warhammer-community.com/warhammer-40000-downloads/",
+    "Age of Sigmar": "https://www.warhammer-community.com/age-of-sigmar-downloads/",
+    "Star Wars: Legion": "https://starwarslegion.atomicmassgames.com/rules-references",
+    "Kill Team": "https://www.warhammer-community.com/warhammer-40000-downloads/",
+    "Bolt Action": "https://www.warlordgames.com/bolt-action-rules/",
+    "HeroClix": "https://wizkidsgames.com/heroclix/rules/",
+    "X-Wing": "https://x-wing.atomicmassgames.com/rules-references"
+  };
+  function gameRuleUrl(name){ return GAME_RULES_URL[name] || null; }
 
   let state = {
     loading: true,
@@ -596,12 +619,12 @@
             <div class="duo-card">
               <h3>Card Games</h3>
               <p>Encontre gente pra jogar os TCGs mais populares do momento.</p>
-              <div class="games">${CARD_GAMES.slice(0,-1).map(g=>`<span>${g}</span>`).join("")}</div>
+              <div class="games">${CARD_GAMES.slice(0,-1).map(g=> gameRuleUrl(g) ? `<a href="${gameRuleUrl(g)}" target="_blank" rel="noopener" style="text-decoration:none;">${g} 📖</a>` : `<span>${g}</span>`).join("")}</div>
             </div>
             <div class="duo-card mini">
               <h3>Miniaturas</h3>
               <p>Exércitos pintados, mesas de guerra e campanhas épicas.</p>
-              <div class="games">${MINI_GAMES.slice(0,-1).map(g=>`<span>${g}</span>`).join("")}</div>
+              <div class="games">${MINI_GAMES.slice(0,-1).map(g=> gameRuleUrl(g) ? `<a href="${gameRuleUrl(g)}" target="_blank" rel="noopener" style="text-decoration:none;">${g} 📖</a>` : `<span>${g}</span>`).join("")}</div>
             </div>
           </div>
         </div>
@@ -646,6 +669,7 @@
                 <div class="meta">
                   <strong>${nomeDoUsuario(c.user_id)}</strong> vai jogar <strong>${c.jogo}</strong>
                   ${c.local ? ' em <strong>'+c.local+'</strong>' : ''} &middot; ${fmtDate(c.data)}
+                  ${gameRuleUrl(c.jogo) ? ` &middot; <a href="${gameRuleUrl(c.jogo)}" target="_blank" rel="noopener" style="color:var(--gold);">📖 regras</a>` : ''}
                 </div>
               </div>
             `).join("")}
@@ -775,6 +799,7 @@
           </div>
           <div class="field"><label>Jogo</label>
             <select id="post-jogo">${games.map(g=>`<option value="${g}" ${d.jogo===g?'selected':''}>${g}</option>`).join("")}</select>
+            ${gameRuleUrl(d.jogo) ? `<a href="${gameRuleUrl(d.jogo)}" target="_blank" rel="noopener" style="font-size:12px;color:var(--gold);display:inline-block;margin-top:6px;">📖 Ver regras oficiais de ${d.jogo}</a>` : ''}
           </div>
           <div class="field"><label>Nome do local (loja, clube...)</label><input id="post-local" type="text" value="${d.local.replace(/"/g,'&quot;')}" placeholder="Ex: Clube do Dado" /></div>
           <div class="field"><label>Data</label><input id="post-data" type="date" value="${d.data}" /></div>
@@ -931,7 +956,7 @@
     if ($("close-post")) $("close-post").onclick = () => { closePickModal("post"); };
     if ($("overlay-post")) $("overlay-post").onclick = (e) => { if(e.target.id==="overlay-post") closePickModal("post"); };
     if ($("post-tipo")) $("post-tipo").onchange = (e) => { state.postDraft.tipo = e.target.value; state.postDraft.jogo = (e.target.value==="Card Game"?CARD_GAMES:MINI_GAMES)[0]; render(); };
-    if ($("post-jogo")) $("post-jogo").onchange = (e) => { state.postDraft.jogo = e.target.value; };
+    if ($("post-jogo")) $("post-jogo").onchange = (e) => { state.postDraft.jogo = e.target.value; render(); };
     if ($("post-local")) $("post-local").oninput = (e) => { state.postDraft.local = e.target.value; };
     if ($("post-data")) $("post-data").oninput = (e) => { state.postDraft.data = e.target.value; };
     if ($("post-notas")) $("post-notas").oninput = (e) => { state.postDraft.notas = e.target.value; };
