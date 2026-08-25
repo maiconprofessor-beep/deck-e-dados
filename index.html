@@ -228,7 +228,8 @@
     allProfiles: [],
     bannedEmails: [],
     banEmailInput: "",
-    chatMessages: []
+    chatMessages: [],
+    profilesMap: {}
   };
 
   const root = document.getElementById("app-root");
@@ -288,12 +289,18 @@
 
   async function loadMapData(){
     try {
-      const [{ data: checkins, error: e1 }, { data: lojas, error: e2 }] = await Promise.all([
+      const [{ data: checkins, error: e1 }, { data: lojas, error: e2 }, { data: perfis, error: e3 }] = await Promise.all([
         supabase.from("checkins").select("*").order("data", { ascending: true }),
-        supabase.from("lojas").select("*")
+        supabase.from("lojas").select("*"),
+        supabase.from("profiles").select("id,name,avatar")
       ]);
       state.checkins = e1 ? [] : (checkins || []);
       state.lojas = e2 ? [] : (lojas || []);
+      if (!e3 && perfis) {
+        const map = {};
+        perfis.forEach(p => { map[p.id] = { name: p.name, avatar: p.avatar }; });
+        state.profilesMap = map;
+      }
     } catch(e){ console.error(e); }
     render();
     syncMapMarkers();
@@ -304,8 +311,8 @@
   // ===================== CHAT AO VIVO =====================
   async function loadChatMessages(){
     try {
-      const { data, error } = await supabase.from("chat_messages").select("*").order("created_at", { ascending: true }).limit(100);
-      if (!error) state.chatMessages = data || [];
+      const { data, error } = await supabase.from("chat_messages").select("*").order("created_at", { ascending: false }).limit(100);
+      if (!error) state.chatMessages = (data || []).reverse();
     } catch(e){ console.error(e); }
     render();
     scrollChatToBottom();
@@ -558,7 +565,7 @@
     lojaMarkers.forEach(m => m.setMap(null)); lojaMarkers = [];
 
     visibleCheckins().forEach(c => {
-      const avatarUrl = c.avatar || fallbackAvatar(nomeDoUsuario(c.user_id));
+      const avatarUrl = avatarDoUsuario(c.user_id, nomeDoUsuario(c.user_id));
       makeAvatarIcon(avatarUrl, "#c9a24b", (iconUrl) => {
         const marker = new google.maps.Marker({
           position: { lat: c.lat, lng: c.lng }, map: gmap,
@@ -578,7 +585,25 @@
             </div>
           </div>
         `});
-        marker.addListener("click", () => { if (activeInfoWindow) activeInfoWindow.close(); info.open(gmap, marker); activeInfoWindow = info; });
+        marker.addListener("click", () => {
+          if (state.pickMode === "partida") {
+            state.pickedLatLng = { lat: c.lat, lng: c.lng };
+            if (c.loja_id) { state.postDraft.lojaId = c.loja_id; }
+            if (c.local) { state.postDraft.local = c.local; }
+            state.showPost = true;
+            render();
+            return;
+          }
+          if (state.pickMode === "loja") {
+            state.pickedLatLng = { lat: c.lat, lng: c.lng };
+            state.showLoja = true;
+            render();
+            return;
+          }
+          if (activeInfoWindow) activeInfoWindow.close();
+          info.open(gmap, marker);
+          activeInfoWindow = info;
+        });
         checkinMarkers.push(marker);
       });
     });
@@ -621,11 +646,15 @@
   }
 
   function nomeDoUsuario(userId){
-    // usa o próprio perfil se for o dono, senão mostra genérico (nomes de outros usuários
-    // não ficam guardados localmente — o ideal é a política de leitura de "profiles" te dar isso;
-    // aqui simplificamos mostrando o profile carregado quando é o dono).
     if (state.profile && state.session && userId === state.session.user.id) return state.profile.name;
+    if (state.profilesMap[userId]) return state.profilesMap[userId].name;
     return "Jogador da comunidade";
+  }
+
+  function avatarDoUsuario(userId, fallbackName){
+    if (state.profile && state.session && userId === state.session.user.id) return state.profile.avatar || fallbackAvatar(fallbackName);
+    if (state.profilesMap[userId] && state.profilesMap[userId].avatar) return state.profilesMap[userId].avatar;
+    return fallbackAvatar(fallbackName);
   }
 
   function visibleCheckins(){
@@ -764,7 +793,7 @@
             ${(!state.loading && visibleCheckins().length===0) ? `<div class="empty">Ninguém marcou partida ainda. Seja o primeiro!</div>` : ''}
             ${visibleCheckins().map(c => `
               <div class="checkin-row">
-                <img src="${c.avatar || fallbackAvatar(nomeDoUsuario(c.user_id))}" alt="" />
+                <img src="${avatarDoUsuario(c.user_id, nomeDoUsuario(c.user_id))}" alt="" />
                 <div class="meta">
                   <strong>${nomeDoUsuario(c.user_id)}</strong> vai jogar <strong>${c.jogo}</strong>
                   ${c.local ? ' em <strong>'+c.local+'</strong>' : ''} &middot; ${fmtDate(c.data)} &middot; 👥 ${c.qtd_jogadores || 1}
