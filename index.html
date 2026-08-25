@@ -229,7 +229,10 @@
     bannedEmails: [],
     banEmailInput: "",
     chatMessages: [],
-    profilesMap: {}
+    profilesMap: {},
+    showFriendsPanel: false,
+    friendRequests: [],
+    friendSearch: ""
   };
 
   const root = document.getElementById("app-root");
@@ -306,6 +309,7 @@
     syncMapMarkers();
     await loadChatMessages();
     subscribeChat();
+    await loadFriendRequests();
   }
 
   // ===================== CHAT AO VIVO =====================
@@ -350,6 +354,62 @@
   }
 
   function showAuthError(msg){ state.authError = msg; render(); }
+
+  // ===================== AMIGOS E PRIVACIDADE =====================
+  async function loadFriendRequests(){
+    try {
+      const myId = state.session.user.id;
+      const { data, error } = await supabase.from("friend_requests").select("*")
+        .or(`from_user.eq.${myId},to_user.eq.${myId}`);
+      if (!error) state.friendRequests = data || [];
+    } catch(e){ console.error(e); }
+    render();
+  }
+
+  function pendingReceivedCount(){
+    if (!state.session) return 0;
+    const myId = state.session.user.id;
+    return state.friendRequests.filter(r => r.to_user === myId && r.status === "pending").length;
+  }
+
+  function friendStatusWith(otherUserId){
+    const myId = state.session.user.id;
+    const rel = state.friendRequests.find(r =>
+      (r.from_user === myId && r.to_user === otherUserId) ||
+      (r.from_user === otherUserId && r.to_user === myId)
+    );
+    if (!rel) return null;
+    if (rel.status === "accepted") return { type: "friends", row: rel };
+    if (rel.status === "pending" && rel.from_user === myId) return { type: "sent", row: rel };
+    if (rel.status === "pending" && rel.to_user === myId) return { type: "received", row: rel };
+    return null;
+  }
+
+  async function sendFriendRequest(toUserId){
+    const { error } = await supabase.from("friend_requests").insert({ from_user: state.session.user.id, to_user: toUserId, status: "pending" });
+    if (error) { console.error(error); return; }
+    await loadFriendRequests();
+  }
+  window.__deckSendFriendRequest = sendFriendRequest;
+  async function acceptFriendRequest(id){
+    const { error } = await supabase.from("friend_requests").update({ status: "accepted" }).eq("id", id);
+    if (error) { console.error(error); return; }
+    await loadFriendRequests();
+  }
+  window.__deckAcceptFriend = acceptFriendRequest;
+  async function removeFriendRow(id){
+    const { error } = await supabase.from("friend_requests").delete().eq("id", id);
+    if (error) { console.error(error); return; }
+    await loadFriendRequests();
+  }
+  window.__deckRemoveFriendRow = removeFriendRow;
+
+  async function setVisibilidade(valor){
+    const { error } = await supabase.from("profiles").update({ visibilidade: valor }).eq("id", state.session.user.id);
+    if (error) { console.error(error); return; }
+    state.profile.visibilidade = valor;
+    render();
+  }
 
   async function doSignUp(){
     const d = state.signupDraft;
@@ -720,6 +780,7 @@
             <img src="${state.profile.avatar || fallbackAvatar(state.profile.name)}" alt="" style="width:26px;height:26px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);vertical-align:middle;" />
             <span style="font-size:13px;">${state.profile.name}</span>
             <span class="role-badge">${state.profile.role}</span>
+            <button class="btn ghost small" id="btn-friends">👥 Amigos${pendingReceivedCount() > 0 ? ` (${pendingReceivedCount()})` : ''}</button>
             ${state.profile.role === "admin" ? `<button class="btn ghost small" id="btn-admin">Painel admin</button>` : ''}
             <button class="btn ghost small" id="btn-logout">Sair</button>
           ` : `
@@ -853,6 +914,7 @@
       ${state.showPost ? renderPostModal() : ''}
       ${state.showLoja ? renderLojaModal() : ''}
       ${state.showAdminPanel ? renderAdminPanel() : ''}
+      ${state.showFriendsPanel ? renderFriendsPanel() : ''}
 
       <footer>
         Deck e Dados &middot; feito por jogadores, pra jogadores
@@ -1002,6 +1064,74 @@
     `;
   }
 
+  function renderFriendsPanel(){
+    const myId = state.session.user.id;
+    const amigos = state.friendRequests.filter(r => r.status === "accepted");
+    const recebidos = state.friendRequests.filter(r => r.status === "pending" && r.to_user === myId);
+    const enviados = state.friendRequests.filter(r => r.status === "pending" && r.from_user === myId);
+    const q = (state.friendSearch || "").trim().toLowerCase();
+    const outrosPerfis = Object.entries(state.profilesMap)
+      .filter(([id]) => id !== myId)
+      .filter(([, p]) => !q || (p.name || "").toLowerCase().includes(q));
+
+    return `
+      <div class="overlay" id="overlay-friends">
+        <div class="modal" style="max-width:520px;">
+          <button class="close-x" id="close-friends">&times;</button>
+          <h3 class="display">Amigos e privacidade</h3>
+          <p class="sub">Escolha quem pode ver onde você vai jogar.</p>
+
+          <div class="field">
+            <label>Quem pode ver suas partidas marcadas</label>
+            <div class="chip-group">
+              <div class="chip ${state.profile.visibilidade!=='amigos'?'selected':''}" id="vis-publico">🌎 Todo mundo</div>
+              <div class="chip ${state.profile.visibilidade==='amigos'?'selected':''}" id="vis-amigos">🔒 Só amigos</div>
+            </div>
+          </div>
+
+          ${recebidos.length > 0 ? `
+            <div class="list-title">Pedidos recebidos</div>
+            ${recebidos.map(r => `
+              <div class="admin-row">
+                <span>${nomeDoUsuario(r.from_user)}</span>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn small" onclick="window.__deckAcceptFriend('${r.id}')">Aceitar</button>
+                  <button class="del-btn" style="color:var(--red);background:none;border:none;cursor:pointer;font-size:12px;" onclick="window.__deckRemoveFriendRow('${r.id}')">Recusar</button>
+                </div>
+              </div>
+            `).join("")}
+          ` : ''}
+
+          <div class="list-title">Seus amigos ${amigos.length ? `(${amigos.length})` : ''}</div>
+          ${amigos.length === 0 ? `<div class="empty">Você ainda não tem amigos adicionados.</div>` : amigos.map(r => {
+            const otherId = r.from_user === myId ? r.to_user : r.from_user;
+            return `
+              <div class="admin-row">
+                <span>${nomeDoUsuario(otherId)}</span>
+                <button class="del-btn" style="color:var(--red);background:none;border:none;cursor:pointer;font-size:12px;" onclick="window.__deckRemoveFriendRow('${r.id}')">Remover</button>
+              </div>
+            `;
+          }).join("")}
+
+          <div class="list-title">Encontrar jogadores</div>
+          <div class="field"><input id="friend-search" type="text" placeholder="Buscar por nome..." value="${state.friendSearch.replace(/"/g,'&quot;')}" /></div>
+          ${outrosPerfis.length === 0 ? `<div class="empty">Nenhum jogador encontrado.</div>` : outrosPerfis.slice(0,20).map(([id, p]) => {
+            const rel = enviados.find(r => r.to_user === id) ? "sent" : (amigos.find(r => r.from_user===id || r.to_user===id) ? "friends" : (recebidos.find(r => r.from_user===id) ? "received" : null));
+            return `
+              <div class="admin-row">
+                <span>${p.name}</span>
+                ${rel === "friends" ? `<span style="color:var(--gold);font-size:12px;">✓ Amigos</span>`
+                  : rel === "sent" ? `<span style="color:var(--muted);font-size:12px;">Pedido enviado</span>`
+                  : rel === "received" ? `<span style="color:var(--gold);font-size:12px;">Responda acima ↑</span>`
+                  : `<button class="btn small" onclick="window.__deckSendFriendRequest('${id}')">Adicionar</button>`}
+              </div>
+            `;
+          }).join("")}
+        </div>
+      </div>
+    `;
+  }
+
   function renderAdminPanel(){
     return `
       <div class="overlay" id="overlay-admin">
@@ -1070,6 +1200,19 @@
     if ($("btn-logout")) $("btn-logout").onclick = doSignOut;
 
     if ($("btn-admin")) $("btn-admin").onclick = async () => { state.showAdminPanel = true; render(); await loadAllProfiles(); };
+
+    if ($("btn-friends")) $("btn-friends").onclick = () => { state.showFriendsPanel = true; render(); };
+    if ($("close-friends")) $("close-friends").onclick = () => { state.showFriendsPanel = false; render(); };
+    if ($("overlay-friends")) $("overlay-friends").onclick = (e) => { if(e.target.id==="overlay-friends"){ state.showFriendsPanel=false; render(); } };
+    if ($("vis-publico")) $("vis-publico").onclick = () => setVisibilidade("publico");
+    if ($("vis-amigos")) $("vis-amigos").onclick = () => setVisibilidade("amigos");
+    if ($("friend-search")) $("friend-search").oninput = (e) => {
+      state.friendSearch = e.target.value;
+      const cursorPos = e.target.selectionStart;
+      render();
+      const newInput = document.getElementById("friend-search");
+      if (newInput) { newInput.focus(); newInput.setSelectionRange(cursorPos, cursorPos); }
+    };
     if ($("close-admin")) $("close-admin").onclick = () => { state.showAdminPanel = false; render(); };
     if ($("overlay-admin")) $("overlay-admin").onclick = (e) => { if(e.target.id==="overlay-admin"){ state.showAdminPanel=false; render(); } };
     if ($("ban-email-input")) $("ban-email-input").oninput = (e) => { state.banEmailInput = e.target.value; };
