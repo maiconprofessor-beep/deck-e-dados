@@ -644,6 +644,7 @@
 
   function syncMapMarkers(){
     if (!gmap) return;
+    if (activeInfoWindow) { activeInfoWindow.close(); activeInfoWindow = null; }
     checkinMarkers.forEach(m => m.setMap(null)); checkinMarkers = [];
     lojaMarkers.forEach(m => m.setMap(null)); lojaMarkers = [];
 
