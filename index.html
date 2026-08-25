@@ -676,6 +676,7 @@
                 <div class="g">${c.jogo}</div>
                 <div class="d">${c.local ? c.local+' &middot; ' : ''}${fmtDate(c.data)}</div>
                 <div class="d">👥 ${qtd} jogador${qtd===1?'':'es'}</div>
+                ${c.notas ? `<div class="d" style="font-style:italic;margin-top:4px;">"${c.notas}"</div>` : ''}
                 ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteCheckin('${c.id}')">Excluir</button>` : ''}
               </div>
             </div>
@@ -705,6 +706,7 @@
               <div style="flex:1;min-width:0;">
                 <div style="font-weight:700;font-size:13px;">${nomeDoUsuario(c.user_id)}</div>
                 <div style="font-size:11px;color:#8a7134;">${c.jogo} &middot; 👥 ${qtd} &middot; ${fmtDate(c.data)}</div>
+                ${c.notas ? `<div style="font-size:11px;color:#555;font-style:italic;">"${c.notas}"</div>` : ''}
               </div>
               ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteCheckin('${c.id}')">Excluir</button>` : ''}
             </div>
@@ -918,6 +920,7 @@
                   <strong>${nomeDoUsuario(c.user_id)}</strong> vai jogar <strong>${c.jogo}</strong>
                   ${c.local ? ' em <strong>'+c.local+'</strong>' : ''} &middot; ${fmtDate(c.data)} &middot; 👥 ${c.qtd_jogadores || 1}
                   ${gameRuleUrl(c.jogo) ? ` &middot; <a href="${gameRuleUrl(c.jogo)}" target="_blank" rel="noopener" style="color:var(--gold);">📖 regras</a>` : ''}
+                  ${c.notas ? `<div style="font-style:italic;margin-top:2px;">"${c.notas}"</div>` : ''}
                 </div>
               </div>
             `).join("")}
