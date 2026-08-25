@@ -245,7 +245,10 @@
     profilesMap: {},
     showFriendsPanel: false,
     friendRequests: [],
-    friendSearch: ""
+    friendSearch: "",
+    eventos: [],
+    showEvento: false,
+    eventoDraft: { lojaId:"", titulo:"", jogo:"", data:"", hora:"", descricao:"" }
   };
 
   const root = document.getElementById("app-root");
@@ -305,13 +308,15 @@
 
   async function loadMapData(){
     try {
-      const [{ data: checkins, error: e1 }, { data: lojas, error: e2 }, { data: perfis, error: e3 }] = await Promise.all([
+      const [{ data: checkins, error: e1 }, { data: lojas, error: e2 }, { data: perfis, error: e3 }, { data: eventos, error: e4 }] = await Promise.all([
         supabase.from("checkins").select("*").order("data", { ascending: true }),
         supabase.from("lojas").select("*"),
-        supabase.from("profiles").select("id,name,avatar")
+        supabase.from("profiles").select("id,name,avatar"),
+        supabase.from("eventos").select("*").order("data", { ascending: true })
       ]);
       state.checkins = e1 ? [] : (checkins || []);
       state.lojas = e2 ? [] : (lojas || []);
+      state.eventos = e4 ? [] : (eventos || []);
       if (!e3 && perfis) {
         const map = {};
         perfis.forEach(p => { map[p.id] = { name: p.name, avatar: p.avatar }; });
@@ -751,6 +756,7 @@
       const canDelete = state.profile && (state.profile.role === "admin" || l.user_id === state.session.user.id);
       const partidasNaLoja = state.checkins.filter(c => c.loja_id === l.id);
       const totalJogadores = partidasNaLoja.reduce((soma, c) => soma + (c.qtd_jogadores || 1), 0);
+      const eventosNaLoja = state.eventos.filter(e => e.loja_id === l.id).sort((a,b)=>(a.data||"9999").localeCompare(b.data||"9999"));
       const info = new google.maps.InfoWindow({ content: `
         <div class="gm-popup">
           <div>
@@ -758,7 +764,16 @@
             <div class="d">${l.endereco || ''}</div>
             ${l.descricao ? `<div class="d">${l.descricao}</div>` : ''}
             ${partidasNaLoja.length > 0 ? `<div class="d">👥 <strong>${totalJogadores}</strong> jogador${totalJogadores===1?'':'es'} confirmado${totalJogadores===1?'':'s'} em ${partidasNaLoja.length} partida${partidasNaLoja.length===1?'':'s'}</div>` : `<div class="d">Nenhuma partida marcada aqui ainda</div>`}
-            ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteLoja('${l.id}')">Excluir</button>` : ''}
+            ${eventosNaLoja.length > 0 ? `
+              <div class="d" style="margin-top:6px;font-weight:700;">📅 Eventos:</div>
+              ${eventosNaLoja.map(e => `
+                <div class="d" style="margin-top:2px;">
+                  <strong>${e.titulo}</strong>${e.jogo ? ' · '+e.jogo : ''} · ${fmtDate(e.data)}${e.hora ? ' às '+e.hora.slice(0,5) : ''}
+                  ${(state.profile.role === "admin" || e.user_id === state.session.user.id) ? ` <button class="del-btn" style="display:inline;" onclick="window.__deckDeleteEvento('${e.id}')">excluir</button>` : ''}
+                </div>
+              `).join("")}
+            ` : ''}
+            ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteLoja('${l.id}')">Excluir loja</button>` : ''}
           </div>
         </div>
       `});
@@ -806,6 +821,10 @@
   };
   window.__deckDeleteLoja = async function(id){
     await supabase.from("lojas").delete().eq("id", id);
+    await loadMapData();
+  };
+  window.__deckDeleteEvento = async function(id){
+    await supabase.from("eventos").delete().eq("id", id);
     await loadMapData();
   };
 
@@ -942,6 +961,24 @@
                 </div>
               </div>
             `).join("")}
+
+            ${state.eventos.length > 0 ? `
+              <div class="list-title" style="margin-top:30px;">📅 Próximos eventos nas lojas</div>
+              ${state.eventos.map(e => {
+                const loja = state.lojas.find(l => l.id === e.loja_id);
+                const canDelete = state.profile && (state.profile.role === "admin" || e.user_id === state.session.user.id);
+                return `
+                  <div class="checkin-row">
+                    <div class="meta" style="flex:1;">
+                      <strong>${e.titulo}</strong>${e.jogo ? ' &middot; '+e.jogo : ''}
+                      ${loja ? ' em <strong>'+loja.nome+'</strong>' : ''} &middot; ${fmtDate(e.data)}${e.hora ? ' às '+e.hora.slice(0,5) : ''}
+                      ${e.descricao ? `<div style="font-style:italic;margin-top:2px;">"${e.descricao}"</div>` : ''}
+                    </div>
+                    ${canDelete ? `<button class="del-btn" style="color:var(--red);background:none;border:none;cursor:pointer;font-size:12px;" onclick="window.__deckDeleteEvento('${e.id}')">Excluir</button>` : ''}
+                  </div>
+                `;
+              }).join("")}
+            ` : ''}
           `}
         </div>
       </section>
@@ -979,6 +1016,7 @@
       ${logged && !state.pickMode ? `
         <div class="fabs">
           ${(state.profile.role === "lojista" || state.profile.role === "admin") ? `<button class="fab secondary" id="btn-fab-loja">+ Cadastrar loja</button>` : ''}
+          ${((state.profile.role === "lojista" && state.lojas.some(l=>l.user_id===state.session.user.id)) || state.profile.role === "admin") ? `<button class="fab secondary" id="btn-fab-evento">+ Criar evento</button>` : ''}
           <button class="fab" id="btn-fab-partida">+ Marcar partida</button>
         </div>
       ` : ''}
@@ -993,6 +1031,7 @@
       ${state.showAuthModal ? renderAuthModal() : ''}
       ${state.showPost ? renderPostModal() : ''}
       ${state.showLoja ? renderLojaModal() : ''}
+      ${state.showEvento ? renderEventoModal() : ''}
       ${state.showAdminPanel ? renderAdminPanel() : ''}
       ${state.showFriendsPanel ? renderFriendsPanel() : ''}
 
@@ -1128,6 +1167,38 @@
           <div class="field"><label>Observações (opcional)</label><textarea id="post-notas">${d.notas}</textarea></div>
           <div id="post-error" class="error-text"></div>
           <div class="modal-actions"><button class="btn" id="save-post">Publicar no mapa</button></div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderEventoModal(){
+    const d = state.eventoDraft;
+    const minhasLojas = state.profile.role === "admin" ? state.lojas : state.lojas.filter(l => l.user_id === state.session.user.id);
+    return `
+      <div class="overlay" id="overlay-evento">
+        <div class="modal">
+          <button class="close-x" id="close-evento">&times;</button>
+          <h3 class="display">Criar evento</h3>
+          <p class="sub">Torneios, noites de jogo ou qualquer evento oficial da sua loja.</p>
+          <div class="field"><label>Loja</label>
+            <select id="evento-loja">
+              <option value="">Selecione...</option>
+              ${minhasLojas.map(l => `<option value="${l.id}" ${d.lojaId===l.id?'selected':''}>${l.nome}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field"><label>Título do evento</label><input id="evento-titulo" type="text" value="${d.titulo.replace(/"/g,'&quot;')}" placeholder="Ex: Torneio de Standard" /></div>
+          <div class="field"><label>Jogo (opcional)</label>
+            <select id="evento-jogo">
+              <option value="">Qualquer jogo / geral</option>
+              ${ALL_GAMES.map(g => `<option value="${g}" ${d.jogo===g?'selected':''}>${g}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field"><label>Data</label><input id="evento-data" type="date" value="${d.data}" /></div>
+          <div class="field"><label>Horário</label><input id="evento-hora" type="time" value="${d.hora}" /></div>
+          <div class="field"><label>Descrição (opcional)</label><textarea id="evento-descricao" placeholder="Formato, premiação, inscrição...">${d.descricao}</textarea></div>
+          <div id="evento-error" class="error-text"></div>
+          <div class="modal-actions"><button class="btn" id="save-evento">Publicar evento</button></div>
         </div>
       </div>
     `;
@@ -1375,6 +1446,32 @@
 
     if ($("btn-fab-partida")) $("btn-fab-partida").onclick = () => { state.pickMode = "partida"; state.pickedLatLng = null; render(); };
     if ($("btn-fab-loja")) $("btn-fab-loja").onclick = () => { state.pickMode = "loja"; state.pickedLatLng = null; render(); };
+    if ($("btn-fab-evento")) $("btn-fab-evento").onclick = () => {
+      state.eventoDraft = { lojaId:"", titulo:"", jogo:"", data:"", hora:"", descricao:"" };
+      state.showEvento = true;
+      render();
+    };
+    if ($("close-evento")) $("close-evento").onclick = () => { state.showEvento = false; render(); };
+    if ($("overlay-evento")) $("overlay-evento").onclick = (e) => { if(e.target.id==="overlay-evento"){ state.showEvento=false; render(); } };
+    if ($("evento-loja")) $("evento-loja").onchange = (e) => { state.eventoDraft.lojaId = e.target.value; };
+    if ($("evento-titulo")) $("evento-titulo").oninput = (e) => { state.eventoDraft.titulo = e.target.value; };
+    if ($("evento-jogo")) $("evento-jogo").onchange = (e) => { state.eventoDraft.jogo = e.target.value; };
+    if ($("evento-data")) $("evento-data").oninput = (e) => { state.eventoDraft.data = e.target.value; };
+    if ($("evento-hora")) $("evento-hora").oninput = (e) => { state.eventoDraft.hora = e.target.value; };
+    if ($("evento-descricao")) $("evento-descricao").oninput = (e) => { state.eventoDraft.descricao = e.target.value; };
+    if ($("save-evento")) $("save-evento").onclick = async () => {
+      const d = state.eventoDraft;
+      if (!d.lojaId) { $("evento-error").textContent = "Escolha a loja do evento."; return; }
+      if (!d.titulo.trim()) { $("evento-error").textContent = "Dê um título ao evento."; return; }
+      const { error } = await supabase.from("eventos").insert({
+        loja_id: d.lojaId, user_id: state.session.user.id, titulo: d.titulo.trim(),
+        jogo: d.jogo || null, descricao: d.descricao.trim(), data: d.data || null, hora: d.hora || null
+      });
+      if (error) { $("evento-error").textContent = "Erro ao publicar: " + error.message; return; }
+      state.showEvento = false;
+      render();
+      await loadMapData();
+    };
     if ($("btn-cancel-pick")) $("btn-cancel-pick").onclick = () => { state.pickMode = null; state.pickedLatLng = null; if (pickMarker) { pickMarker.setMap(null); pickMarker = null; } render(); };
 
     if ($("close-post")) $("close-post").onclick = () => { closePickModal("post"); };
