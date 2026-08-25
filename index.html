@@ -879,7 +879,7 @@
 
     root.innerHTML = `
       <nav>
-        <div class="brand display"><img src="/logo-icon.png" alt="Deck e Dados" style="height:32px;width:32px;border-radius:50%;object-fit:cover;vertical-align:middle;" />
+        <div class="brand display">${svgLogo(30)} Deck e Dados</div>
         <div class="navlinks">
           ${logged ? `<a href="#mapa-section">Mapa</a> <a href="#chat-section">Chat</a>` : ''}
           ${logged ? `
