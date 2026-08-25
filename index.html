@@ -619,53 +619,111 @@
     }
   }
 
+  function checkinGroupKey(c){
+    if (c.loja_id) return "loja:" + c.loja_id;
+    return "pt:" + c.lat.toFixed(5) + "," + c.lng.toFixed(5);
+  }
+
+  function handlePickClickAt(lat, lng, lojaId, local){
+    if (state.pickMode === "partida") {
+      state.pickedLatLng = { lat, lng };
+      if (lojaId) state.postDraft.lojaId = lojaId;
+      if (local) state.postDraft.local = local;
+      state.showPost = true;
+      render();
+      return true;
+    }
+    if (state.pickMode === "loja") {
+      state.pickedLatLng = { lat, lng };
+      state.showLoja = true;
+      render();
+      return true;
+    }
+    return false;
+  }
+
   function syncMapMarkers(){
     if (!gmap) return;
     checkinMarkers.forEach(m => m.setMap(null)); checkinMarkers = [];
     lojaMarkers.forEach(m => m.setMap(null)); lojaMarkers = [];
 
+    const groups = {};
     visibleCheckins().forEach(c => {
-      const avatarUrl = avatarDoUsuario(c.user_id, nomeDoUsuario(c.user_id));
-      makeAvatarIcon(avatarUrl, "#c9a24b", (iconUrl) => {
-        const marker = new google.maps.Marker({
-          position: { lat: c.lat, lng: c.lng }, map: gmap,
-          icon: iconUrl ? { url: iconUrl, scaledSize: new google.maps.Size(44,44), anchor: new google.maps.Point(22,22) } : undefined
+      const key = checkinGroupKey(c);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(c);
+    });
+
+    Object.values(groups).forEach(group => {
+      const first = group[0];
+
+      if (group.length === 1) {
+        const c = first;
+        const avatarUrl = avatarDoUsuario(c.user_id, nomeDoUsuario(c.user_id));
+        makeAvatarIcon(avatarUrl, "#c9a24b", (iconUrl) => {
+          const marker = new google.maps.Marker({
+            position: { lat: c.lat, lng: c.lng }, map: gmap,
+            icon: iconUrl ? { url: iconUrl, scaledSize: new google.maps.Size(44,44), anchor: new google.maps.Point(22,22) } : undefined
+          });
+          const canDelete = state.profile && (state.profile.role === "admin" || c.user_id === state.session.user.id);
+          const qtd = c.qtd_jogadores || 1;
+          const info = new google.maps.InfoWindow({ content: `
+            <div class="gm-popup">
+              <img class="pin-avatar" src="${avatarUrl}" alt="" />
+              <div>
+                <h4>${nomeDoUsuario(c.user_id)}</h4>
+                <div class="g">${c.jogo}</div>
+                <div class="d">${c.local ? c.local+' &middot; ' : ''}${fmtDate(c.data)}</div>
+                <div class="d">👥 ${qtd} jogador${qtd===1?'':'es'}</div>
+                ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteCheckin('${c.id}')">Excluir</button>` : ''}
+              </div>
+            </div>
+          `});
+          marker.addListener("click", () => {
+            if (handlePickClickAt(c.lat, c.lng, c.loja_id, c.local)) return;
+            if (activeInfoWindow) activeInfoWindow.close();
+            info.open(gmap, marker);
+            activeInfoWindow = info;
+          });
+          checkinMarkers.push(marker);
         });
-        const canDelete = state.profile && (state.profile.role === "admin" || c.user_id === state.session.user.id);
-        const qtd = c.qtd_jogadores || 1;
-        const info = new google.maps.InfoWindow({ content: `
-          <div class="gm-popup">
-            <img class="pin-avatar" src="${avatarUrl}" alt="" />
-            <div>
-              <h4>${nomeDoUsuario(c.user_id)}</h4>
-              <div class="g">${c.jogo}</div>
-              <div class="d">${c.local ? c.local+' &middot; ' : ''}${fmtDate(c.data)}</div>
-              <div class="d">👥 ${qtd} jogador${qtd===1?'':'es'}</div>
+      } else {
+        const totalJogadores = group.reduce((s,c) => s + (c.qtd_jogadores || 1), 0);
+        const marker = new google.maps.Marker({
+          position: { lat: first.lat, lng: first.lng }, map: gmap,
+          icon: { path: google.maps.SymbolPath.CIRCLE, fillColor:"#b33a3a", fillOpacity:1, strokeColor:"#132c2a", strokeWeight:2, scale:17 },
+          label: { text: String(totalJogadores), color:"#fff", fontWeight:"700", fontSize:"13px" }
+        });
+        const listHtml = group.map(c => {
+          const avatarUrl = avatarDoUsuario(c.user_id, nomeDoUsuario(c.user_id));
+          const canDelete = state.profile && (state.profile.role === "admin" || c.user_id === state.session.user.id);
+          const qtd = c.qtd_jogadores || 1;
+          return `
+            <div style="display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #eee;">
+              <img src="${avatarUrl}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #c9a24b;flex-shrink:0;" />
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:700;font-size:13px;">${nomeDoUsuario(c.user_id)}</div>
+                <div style="font-size:11px;color:#8a7134;">${c.jogo} &middot; 👥 ${qtd} &middot; ${fmtDate(c.data)}</div>
+              </div>
               ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteCheckin('${c.id}')">Excluir</button>` : ''}
             </div>
+          `;
+        }).join("");
+        const info = new google.maps.InfoWindow({ content: `
+          <div style="min-width:230px;max-height:280px;overflow-y:auto;">
+            <div style="font-weight:700;margin-bottom:4px;">${first.local || 'Partidas marcadas aqui'}</div>
+            <div style="font-size:12px;color:#8a7134;margin-bottom:6px;">👥 ${totalJogadores} jogadores no total &middot; ${group.length} partidas</div>
+            ${listHtml}
           </div>
         `});
         marker.addListener("click", () => {
-          if (state.pickMode === "partida") {
-            state.pickedLatLng = { lat: c.lat, lng: c.lng };
-            if (c.loja_id) { state.postDraft.lojaId = c.loja_id; }
-            if (c.local) { state.postDraft.local = c.local; }
-            state.showPost = true;
-            render();
-            return;
-          }
-          if (state.pickMode === "loja") {
-            state.pickedLatLng = { lat: c.lat, lng: c.lng };
-            state.showLoja = true;
-            render();
-            return;
-          }
+          if (handlePickClickAt(first.lat, first.lng, first.loja_id, first.local)) return;
           if (activeInfoWindow) activeInfoWindow.close();
           info.open(gmap, marker);
           activeInfoWindow = info;
         });
         checkinMarkers.push(marker);
-      });
+      }
     });
 
     state.lojas.forEach(l => {
