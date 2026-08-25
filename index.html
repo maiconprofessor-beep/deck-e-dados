@@ -1136,6 +1136,11 @@
       .filter(([id]) => id !== myId)
       .filter(([, p]) => !q || (p.name || "").toLowerCase().includes(q));
 
+    const friendIds = amigos.map(r => r.from_user === myId ? r.to_user : r.from_user);
+    const partidasDeAmigos = state.checkins
+      .filter(c => friendIds.includes(c.user_id))
+      .sort((a,b) => (a.data||"9999").localeCompare(b.data||"9999"));
+
     return `
       <div class="overlay" id="overlay-friends">
         <div class="modal" style="max-width:520px;">
@@ -1150,6 +1155,19 @@
               <div class="chip ${state.profile.visibilidade==='amigos'?'selected':''}" id="vis-amigos">🔒 Só amigos</div>
             </div>
           </div>
+
+          ${amigos.length > 0 ? `
+            <div class="list-title">🎲 Onde seus amigos vão jogar</div>
+            ${partidasDeAmigos.length === 0 ? `<div class="empty">Nenhum amigo marcou partida ainda.</div>` : partidasDeAmigos.map(c => `
+              <div class="admin-row" style="align-items:flex-start;">
+                <div>
+                  <strong>${nomeDoUsuario(c.user_id)}</strong> vai jogar <strong>${c.jogo}</strong>
+                  ${c.local ? ' em <strong>'+c.local+'</strong>' : ''}
+                  <div style="color:var(--muted);font-size:11px;margin-top:2px;">${fmtDate(c.data)} &middot; 👥 ${c.qtd_jogadores||1}</div>
+                </div>
+              </div>
+            `).join("")}
+          ` : ''}
 
           ${recebidos.length > 0 ? `
             <div class="list-title">Pedidos recebidos</div>
