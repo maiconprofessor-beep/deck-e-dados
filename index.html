@@ -328,6 +328,7 @@
     await loadChatMessages();
     subscribeChat();
     await loadFriendRequests();
+    if (state.profile && state.profile.role === "admin") await loadAllProfiles();
   }
 
   // ===================== CHAT AO VIVO =====================
@@ -455,7 +456,8 @@
       email: emailLower,
       avatar: d.avatar || null,
       games: d.games,
-      role: d.isLojista ? "lojista" : "jogador",
+      role: "jogador",
+      lojista_pendente: d.isLojista,
       loja_nome: d.isLojista ? d.lojaNome.trim() : null
     });
     if (perr) { showAuthError("Erro ao criar perfil: " + perr.message); return; }
@@ -495,7 +497,8 @@
       email: (state.session.user.email || "").toLowerCase(),
       avatar: d.avatar || null,
       games: d.games,
-      role: d.isLojista ? "lojista" : "jogador",
+      role: "jogador",
+      lojista_pendente: d.isLojista,
       loja_nome: d.isLojista ? d.lojaNome.trim() : null
     });
     if (error) { showAuthError("Erro ao criar perfil: " + error.message); return; }
@@ -840,6 +843,16 @@
     await supabase.from("profiles").update({ role }).eq("id", id);
     await loadAllProfiles();
   };
+  window.__deckApproveLojista = async function(id){
+    const { error } = await supabase.from("profiles").update({ role: "lojista", lojista_pendente: false }).eq("id", id);
+    if (error) { alert("Erro ao aprovar: " + error.message); return; }
+    await loadAllProfiles();
+  };
+  window.__deckRejectLojista = async function(id){
+    const { error } = await supabase.from("profiles").update({ lojista_pendente: false }).eq("id", id);
+    if (error) { alert("Erro ao recusar: " + error.message); return; }
+    await loadAllProfiles();
+  };
   window.__deckRemoveProfile = async function(id, name){
     if (!confirm(`Remover ${name} da comunidade? A pessoa continua conseguindo entrar com o login dela, mas vai precisar completar o perfil de novo.`)) return;
     const { error } = await supabase.from("profiles").delete().eq("id", id);
@@ -873,8 +886,9 @@
             <img src="${state.profile.avatar || fallbackAvatar(state.profile.name)}" alt="" style="width:26px;height:26px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);vertical-align:middle;" />
             <span style="font-size:13px;">${state.profile.name}</span>
             <span class="role-badge">${state.profile.role}</span>
+            ${state.profile.lojista_pendente ? `<span class="role-badge" style="background:var(--red);color:#fff;">pedido de lojista pendente</span>` : ''}
             <button class="btn ghost small" id="btn-friends">👥 Amigos${pendingReceivedCount() > 0 ? ` (${pendingReceivedCount()})` : ''}</button>
-            ${state.profile.role === "admin" ? `<button class="btn ghost small" id="btn-admin">Painel admin</button>` : ''}
+            ${state.profile.role === "admin" ? `<button class="btn ghost small" id="btn-admin">Painel admin${state.allProfiles.filter(p=>p.lojista_pendente).length > 0 ? ` (${state.allProfiles.filter(p=>p.lojista_pendente).length})` : ''}</button>` : ''}
             <button class="btn ghost small" id="btn-logout">Sair</button>
           ` : `
             <button class="btn ghost small" id="btn-login">Entrar</button>
@@ -1122,7 +1136,7 @@
       </div>
       <div class="field checkbox">
         <input type="checkbox" id="signup-lojista" ${d.isLojista?'checked':''} />
-        <label style="margin:0;" for="signup-lojista">Sou lojista (tenho uma loja física)</label>
+        <label style="margin:0;" for="signup-lojista">Sou lojista (tenho uma loja física) — sujeito à aprovação do admin</label>
       </div>
       ${d.isLojista ? `<div class="field"><label>Nome da loja</label><input id="signup-loja-nome" type="text" value="${d.lojaNome.replace(/"/g,'&quot;')}" placeholder="Ex: Clube do Dado" /></div>` : ''}
     `;
@@ -1309,12 +1323,27 @@
   }
 
   function renderAdminPanel(){
+    const pendentes = state.allProfiles.filter(p => p.lojista_pendente);
     return `
       <div class="overlay" id="overlay-admin">
         <div class="modal" style="max-width:560px;">
           <button class="close-x" id="close-admin">&times;</button>
           <h3 class="display">Painel admin</h3>
           <p class="sub">Altere o papel, remova ou bloqueie o e-mail de qualquer usuário.</p>
+
+          ${pendentes.length > 0 ? `
+            <div class="list-title">🏪 Pedidos de lojista pendentes</div>
+            ${pendentes.map(p => `
+              <div class="admin-row">
+                <span>${p.name} &middot; <em>${p.loja_nome || 'sem nome de loja'}</em></span>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn small" onclick="window.__deckApproveLojista('${p.id}')">Aprovar</button>
+                  <button class="del-btn" style="color:var(--red);background:none;border:none;cursor:pointer;font-size:12px;" onclick="window.__deckRejectLojista('${p.id}')">Recusar</button>
+                </div>
+              </div>
+            `).join("")}
+          ` : ''}
+
           ${state.allProfiles.map(p => `
             <div class="admin-row" style="flex-wrap:wrap;">
               <span>${p.name} ${p.id === state.session.user.id ? '(você)' : ''}<br/><span style="color:var(--muted);font-size:11px;">${p.email || ''}</span></span>
