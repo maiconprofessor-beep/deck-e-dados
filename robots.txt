@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://deck-e-dados.vercel.app/sitemap.xml
