@@ -1463,6 +1463,7 @@
     };
     if ($("signup-name")) $("signup-name").oninput = (e) => { state.signupDraft.name = e.target.value; };
     if ($("signup-lojista")) $("signup-lojista").onchange = (e) => { state.signupDraft.isLojista = e.target.checked; render(); state.showAuthModal = true; };
+    if ($("signup-consent")) $("signup-consent").onchange = (e) => { state.signupDraft.consentAceito = e.target.checked; };
     if ($("signup-loja-nome")) $("signup-loja-nome").oninput = (e) => { state.signupDraft.lojaNome = e.target.value; };
     if ($("avatar-file")) $("avatar-file").onchange = (e) => {
       const file = e.target.files[0];
