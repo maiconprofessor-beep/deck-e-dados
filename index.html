@@ -1157,6 +1157,10 @@
         <input type="checkbox" id="signup-lojista" ${d.isLojista?'checked':''} />
         <label style="margin:0;" for="signup-lojista">Sou lojista (tenho uma loja física) — sujeito à aprovação do admin</label>
       </div>
+      <div class="field checkbox">
+  <input type="checkbox" id="signup-consent" ${d.consentAceito?'checked':''} />
+  <label style="margin:0;" for="signup-consent">Li e concordo com a <a href="/privacidade.html" target="_blank">Política de Privacidade</a> e os <a href="/termos.html" target="_blank">Termos de Uso</a></label>
+</div>
       ${d.isLojista ? `<div class="field"><label>Nome da loja</label><input id="signup-loja-nome" type="text" value="${d.lojaNome.replace(/"/g,'&quot;')}" placeholder="Ex: Clube do Dado" /></div>` : ''}
     `;
   }
