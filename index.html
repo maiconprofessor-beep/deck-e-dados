@@ -477,6 +477,7 @@
   }
   async function openDm(friendId){
     state.showDmModal = true;
+    state.showFriendsPanel = false;
     state.dmActiveFriend = friendId;
     render();
     scrollDmToBottom();
@@ -1221,12 +1222,12 @@
       ${state.showAuthModal ? renderAuthModal() : ''}
       ${state.showForgotPasswordModal ? renderForgotPasswordModal() : ''}
       ${state.showResetPasswordModal ? renderResetPasswordModal() : ''}
-      ${state.showDmModal ? renderDmModal() : ''}
       ${state.showPost ? renderPostModal() : ''}
       ${state.showLoja ? renderLojaModal() : ''}
       ${state.showEvento ? renderEventoModal() : ''}
       ${state.showAdminPanel ? renderAdminPanel() : ''}
       ${state.showFriendsPanel ? renderFriendsPanel() : ''}
+      ${state.showDmModal ? renderDmModal() : ''}
       <footer>
         Deck e Dados &middot; feito por jogadores, pra jogadores
         <div class="social-links">
