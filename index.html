@@ -267,6 +267,9 @@
     showFriendsPanel: false,
     friendRequests: [],
     friendSearch: "",
+    dmMessages: [],
+    showDmModal: false,
+    dmActiveFriend: null,
     eventos: [],
     interesses: [],
     inscricoesEventos: [],
@@ -277,6 +280,7 @@
   let gmap = null, gmapsReady = false, gmapsLoading = false;
   let chatChannel = null;
   let mapChannel = null;
+  let dmChannel = null;
   let searchResultMarker = null;
   let checkinMarkers = [], lojaMarkers = [], pickMarker = null, activeInfoWindow = null;
   function svgLogo(size){
@@ -357,6 +361,8 @@
     subscribeChat();
     subscribeMapData();
     await loadFriendRequests();
+    await loadDmMessages();
+    subscribeDm();
     if (state.profile && state.profile.role === "admin") await loadAllProfiles();
   }
   // ===================== CHAT AO VIVO =====================
@@ -424,6 +430,77 @@
       user_id: state.session.user.id, user_name: state.profile.name, message: text
     });
     if (error) { console.error("Erro ao enviar mensagem:", error); }
+  }
+
+  // ===================== MENSAGENS DIRETAS =====================
+  async function loadDmMessages(){
+    try {
+      const myId = state.session.user.id;
+      const { data, error } = await supabase.from("dm_messages").select("*")
+        .or(`from_user.eq.${myId},to_user.eq.${myId}`)
+        .order("created_at", { ascending: true });
+      if (!error) state.dmMessages = data || [];
+    } catch(e){ console.error(e); }
+    render();
+  }
+  function subscribeDm(){
+    if (dmChannel) return;
+    dmChannel = supabase.channel("dm-room")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "dm_messages" }, (payload) => {
+        state.dmMessages.push(payload.new);
+        const myId = state.session.user.id;
+        if (state.showDmModal && state.dmActiveFriend &&
+            payload.new.to_user === myId && payload.new.from_user === state.dmActiveFriend) {
+          payload.new.lida = true;
+          supabase.from("dm_messages").update({ lida: true }).eq("id", payload.new.id);
+        }
+        render();
+        if (state.showDmModal) scrollDmToBottom();
+      })
+      .subscribe();
+  }
+  function scrollDmToBottom(){
+    setTimeout(() => {
+      const el = document.getElementById("dm-messages");
+      if (el) el.scrollTop = el.scrollHeight;
+    }, 0);
+  }
+  function dmMessagesWith(friendId){
+    const myId = state.session.user.id;
+    return state.dmMessages
+      .filter(m => (m.from_user === myId && m.to_user === friendId) || (m.from_user === friendId && m.to_user === myId))
+      .sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+  }
+  function unreadDmFrom(friendId){
+    const myId = state.session.user.id;
+    return state.dmMessages.filter(m => m.from_user === friendId && m.to_user === myId && !m.lida).length;
+  }
+  async function openDm(friendId){
+    state.showDmModal = true;
+    state.dmActiveFriend = friendId;
+    render();
+    scrollDmToBottom();
+    const myId = state.session.user.id;
+    const naoLidas = state.dmMessages.filter(m => m.from_user === friendId && m.to_user === myId && !m.lida);
+    if (naoLidas.length > 0) {
+      const ids = naoLidas.map(m => m.id);
+      naoLidas.forEach(m => { m.lida = true; });
+      render();
+      await supabase.from("dm_messages").update({ lida: true }).in("id", ids);
+    }
+  }
+  window.__deckOpenDm = openDm;
+  async function sendDm(){
+    const input = document.getElementById("dm-input");
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = "";
+    const friendId = state.dmActiveFriend;
+    const { error } = await supabase.from("dm_messages").insert({
+      from_user: state.session.user.id, to_user: friendId, message: text
+    });
+    if (error) { console.error("Erro ao enviar mensagem direta:", error); }
   }
   function showAuthError(msg){ state.authError = msg; render(); }
   // ===================== AMIGOS E PRIVACIDADE =====================
@@ -559,6 +636,7 @@
     await supabase.auth.signOut();
     if (chatChannel) { supabase.removeChannel(chatChannel); chatChannel = null; }
     if (mapChannel) { supabase.removeChannel(mapChannel); mapChannel = null; }
+    if (dmChannel) { supabase.removeChannel(dmChannel); dmChannel = null; }
     state.session = null; state.profile = null; state.checkins = []; state.lojas = [];
     render();
   }
@@ -1143,6 +1221,7 @@
       ${state.showAuthModal ? renderAuthModal() : ''}
       ${state.showForgotPasswordModal ? renderForgotPasswordModal() : ''}
       ${state.showResetPasswordModal ? renderResetPasswordModal() : ''}
+      ${state.showDmModal ? renderDmModal() : ''}
       ${state.showPost ? renderPostModal() : ''}
       ${state.showLoja ? renderLojaModal() : ''}
       ${state.showEvento ? renderEventoModal() : ''}
@@ -1346,6 +1425,32 @@
       </div>
     `;
   }
+  function renderDmModal(){
+    const friendId = state.dmActiveFriend;
+    const msgs = dmMessagesWith(friendId);
+    const myId = state.session.user.id;
+    return `
+      <div class="overlay" id="overlay-dm">
+        <div class="modal" style="max-width:480px;">
+          <button class="close-x" id="close-dm">&times;</button>
+          <h3 class="display">Conversa com ${nomeDoUsuario(friendId)}</h3>
+          <div id="dm-messages" class="chat-box" style="height:300px;">
+            ${msgs.length === 0 ? `<div class="empty">Nenhuma mensagem ainda. Diga oi! 👋</div>` : ''}
+            ${msgs.map(m => `
+              <div class="chat-msg ${m.from_user === myId ? 'mine' : ''}">
+                <span class="txt">${esc(m.message)}</span>
+                <span class="time">${new Date(m.created_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span>
+              </div>
+            `).join("")}
+          </div>
+          <div class="chat-input-row">
+            <input id="dm-input" type="text" placeholder="Escreva uma mensagem..." maxlength="500" />
+            <button class="btn" id="btn-dm-send">Enviar</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
   function renderLojaModal(){
     const d = state.lojaDraft;
     return `
@@ -1416,10 +1521,14 @@
           <div class="list-title">Seus amigos ${amigos.length ? `(${amigos.length})` : ''}</div>
           ${amigos.length === 0 ? `<div class="empty">Você ainda não tem amigos adicionados.</div>` : amigos.map(r => {
             const otherId = r.from_user === myId ? r.to_user : r.from_user;
+            const naoLidas = unreadDmFrom(otherId);
             return `
               <div class="admin-row">
                 <span>${nomeDoUsuario(otherId)}</span>
-                <button class="del-btn" style="color:var(--red);background:none;border:none;cursor:pointer;font-size:12px;" onclick="window.__deckRemoveFriendRow('${r.id}')">Remover</button>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn small ghost" onclick="window.__deckOpenDm('${otherId}')">💬 Mensagem${naoLidas>0?` (${naoLidas})`:''}</button>
+                  <button class="del-btn" style="color:var(--red);background:none;border:none;cursor:pointer;font-size:12px;" onclick="window.__deckRemoveFriendRow('${r.id}')">Remover</button>
+                </div>
               </div>
             `;
           }).join("")}
@@ -1595,6 +1704,10 @@
     if ($("new-password-1")) $("new-password-1").oninput = (e) => { state.newPasswordDraft = e.target.value; };
     if ($("new-password-2")) $("new-password-2").oninput = (e) => { state.newPasswordConfirm = e.target.value; };
     if ($("btn-reset-submit")) $("btn-reset-submit").onclick = doResetPassword;
+    if ($("close-dm")) $("close-dm").onclick = () => { state.showDmModal = false; state.dmActiveFriend = null; render(); };
+    if ($("overlay-dm")) $("overlay-dm").onclick = (e) => { if(e.target.id==="overlay-dm"){ state.showDmModal=false; state.dmActiveFriend=null; render(); } };
+    if ($("btn-dm-send")) $("btn-dm-send").onclick = sendDm;
+    if ($("dm-input")) $("dm-input").onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); sendDm(); } };
     if ($("btn-complete-submit")) $("btn-complete-submit").onclick = doCompleteProfile;
     if ($("btn-fab-partida")) $("btn-fab-partida").onclick = () => { state.pickMode = "partida"; state.pickedLatLng = null; render(); };
     if ($("btn-fab-loja")) $("btn-fab-loja").onclick = () => { state.pickMode = "loja"; state.pickedLatLng = null; render(); };
