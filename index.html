@@ -250,6 +250,7 @@
     friendRequests: [],
     friendSearch: "",
     eventos: [],
+    interesses: [],
     showEvento: false,
     eventoDraft: { lojaId:"", titulo:"", jogo:"", data:"", hora:"", descricao:"" }
   };
@@ -312,15 +313,17 @@
   }
   async function loadMapData(){
     try {
-      const [{ data: checkins, error: e1 }, { data: lojas, error: e2 }, { data: perfis, error: e3 }, { data: eventos, error: e4 }] = await Promise.all([
+      const [{ data: checkins, error: e1 }, { data: lojas, error: e2 }, { data: perfis, error: e3 }, { data: eventos, error: e4 }, { data: interesses, error: e5 }] = await Promise.all([
         supabase.from("checkins").select("*").order("data", { ascending: true }),
         supabase.from("lojas").select("*"),
         supabase.from("profiles").select("id,name,avatar"),
-        supabase.from("eventos").select("*").order("data", { ascending: true })
+        supabase.from("eventos").select("*").order("data", { ascending: true }),
+        supabase.from("checkin_interesses").select("*")
       ]);
       state.checkins = e1 ? [] : (checkins || []);
       state.lojas = e2 ? [] : (lojas || []);
       state.eventos = e4 ? [] : (eventos || []);
+      state.interesses = e5 ? [] : (interesses || []);
       if (!e3 && perfis) {
         const map = {};
         perfis.forEach(p => { map[p.id] = { name: p.name, avatar: p.avatar }; });
@@ -364,14 +367,16 @@
   // ===================== MAPA EM TEMPO REAL =====================
   async function refreshMapOnly(){
     try {
-      const [{ data: checkins, error: e1 }, { data: lojas, error: e2 }, { data: eventos, error: e4 }] = await Promise.all([
+      const [{ data: checkins, error: e1 }, { data: lojas, error: e2 }, { data: eventos, error: e4 }, { data: interesses, error: e5 }] = await Promise.all([
         supabase.from("checkins").select("*").order("data", { ascending: true }),
         supabase.from("lojas").select("*"),
-        supabase.from("eventos").select("*").order("data", { ascending: true })
+        supabase.from("eventos").select("*").order("data", { ascending: true }),
+        supabase.from("checkin_interesses").select("*")
       ]);
       state.checkins = e1 ? state.checkins : (checkins || []);
       state.lojas = e2 ? state.lojas : (lojas || []);
       state.eventos = e4 ? state.eventos : (eventos || []);
+      state.interesses = e5 ? state.interesses : (interesses || []);
     } catch(e){ console.error(e); }
     render();
     syncMapMarkers();
@@ -382,6 +387,7 @@
       .on("postgres_changes", { event: "*", schema: "public", table: "checkins" }, () => { refreshMapOnly(); })
       .on("postgres_changes", { event: "*", schema: "public", table: "lojas" }, () => { refreshMapOnly(); })
       .on("postgres_changes", { event: "*", schema: "public", table: "eventos" }, () => { refreshMapOnly(); })
+      .on("postgres_changes", { event: "*", schema: "public", table: "checkin_interesses" }, () => { refreshMapOnly(); })
       .subscribe();
   }
   async function sendChatMessage(){
@@ -693,6 +699,9 @@
           });
           const canDelete = state.profile && (state.profile.role === "admin" || c.user_id === state.session.user.id);
           const qtd = c.qtd_jogadores || 1;
+          const interessadosPopup = interessadosDoCheckin(c.id);
+          const souInteressadoPopup = jaTenhoInteresse(c.id);
+          const souDonoPopup = state.session && c.user_id === state.session.user.id;
           const info = new google.maps.InfoWindow({ content: `
             <div class="gm-popup">
               <img class="pin-avatar" src="${avatarUrl}" alt="" />
@@ -702,6 +711,8 @@
                 <div class="d">${c.local ? esc(c.local)+' &middot; ' : ''}${fmtDate(c.data)}</div>
                 <div class="d">👥 ${qtd} jogador${qtd===1?'':'es'}</div>
                 ${c.notas ? `<div class="d" style="font-style:italic;margin-top:4px;">"${esc(c.notas)}"</div>` : ''}
+                ${interessadosPopup.length > 0 ? `<div class="d" style="margin-top:4px;">🙋 ${interessadosPopup.length} interessado${interessadosPopup.length===1?'':'s'}</div>` : ''}
+                ${!souDonoPopup ? `<button class="del-btn" style="color:#8a7134;" onclick="window.__deckToggleInteresse('${c.id}')">${souInteressadoPopup ? '✓ Vou jogar' : 'Quero jogar'}</button>` : ''}
                 ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteCheckin('${c.id}')">Excluir</button>` : ''}
               </div>
             </div>
@@ -809,6 +820,24 @@
     if (state.profilesMap[userId] && state.profilesMap[userId].avatar) return state.profilesMap[userId].avatar;
     return fallbackAvatar(fallbackName);
   }
+  function interessadosDoCheckin(checkinId){
+    return state.interesses.filter(i => i.checkin_id === checkinId);
+  }
+  function jaTenhoInteresse(checkinId){
+    return !!(state.session && state.interesses.some(i => i.checkin_id === checkinId && i.user_id === state.session.user.id));
+  }
+  async function toggleInteresse(checkinId){
+    if (!state.session) return;
+    const existing = state.interesses.find(i => i.checkin_id === checkinId && i.user_id === state.session.user.id);
+    if (existing) {
+      await supabase.from("checkin_interesses").delete().eq("id", existing.id);
+    } else {
+      const { error } = await supabase.from("checkin_interesses").insert({ checkin_id: checkinId, user_id: state.session.user.id });
+      if (error) { console.error("Erro ao marcar interesse:", error); return; }
+    }
+    await refreshMapOnly();
+  }
+  window.__deckToggleInteresse = toggleInteresse;
   function visibleCheckins(){
     let list = state.checkins.slice().sort((a,b)=>(a.data||"9999").localeCompare(b.data||"9999"));
     if (state.query && state.query.trim()){
@@ -955,17 +984,24 @@
             <div class="list-title">${'\u25CF'} Próximas partidas marcadas</div>
             ${state.loading ? `<div class="empty">Carregando...</div>` : ''}
             ${(!state.loading && visibleCheckins().length===0) ? `<div class="empty">Ninguém marcou partida ainda. Seja o primeiro!</div>` : ''}
-            ${visibleCheckins().map(c => `
-              <div class="checkin-row">
+            ${visibleCheckins().map(c => {
+              const interessados = interessadosDoCheckin(c.id);
+              const souInteressado = jaTenhoInteresse(c.id);
+              const souDono = state.session && c.user_id === state.session.user.id;
+              return `
+              <div class="checkin-row" style="flex-wrap:wrap;">
                 <img src="${avatarDoUsuario(c.user_id, nomeDoUsuario(c.user_id))}" alt="" />
-                <div class="meta">
+                <div class="meta" style="flex:1;">
                   <strong>${nomeDoUsuario(c.user_id)}</strong> vai jogar <strong>${esc(c.jogo)}</strong>
                   ${c.local ? ' em <strong>'+esc(c.local)+'</strong>' : ''} &middot; ${fmtDate(c.data)} &middot; 👥 ${c.qtd_jogadores || 1}
                   ${gameRuleUrl(c.jogo) ? ` &middot; <a href="${gameRuleUrl(c.jogo)}" target="_blank" rel="noopener" style="color:var(--gold);">📖 regras</a>` : ''}
                   ${c.notas ? `<div style="font-style:italic;margin-top:2px;">"${esc(c.notas)}"</div>` : ''}
+                  ${interessados.length > 0 ? `<div style="margin-top:6px;font-size:12px;color:var(--gold);">🙋 ${interessados.length} interessado${interessados.length===1?'':'s'}: ${interessados.map(i => esc(nomeDoUsuario(i.user_id))).join(", ")}</div>` : ''}
                 </div>
+                ${!souDono ? `<button class="btn ${souInteressado?'ghost':''} small" onclick="window.__deckToggleInteresse('${c.id}')">${souInteressado ? '✓ Vou jogar' : 'Quero jogar'}</button>` : ''}
               </div>
-            `).join("")}
+            `;
+            }).join("")}
             ${state.eventos.length > 0 ? `
               <div class="list-title" style="margin-top:30px;">📅 Próximos eventos nas lojas</div>
               ${state.eventos.map(e => {
