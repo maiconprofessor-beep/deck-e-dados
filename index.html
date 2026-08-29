@@ -475,6 +475,11 @@
     const myId = state.session.user.id;
     return state.dmMessages.filter(m => m.from_user === friendId && m.to_user === myId && !m.lida).length;
   }
+  function totalUnreadDms(){
+    if (!state.session) return 0;
+    const myId = state.session.user.id;
+    return state.dmMessages.filter(m => m.to_user === myId && !m.lida).length;
+  }
   async function openDm(friendId){
     state.showDmModal = true;
     state.showFriendsPanel = false;
@@ -1062,7 +1067,7 @@
             <span style="font-size:13px;">${esc(state.profile.name)}</span>
             <span class="role-badge">${state.profile.role}</span>
             ${state.profile.lojista_pendente ? `<span class="role-badge" style="background:var(--red);color:#fff;">pedido de lojista pendente</span>` : ''}
-            <button class="btn ghost small" id="btn-friends">👥 Amigos${pendingReceivedCount() > 0 ? ` (${pendingReceivedCount()})` : ''}</button>
+            <button class="btn ghost small" id="btn-friends">👥 Amigos${(pendingReceivedCount() + totalUnreadDms()) > 0 ? ` (${pendingReceivedCount() + totalUnreadDms()})` : ''}</button>
             ${state.profile.role === "admin" ? `<button class="btn ghost small" id="btn-admin">Painel admin${state.allProfiles.filter(p=>p.lojista_pendente).length > 0 ? ` (${state.allProfiles.filter(p=>p.lojista_pendente).length})` : ''}</button>` : ''}
             <button class="btn ghost small" id="btn-logout">Sair</button>
           ` : `
