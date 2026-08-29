@@ -251,6 +251,7 @@
     friendSearch: "",
     eventos: [],
     interesses: [],
+    inscricoesEventos: [],
     showEvento: false,
     eventoDraft: { lojaId:"", titulo:"", jogo:"", data:"", hora:"", descricao:"" }
   };
@@ -313,17 +314,19 @@
   }
   async function loadMapData(){
     try {
-      const [{ data: checkins, error: e1 }, { data: lojas, error: e2 }, { data: perfis, error: e3 }, { data: eventos, error: e4 }, { data: interesses, error: e5 }] = await Promise.all([
+      const [{ data: checkins, error: e1 }, { data: lojas, error: e2 }, { data: perfis, error: e3 }, { data: eventos, error: e4 }, { data: interesses, error: e5 }, { data: inscricoes, error: e6 }] = await Promise.all([
         supabase.from("checkins").select("*").order("data", { ascending: true }),
         supabase.from("lojas").select("*"),
         supabase.from("profiles").select("id,name,avatar"),
         supabase.from("eventos").select("*").order("data", { ascending: true }),
-        supabase.from("checkin_interesses").select("*")
+        supabase.from("checkin_interesses").select("*"),
+        supabase.from("evento_inscricoes").select("*")
       ]);
       state.checkins = e1 ? [] : (checkins || []);
       state.lojas = e2 ? [] : (lojas || []);
       state.eventos = e4 ? [] : (eventos || []);
       state.interesses = e5 ? [] : (interesses || []);
+      state.inscricoesEventos = e6 ? [] : (inscricoes || []);
       if (!e3 && perfis) {
         const map = {};
         perfis.forEach(p => { map[p.id] = { name: p.name, avatar: p.avatar }; });
@@ -367,16 +370,18 @@
   // ===================== MAPA EM TEMPO REAL =====================
   async function refreshMapOnly(){
     try {
-      const [{ data: checkins, error: e1 }, { data: lojas, error: e2 }, { data: eventos, error: e4 }, { data: interesses, error: e5 }] = await Promise.all([
+      const [{ data: checkins, error: e1 }, { data: lojas, error: e2 }, { data: eventos, error: e4 }, { data: interesses, error: e5 }, { data: inscricoes, error: e6 }] = await Promise.all([
         supabase.from("checkins").select("*").order("data", { ascending: true }),
         supabase.from("lojas").select("*"),
         supabase.from("eventos").select("*").order("data", { ascending: true }),
-        supabase.from("checkin_interesses").select("*")
+        supabase.from("checkin_interesses").select("*"),
+        supabase.from("evento_inscricoes").select("*")
       ]);
       state.checkins = e1 ? state.checkins : (checkins || []);
       state.lojas = e2 ? state.lojas : (lojas || []);
       state.eventos = e4 ? state.eventos : (eventos || []);
       state.interesses = e5 ? state.interesses : (interesses || []);
+      state.inscricoesEventos = e6 ? state.inscricoesEventos : (inscricoes || []);
     } catch(e){ console.error(e); }
     render();
     syncMapMarkers();
@@ -388,6 +393,7 @@
       .on("postgres_changes", { event: "*", schema: "public", table: "lojas" }, () => { refreshMapOnly(); })
       .on("postgres_changes", { event: "*", schema: "public", table: "eventos" }, () => { refreshMapOnly(); })
       .on("postgres_changes", { event: "*", schema: "public", table: "checkin_interesses" }, () => { refreshMapOnly(); })
+      .on("postgres_changes", { event: "*", schema: "public", table: "evento_inscricoes" }, () => { refreshMapOnly(); })
       .subscribe();
   }
   async function sendChatMessage(){
@@ -783,12 +789,19 @@
             ${partidasNaLoja.length > 0 ? `<div class="d">👥 <strong>${totalJogadores}</strong> jogador${totalJogadores===1?'':'es'} confirmado${totalJogadores===1?'':'s'} em ${partidasNaLoja.length} partida${partidasNaLoja.length===1?'':'s'}</div>` : `<div class="d">Nenhuma partida marcada aqui ainda</div>`}
             ${eventosNaLoja.length > 0 ? `
               <div class="d" style="margin-top:6px;font-weight:700;">📅 Eventos:</div>
-              ${eventosNaLoja.map(e => `
+              ${eventosNaLoja.map(e => {
+                const inscritosPopup = inscritosDoEvento(e.id);
+                const souInscritoPopup = jaTenhoInscricao(e.id);
+                const souDonoPopup = state.session && e.user_id === state.session.user.id;
+                return `
                 <div class="d" style="margin-top:2px;">
                   <strong>${esc(e.titulo)}</strong>${e.jogo ? ' · '+esc(e.jogo) : ''} · ${fmtDate(e.data)}${e.hora ? ' às '+e.hora.slice(0,5) : ''}
+                  ${inscritosPopup.length > 0 ? ` · 🏆 ${inscritosPopup.length}` : ''}
+                  ${!souDonoPopup ? ` <button class="del-btn" style="display:inline;color:#8a7134;" onclick="window.__deckToggleInscricao('${e.id}')">${souInscritoPopup ? '✓ inscrito' : 'inscrever-se'}</button>` : ''}
                   ${(state.profile.role === "admin" || e.user_id === state.session.user.id) ? ` <button class="del-btn" style="display:inline;" onclick="window.__deckDeleteEvento('${e.id}')">excluir</button>` : ''}
                 </div>
-              `).join("")}
+              `;
+              }).join("")}
             ` : ''}
             ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteLoja('${l.id}')">Excluir loja</button>` : ''}
           </div>
@@ -838,6 +851,24 @@
     await refreshMapOnly();
   }
   window.__deckToggleInteresse = toggleInteresse;
+  function inscritosDoEvento(eventoId){
+    return state.inscricoesEventos.filter(i => i.evento_id === eventoId);
+  }
+  function jaTenhoInscricao(eventoId){
+    return !!(state.session && state.inscricoesEventos.some(i => i.evento_id === eventoId && i.user_id === state.session.user.id));
+  }
+  async function toggleInscricaoEvento(eventoId){
+    if (!state.session) return;
+    const existing = state.inscricoesEventos.find(i => i.evento_id === eventoId && i.user_id === state.session.user.id);
+    if (existing) {
+      await supabase.from("evento_inscricoes").delete().eq("id", existing.id);
+    } else {
+      const { error } = await supabase.from("evento_inscricoes").insert({ evento_id: eventoId, user_id: state.session.user.id });
+      if (error) { console.error("Erro ao se inscrever:", error); return; }
+    }
+    await refreshMapOnly();
+  }
+  window.__deckToggleInscricao = toggleInscricaoEvento;
   function visibleCheckins(){
     let list = state.checkins.slice().sort((a,b)=>(a.data||"9999").localeCompare(b.data||"9999"));
     if (state.query && state.query.trim()){
@@ -1007,13 +1038,18 @@
               ${state.eventos.map(e => {
                 const loja = state.lojas.find(l => l.id === e.loja_id);
                 const canDelete = state.profile && (state.profile.role === "admin" || e.user_id === state.session.user.id);
+                const inscritos = inscritosDoEvento(e.id);
+                const souInscrito = jaTenhoInscricao(e.id);
+                const souDonoEvento = state.session && e.user_id === state.session.user.id;
                 return `
-                  <div class="checkin-row">
+                  <div class="checkin-row" style="flex-wrap:wrap;">
                     <div class="meta" style="flex:1;">
                       <strong>${esc(e.titulo)}</strong>${e.jogo ? ' &middot; '+esc(e.jogo) : ''}
                       ${loja ? ' em <strong>'+esc(loja.nome)+'</strong>' : ''} &middot; ${fmtDate(e.data)}${e.hora ? ' às '+e.hora.slice(0,5) : ''}
                       ${e.descricao ? `<div style="font-style:italic;margin-top:2px;">"${esc(e.descricao)}"</div>` : ''}
+                      ${inscritos.length > 0 ? `<div style="margin-top:6px;font-size:12px;color:var(--gold);">🏆 ${inscritos.length} inscrito${inscritos.length===1?'':'s'}: ${inscritos.map(i => esc(nomeDoUsuario(i.user_id))).join(", ")}</div>` : ''}
                     </div>
+                    ${!souDonoEvento ? `<button class="btn ${souInscrito?'ghost':''} small" onclick="window.__deckToggleInscricao('${e.id}')">${souInscrito ? '✓ Inscrito' : 'Inscrever-se'}</button>` : ''}
                     ${canDelete ? `<button class="del-btn" style="color:var(--red);background:none;border:none;cursor:pointer;font-size:12px;" onclick="window.__deckDeleteEvento('${e.id}')">Excluir</button>` : ''}
                   </div>
                 `;
