@@ -316,13 +316,77 @@
     if (isNaN(dt)) return d;
     return dt.toLocaleDateString('pt-BR', { day:'2-digit', month:'short' });
   }
-  function lojaMarkerIconUrl(){
-    return `data:image/svg+xml;utf8,` + encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
-        <polygon points="20,2 33,10 38,24 29,36 11,36 2,24 7,10" fill="#c9a24b" stroke="#132c2a" stroke-width="2"/>
-        <text x="20" y="25" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="13" fill="#132c2a">20</text>
-      </svg>`
-    );
+  function makeLojaMarkerIcon(loja, totalJogadores, cb){
+    const w = 64, h = 84;
+    const canvas = document.createElement("canvas");
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext("2d");
+
+    function drawRest(logoImg){
+      ctx.fillStyle = "#132c2a";
+      ctx.fillRect(2, 0, w-4, 16);
+      ctx.strokeStyle = "#c9a24b";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(2, 0, w-4, 16);
+      ctx.fillStyle = "#c9a24b";
+      ctx.font = "bold 9px Georgia, serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("LOJISTA", w/2, 9);
+
+      const logoSize = 52;
+      const lx = (w - logoSize) / 2;
+      const ly = 20;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(lx + logoSize/2, ly + logoSize/2, logoSize/2, 0, Math.PI*2);
+      ctx.closePath();
+      ctx.clip();
+      if (logoImg) {
+        ctx.drawImage(logoImg, lx, ly, logoSize, logoSize);
+      } else {
+        ctx.fillStyle = "#8a7134";
+        ctx.fillRect(lx, ly, logoSize, logoSize);
+        ctx.fillStyle = "#132c2a";
+        ctx.font = "bold 22px Georgia, serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText((loja.nome||"?").trim().charAt(0).toUpperCase(), lx+logoSize/2, ly+logoSize/2+2);
+      }
+      ctx.restore();
+      ctx.beginPath();
+      ctx.arc(lx + logoSize/2, ly + logoSize/2, logoSize/2, 0, Math.PI*2);
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#c9a24b";
+      ctx.stroke();
+
+      if (totalJogadores > 0) {
+        const bx = lx + logoSize - 6, by = ly + 6;
+        ctx.beginPath();
+        ctx.arc(bx, by, 11, 0, Math.PI*2);
+        ctx.fillStyle = "#b33a3a";
+        ctx.fill();
+        ctx.strokeStyle = "#132c2a";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 12px Arial, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(String(totalJogadores), bx, by+1);
+      }
+
+      cb(canvas.toDataURL("image/png"));
+    }
+
+    if (loja.logo) {
+      const img = new Image();
+      img.onload = () => drawRest(img);
+      img.onerror = () => drawRest(null);
+      img.src = loja.logo;
+    } else {
+      drawRest(null);
+    }
   }
   function todayStr(){
     const d = new Date();
@@ -910,14 +974,15 @@
       }
     });
     state.lojas.forEach(l => {
-      const marker = new google.maps.Marker({
-        position: { lat: l.lat, lng: l.lng }, map: gmap,
-        icon: { url: lojaMarkerIconUrl(), scaledSize: new google.maps.Size(32,32), anchor: new google.maps.Point(16,16) }
-      });
       const canDelete = state.profile && (state.profile.role === "admin" || l.user_id === state.session.user.id);
-      const partidasNaLoja = state.checkins.filter(c => c.loja_id === l.id);
+      const partidasNaLoja = visibleCheckins().filter(c => c.loja_id === l.id);
       const totalJogadores = partidasNaLoja.reduce((soma, c) => soma + (c.qtd_jogadores || 1), 0);
       const eventosNaLoja = visibleEventos().filter(e => e.loja_id === l.id).sort((a,b)=>(a.data||"9999").localeCompare(b.data||"9999"));
+      makeLojaMarkerIcon(l, totalJogadores, (iconUrl) => {
+      const marker = new google.maps.Marker({
+        position: { lat: l.lat, lng: l.lng }, map: gmap,
+        icon: { url: iconUrl, scaledSize: new google.maps.Size(64,84), anchor: new google.maps.Point(32,80) }
+      });
       const info = new google.maps.InfoWindow({ content: `
         <div class="gm-popup">
           ${l.logo ? `<img src="${l.logo}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;" />` : ''}
@@ -962,6 +1027,7 @@
         activeInfoWindow = info;
       });
       lojaMarkers.push(marker);
+      });
     });
   }
   function nomeDoUsuario(userId){
