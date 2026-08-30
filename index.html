@@ -315,6 +315,12 @@
     if (isNaN(dt)) return d;
     return dt.toLocaleDateString('pt-BR', { day:'2-digit', month:'short' });
   }
+  function todayStr(){
+    const d = new Date();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    return `${d.getFullYear()}-${m}-${day}`;
+  }
   // ===================== AUTENTICAÇÃO =====================
   async function initAuth(){
     if (NOT_CONFIGURED || !supabase) { state.loading = false; render(); return; }
@@ -903,7 +909,7 @@
       const canDelete = state.profile && (state.profile.role === "admin" || l.user_id === state.session.user.id);
       const partidasNaLoja = state.checkins.filter(c => c.loja_id === l.id);
       const totalJogadores = partidasNaLoja.reduce((soma, c) => soma + (c.qtd_jogadores || 1), 0);
-      const eventosNaLoja = state.eventos.filter(e => e.loja_id === l.id).sort((a,b)=>(a.data||"9999").localeCompare(b.data||"9999"));
+      const eventosNaLoja = visibleEventos().filter(e => e.loja_id === l.id).sort((a,b)=>(a.data||"9999").localeCompare(b.data||"9999"));
       const info = new google.maps.InfoWindow({ content: `
         <div class="gm-popup">
           <div>
@@ -994,12 +1000,19 @@
   }
   window.__deckToggleInscricao = toggleInscricaoEvento;
   function visibleCheckins(){
-    let list = state.checkins.slice().sort((a,b)=>(a.data||"9999").localeCompare(b.data||"9999"));
+    const hoje = todayStr();
+    let list = state.checkins.slice()
+      .filter(c => !c.data || c.data >= hoje)
+      .sort((a,b)=>(a.data||"9999").localeCompare(b.data||"9999"));
     if (state.query && state.query.trim()){
       const q = state.query.trim().toLowerCase();
       list = list.filter(c => (c.jogo||"").toLowerCase().includes(q) || (c.local||"").toLowerCase().includes(q));
     }
     return list;
+  }
+  function visibleEventos(){
+    const hoje = todayStr();
+    return state.eventos.filter(e => !e.data || e.data >= hoje);
   }
   window.__deckDeleteCheckin = async function(id){
     await supabase.from("checkins").delete().eq("id", id);
@@ -1157,9 +1170,9 @@
               </div>
             `;
             }).join("")}
-            ${state.eventos.length > 0 ? `
+            ${visibleEventos().length > 0 ? `
               <div class="list-title" style="margin-top:30px;">📅 Próximos eventos nas lojas</div>
-              ${state.eventos.map(e => {
+              ${visibleEventos().map(e => {
                 const loja = state.lojas.find(l => l.id === e.loja_id);
                 const canDelete = state.profile && (state.profile.role === "admin" || e.user_id === state.session.user.id);
                 const inscritos = inscritosDoEvento(e.id);
