@@ -1015,15 +1015,18 @@
     return state.eventos.filter(e => !e.data || e.data >= hoje);
   }
   window.__deckDeleteCheckin = async function(id){
-    await supabase.from("checkins").delete().eq("id", id);
+    const { error } = await supabase.from("checkins").delete().eq("id", id);
+    if (error) { alert("Erro ao excluir: " + error.message); return; }
     await loadMapData();
   };
   window.__deckDeleteLoja = async function(id){
-    await supabase.from("lojas").delete().eq("id", id);
+    const { error } = await supabase.from("lojas").delete().eq("id", id);
+    if (error) { alert("Erro ao excluir loja: " + error.message); return; }
     await loadMapData();
   };
   window.__deckDeleteEvento = async function(id){
-    await supabase.from("eventos").delete().eq("id", id);
+    const { error } = await supabase.from("eventos").delete().eq("id", id);
+    if (error) { alert("Erro ao excluir evento: " + error.message); return; }
     await loadMapData();
   };
   // ===================== PAINEL ADMIN =====================
