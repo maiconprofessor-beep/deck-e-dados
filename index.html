@@ -256,7 +256,7 @@
     postDraft: { tipo:"Card Game", jogo:CARD_GAMES[0], local:"", lojaId:"", qtdJogadores:1, data:"", notas:"" },
     showLoja: false,
     lojaEditId: null,
-    lojaDraft: { nome:"", endereco:"", descricao:"", logo:"", siteUrl:"" },
+    lojaDraft: { nome:"", endereco:"", descricao:"", logo:"", siteUrl:"", tipos:[] },
     pickMode: null, // 'partida' | 'loja'
     pickedLatLng: null,
     showAdminPanel: false,
@@ -923,6 +923,7 @@
           ${l.logo ? `<img src="${l.logo}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;" />` : ''}
           <div>
             <h4>${esc(l.nome)}</h4>
+            ${l.tipos && l.tipos.length > 0 ? `<div class="d" style="color:#8a7134;font-weight:700;">${l.tipos.map(t=>esc(t)).join(' · ')}</div>` : ''}
             <div class="d">${esc(l.endereco)}</div>
             ${l.site_url ? `<div class="d"><a href="${esc(l.site_url)}" target="_blank" rel="noopener">🔗 Visitar site</a></div>` : ''}
             ${l.descricao ? `<div class="d">${esc(l.descricao)}</div>` : ''}
@@ -1038,7 +1039,7 @@
     const l = state.lojas.find(x => x.id === id);
     if (!l) return;
     state.lojaEditId = id;
-    state.lojaDraft = { nome: l.nome || "", endereco: l.endereco || "", descricao: l.descricao || "", logo: l.logo || "", siteUrl: l.site_url || "" };
+    state.lojaDraft = { nome: l.nome || "", endereco: l.endereco || "", descricao: l.descricao || "", logo: l.logo || "", siteUrl: l.site_url || "", tipos: l.tipos || [] };
     state.showLoja = true;
     render();
   };
@@ -1508,6 +1509,12 @@
             </div>
           </div>
           <div class="field"><label>Nome da loja</label><input id="loja-nome" type="text" value="${d.nome.replace(/"/g,'&quot;')}" /></div>
+          <div class="field">
+            <label>Tipo de loja (pode marcar mais de um)</label>
+            <div class="chip-group">
+              ${["Card Game","Miniaturas","Board Game"].map(t => `<div class="chip ${d.tipos.includes(t)?'selected':''}" data-loja-tipo="${t}">${t}</div>`).join("")}
+            </div>
+          </div>
           <div class="field"><label>Endereço</label><input id="loja-endereco" type="text" value="${d.endereco.replace(/"/g,'&quot;')}" placeholder="Rua, número, bairro, cidade" /></div>
           <div class="field"><label>Site ou Instagram (opcional)</label><input id="loja-site-url" type="text" value="${d.siteUrl.replace(/"/g,'&quot;')}" placeholder="https://instagram.com/sualoja" /></div>
           <div class="field"><label>Descrição (opcional)</label><textarea id="loja-descricao">${d.descricao}</textarea></div>
@@ -1737,6 +1744,14 @@
         render();
       };
     });
+    document.querySelectorAll("[data-loja-tipo]").forEach(el => {
+      el.onclick = () => {
+        const t = el.getAttribute("data-loja-tipo");
+        const idx = state.lojaDraft.tipos.indexOf(t);
+        if (idx>-1) state.lojaDraft.tipos.splice(idx,1); else state.lojaDraft.tipos.push(t);
+        render();
+      };
+    });
     if ($("btn-auth-submit")) $("btn-auth-submit").onclick = () => { state.authMode === "login" ? doSignIn() : doSignUp(); };
     if ($("link-forgot-password")) $("link-forgot-password").onclick = (e) => {
       e.preventDefault();
@@ -1847,7 +1862,7 @@
       if (state.lojaEditId) {
         const { error } = await supabase.from("lojas").update({
           nome: d.nome.trim(), endereco: d.endereco.trim(), descricao: d.descricao.trim(),
-          logo: d.logo || null, site_url: d.siteUrl.trim() || null
+          logo: d.logo || null, site_url: d.siteUrl.trim() || null, tipos: d.tipos
         }).eq("id", state.lojaEditId);
         if (error) { $("loja-error").textContent = "Erro ao salvar: " + error.message; return; }
         state.lojaEditId = null;
@@ -1858,7 +1873,7 @@
       if (!state.pickedLatLng) { $("loja-error").textContent = "Clique no mapa pra marcar onde fica a loja."; return; }
       const { error } = await supabase.from("lojas").insert({
         user_id: state.session.user.id, nome: d.nome.trim(), endereco: d.endereco.trim(),
-        descricao: d.descricao.trim(), logo: d.logo || null, site_url: d.siteUrl.trim() || null,
+        descricao: d.descricao.trim(), logo: d.logo || null, site_url: d.siteUrl.trim() || null, tipos: d.tipos,
         lat: state.pickedLatLng.lat, lng: state.pickedLatLng.lng
       });
       if (error) { $("loja-error").textContent = "Erro ao publicar: " + error.message; return; }
