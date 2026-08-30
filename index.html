@@ -255,6 +255,7 @@
     showPost: false,
     postDraft: { tipo:"Card Game", jogo:CARD_GAMES[0], local:"", lojaId:"", qtdJogadores:1, data:"", notas:"" },
     showLoja: false,
+    lojaEditId: null,
     lojaDraft: { nome:"", endereco:"", descricao:"", logo:"", siteUrl:"" },
     pickMode: null, // 'partida' | 'loja'
     pickedLatLng: null,
@@ -935,7 +936,7 @@
               `;
               }).join("")}
             ` : ''}
-            ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteLoja('${l.id}')">Excluir loja</button>` : ''}
+            ${canDelete ? `<button class="del-btn" style="color:#8a7134;" onclick="window.__deckEditLoja('${l.id}')">Editar</button> <button class="del-btn" onclick="window.__deckDeleteLoja('${l.id}')">Excluir loja</button>` : ''}
           </div>
         </div>
       `});
@@ -1025,6 +1026,14 @@
     const { error } = await supabase.from("lojas").delete().eq("id", id);
     if (error) { alert("Erro ao excluir loja: " + error.message); return; }
     await loadMapData();
+  };
+  window.__deckEditLoja = function(id){
+    const l = state.lojas.find(x => x.id === id);
+    if (!l) return;
+    state.lojaEditId = id;
+    state.lojaDraft = { nome: l.nome || "", endereco: l.endereco || "", descricao: l.descricao || "", logo: l.logo || "", siteUrl: l.site_url || "" };
+    state.showLoja = true;
+    render();
   };
   window.__deckDeleteEvento = async function(id){
     const { error } = await supabase.from("eventos").delete().eq("id", id);
@@ -1477,12 +1486,13 @@
   }
   function renderLojaModal(){
     const d = state.lojaDraft;
+    const editing = !!state.lojaEditId;
     return `
       <div class="overlay" id="overlay-loja">
         <div class="modal">
           <button class="close-x" id="close-loja">&times;</button>
-          <h3 class="display">Cadastrar loja</h3>
-          <p class="sub" id="pick-status">📍 Local selecionado no mapa. Preencha os dados da loja.</p>
+          <h3 class="display">${editing ? 'Editar loja' : 'Cadastrar loja'}</h3>
+          <p class="sub" id="pick-status">${editing ? 'Atualize os dados da loja.' : '📍 Local selecionado no mapa. Preencha os dados da loja.'}</p>
           <div class="field">
             <label>Logo da loja (opcional)</label>
             <div class="avatar-upload">
@@ -1495,7 +1505,7 @@
           <div class="field"><label>Site ou Instagram (opcional)</label><input id="loja-site-url" type="text" value="${d.siteUrl.replace(/"/g,'&quot;')}" placeholder="https://instagram.com/sualoja" /></div>
           <div class="field"><label>Descrição (opcional)</label><textarea id="loja-descricao">${d.descricao}</textarea></div>
           <div id="loja-error" class="error-text"></div>
-          <div class="modal-actions"><button class="btn" id="save-loja">Publicar loja no mapa</button></div>
+          <div class="modal-actions"><button class="btn" id="save-loja">${editing ? 'Salvar alterações' : 'Publicar loja no mapa'}</button></div>
         </div>
       </div>
     `;
@@ -1825,9 +1835,20 @@
     };
     if ($("loja-descricao")) $("loja-descricao").oninput = (e) => { state.lojaDraft.descricao = e.target.value; };
     if ($("save-loja")) $("save-loja").onclick = async () => {
-      if (!state.pickedLatLng) { $("loja-error").textContent = "Clique no mapa pra marcar onde fica a loja."; return; }
       const d = state.lojaDraft;
       if (!d.nome.trim()) { $("loja-error").textContent = "Informe o nome da loja."; return; }
+      if (state.lojaEditId) {
+        const { error } = await supabase.from("lojas").update({
+          nome: d.nome.trim(), endereco: d.endereco.trim(), descricao: d.descricao.trim(),
+          logo: d.logo || null, site_url: d.siteUrl.trim() || null
+        }).eq("id", state.lojaEditId);
+        if (error) { $("loja-error").textContent = "Erro ao salvar: " + error.message; return; }
+        state.lojaEditId = null;
+        closePickModal("loja");
+        await loadMapData();
+        return;
+      }
+      if (!state.pickedLatLng) { $("loja-error").textContent = "Clique no mapa pra marcar onde fica a loja."; return; }
       const { error } = await supabase.from("lojas").insert({
         user_id: state.session.user.id, nome: d.nome.trim(), endereco: d.endereco.trim(),
         descricao: d.descricao.trim(), logo: d.logo || null, site_url: d.siteUrl.trim() || null,
@@ -1841,6 +1862,7 @@
   function closePickModal(which){
     if (which === "post") state.showPost = false; else state.showLoja = false;
     state.pickMode = null; state.pickedLatLng = null;
+    state.lojaEditId = null;
     if (pickMarker) { pickMarker.setMap(null); pickMarker = null; }
     render();
   }
