@@ -255,7 +255,7 @@
     showPost: false,
     postDraft: { tipo:"Card Game", jogo:CARD_GAMES[0], local:"", lojaId:"", qtdJogadores:1, data:"", notas:"" },
     showLoja: false,
-    lojaDraft: { nome:"", endereco:"", descricao:"" },
+    lojaDraft: { nome:"", endereco:"", descricao:"", logo:"", siteUrl:"" },
     pickMode: null, // 'partida' | 'loja'
     pickedLatLng: null,
     showAdminPanel: false,
@@ -912,9 +912,11 @@
       const eventosNaLoja = visibleEventos().filter(e => e.loja_id === l.id).sort((a,b)=>(a.data||"9999").localeCompare(b.data||"9999"));
       const info = new google.maps.InfoWindow({ content: `
         <div class="gm-popup">
+          ${l.logo ? `<img src="${l.logo}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;" />` : ''}
           <div>
             <h4>${esc(l.nome)}</h4>
             <div class="d">${esc(l.endereco)}</div>
+            ${l.site_url ? `<div class="d"><a href="${esc(l.site_url)}" target="_blank" rel="noopener">🔗 Visitar site</a></div>` : ''}
             ${l.descricao ? `<div class="d">${esc(l.descricao)}</div>` : ''}
             ${partidasNaLoja.length > 0 ? `<div class="d">👥 <strong>${totalJogadores}</strong> jogador${totalJogadores===1?'':'es'} confirmado${totalJogadores===1?'':'s'} em ${partidasNaLoja.length} partida${partidasNaLoja.length===1?'':'s'}</div>` : `<div class="d">Nenhuma partida marcada aqui ainda</div>`}
             ${eventosNaLoja.length > 0 ? `
@@ -1481,8 +1483,16 @@
           <button class="close-x" id="close-loja">&times;</button>
           <h3 class="display">Cadastrar loja</h3>
           <p class="sub" id="pick-status">📍 Local selecionado no mapa. Preencha os dados da loja.</p>
+          <div class="field">
+            <label>Logo da loja (opcional)</label>
+            <div class="avatar-upload">
+              <img class="avatar-preview" id="loja-logo-preview" src="${d.logo || fallbackAvatar(d.nome)}" style="border-radius:8px;" />
+              <input type="file" id="loja-logo-file" accept="image/*" />
+            </div>
+          </div>
           <div class="field"><label>Nome da loja</label><input id="loja-nome" type="text" value="${d.nome.replace(/"/g,'&quot;')}" /></div>
           <div class="field"><label>Endereço</label><input id="loja-endereco" type="text" value="${d.endereco.replace(/"/g,'&quot;')}" placeholder="Rua, número, bairro, cidade" /></div>
+          <div class="field"><label>Site ou Instagram (opcional)</label><input id="loja-site-url" type="text" value="${d.siteUrl.replace(/"/g,'&quot;')}" placeholder="https://instagram.com/sualoja" /></div>
           <div class="field"><label>Descrição (opcional)</label><textarea id="loja-descricao">${d.descricao}</textarea></div>
           <div id="loja-error" class="error-text"></div>
           <div class="modal-actions"><button class="btn" id="save-loja">Publicar loja no mapa</button></div>
@@ -1791,6 +1801,28 @@
     if ($("overlay-loja")) $("overlay-loja").onclick = (e) => { if(e.target.id==="overlay-loja") closePickModal("loja"); };
     if ($("loja-nome")) $("loja-nome").oninput = (e) => { state.lojaDraft.nome = e.target.value; };
     if ($("loja-endereco")) $("loja-endereco").oninput = (e) => { state.lojaDraft.endereco = e.target.value; };
+    if ($("loja-site-url")) $("loja-site-url").oninput = (e) => { state.lojaDraft.siteUrl = e.target.value; };
+    if ($("loja-logo-file")) $("loja-logo-file").onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const size = 160;
+          canvas.width = size; canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          const minSide = Math.min(img.width, img.height);
+          const sx = (img.width - minSide)/2, sy = (img.height - minSide)/2;
+          ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+          state.lojaDraft.logo = canvas.toDataURL("image/jpeg", 0.75);
+          render();
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
     if ($("loja-descricao")) $("loja-descricao").oninput = (e) => { state.lojaDraft.descricao = e.target.value; };
     if ($("save-loja")) $("save-loja").onclick = async () => {
       if (!state.pickedLatLng) { $("loja-error").textContent = "Clique no mapa pra marcar onde fica a loja."; return; }
@@ -1798,7 +1830,8 @@
       if (!d.nome.trim()) { $("loja-error").textContent = "Informe o nome da loja."; return; }
       const { error } = await supabase.from("lojas").insert({
         user_id: state.session.user.id, nome: d.nome.trim(), endereco: d.endereco.trim(),
-        descricao: d.descricao.trim(), lat: state.pickedLatLng.lat, lng: state.pickedLatLng.lng
+        descricao: d.descricao.trim(), logo: d.logo || null, site_url: d.siteUrl.trim() || null,
+        lat: state.pickedLatLng.lat, lng: state.pickedLatLng.lng
       });
       if (error) { $("loja-error").textContent = "Erro ao publicar: " + error.message; return; }
       closePickModal("loja");
