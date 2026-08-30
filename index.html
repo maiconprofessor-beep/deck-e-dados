@@ -316,6 +316,14 @@
     if (isNaN(dt)) return d;
     return dt.toLocaleDateString('pt-BR', { day:'2-digit', month:'short' });
   }
+  function lojaMarkerIconUrl(){
+    return `data:image/svg+xml;utf8,` + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+        <polygon points="20,2 33,10 38,24 29,36 11,36 2,24 7,10" fill="#c9a24b" stroke="#132c2a" stroke-width="2"/>
+        <text x="20" y="25" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="13" fill="#132c2a">20</text>
+      </svg>`
+    );
+  }
   function todayStr(){
     const d = new Date();
     const m = String(d.getMonth()+1).padStart(2,'0');
@@ -904,8 +912,7 @@
     state.lojas.forEach(l => {
       const marker = new google.maps.Marker({
         position: { lat: l.lat, lng: l.lng }, map: gmap,
-        icon: { path: google.maps.SymbolPath.CIRCLE, fillColor:"#c9a24b", fillOpacity:1, strokeColor:"#132c2a", strokeWeight:2, scale:12 },
-        label: { text: "🎲", fontSize: "14px" }
+        icon: { url: lojaMarkerIconUrl(), scaledSize: new google.maps.Size(32,32), anchor: new google.maps.Point(16,16) }
       });
       const canDelete = state.profile && (state.profile.role === "admin" || l.user_id === state.session.user.id);
       const partidasNaLoja = state.checkins.filter(c => c.loja_id === l.id);
