@@ -250,10 +250,14 @@
     newPasswordDraft: "",
     newPasswordConfirm: "",
     resetError: "",
+    showEditProfile: false,
+    profileEditDraft: { name:"", avatar:"", games:[] },
+    profileEditError: "",
     loginDraft: { email:"", password:"" },
     signupDraft:  { email:"", password:"", name:"", avatar:"", games:[], isLojista:false, lojaNome:"", consentAceito:false },
     showPost: false,
     postDraft: { tipo:"Card Game", jogo:CARD_GAMES[0], local:"", lojaId:"", qtdJogadores:1, data:"", notas:"" },
+    postEditId: null,
     showLoja: false,
     lojaEditId: null,
     lojaDraft: { nome:"", endereco:"", descricao:"", logo:"", siteUrl:"", tipos:[] },
@@ -757,6 +761,30 @@
     if (state.profile) { render(); await loadMapData(); }
     else { state.completingProfile = true; state.showAuthModal = true; render(); }
   }
+  function openEditProfile(){
+    state.profileEditDraft = {
+      name: state.profile.name || "",
+      avatar: state.profile.avatar || "",
+      games: (state.profile.games || []).slice()
+    };
+    state.profileEditError = "";
+    state.showEditProfile = true;
+    render();
+  }
+  async function doSaveProfile(){
+    const d = state.profileEditDraft;
+    state.profileEditError = "";
+    if (!d.name.trim()) { state.profileEditError = "Preencha seu nome."; render(); return; }
+    const { error } = await supabase.from("profiles").update({
+      name: d.name.trim(), avatar: d.avatar || null, games: d.games
+    }).eq("id", state.session.user.id);
+    if (error) { state.profileEditError = "Erro ao salvar: " + error.message; render(); return; }
+    state.profile.name = d.name.trim();
+    state.profile.avatar = d.avatar || null;
+    state.profile.games = d.games;
+    state.showEditProfile = false;
+    render();
+  }
   // ===================== MAPA (Google Maps) =====================
   function loadGoogleMaps(cb){
     if (MAPS_NOT_CONFIGURED) return;
@@ -926,7 +954,7 @@
                 ${c.notas ? `<div class="d" style="font-style:italic;margin-top:4px;">"${esc(c.notas)}"</div>` : ''}
                 ${interessadosPopup.length > 0 ? `<div class="d" style="margin-top:4px;">🙋 ${interessadosPopup.length} interessado${interessadosPopup.length===1?'':'s'}</div>` : ''}
                 ${!souDonoPopup ? `<button class="del-btn" style="color:#8a7134;" onclick="window.__deckToggleInteresse('${c.id}')">${souInteressadoPopup ? '✓ Vou jogar' : 'Quero jogar'}</button>` : ''}
-                ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteCheckin('${c.id}')">Excluir</button>` : ''}
+                ${canDelete ? `<button class="del-btn" style="color:#8a7134;" onclick="window.__deckEditCheckin('${c.id}')">Editar</button> <button class="del-btn" onclick="window.__deckDeleteCheckin('${c.id}')">Excluir</button>` : ''}
               </div>
             </div>
           `});
@@ -957,7 +985,7 @@
                 <div style="font-size:11px;color:#8a7134;">${esc(c.jogo)} &middot; 👥 ${qtd} &middot; ${fmtDate(c.data)}</div>
                 ${c.notas ? `<div style="font-size:11px;color:#555;font-style:italic;">"${esc(c.notas)}"</div>` : ''}
               </div>
-              ${canDelete ? `<button class="del-btn" onclick="window.__deckDeleteCheckin('${c.id}')">Excluir</button>` : ''}
+              ${canDelete ? `<button class="del-btn" style="color:#8a7134;" onclick="window.__deckEditCheckin('${c.id}')">Editar</button> <button class="del-btn" onclick="window.__deckDeleteCheckin('${c.id}')">Excluir</button>` : ''}
             </div>
           `;
         }).join("");
@@ -1100,6 +1128,18 @@
     if (error) { alert("Erro ao excluir: " + error.message); return; }
     await loadMapData();
   };
+  window.__deckEditCheckin = function(id){
+    const c = state.checkins.find(x => x.id === id);
+    if (!c) return;
+    state.postDraft = {
+      tipo: c.tipo || "Card Game", jogo: c.jogo, local: c.local || "",
+      lojaId: c.loja_id || "", qtdJogadores: c.qtd_jogadores || 1,
+      data: c.data || "", notas: c.notas || ""
+    };
+    state.postEditId = id;
+    state.showPost = true;
+    render();
+  };
   window.__deckDeleteLoja = async function(id){
     const { error } = await supabase.from("lojas").delete().eq("id", id);
     if (error) { alert("Erro ao excluir loja: " + error.message); return; }
@@ -1197,6 +1237,7 @@
             <span style="font-size:13px;">${esc(state.profile.name)}</span>
             <span class="role-badge">${state.profile.role}</span>
             ${state.profile.lojista_pendente ? `<span class="role-badge" style="background:var(--red);color:#fff;">pedido de lojista pendente</span>` : ''}
+            <button class="btn ghost small" id="btn-edit-profile">✎ Perfil</button>
             <button class="btn ghost small" id="btn-friends">👥 Amigos${(pendingReceivedCount() + totalUnreadDms()) > 0 ? ` (${pendingReceivedCount() + totalUnreadDms()})` : ''}</button>
             ${state.profile.role === "admin" ? `<button class="btn ghost small" id="btn-admin">Painel admin${state.allProfiles.filter(p=>p.lojista_pendente).length > 0 ? ` (${state.allProfiles.filter(p=>p.lojista_pendente).length})` : ''}</button>` : ''}
             <button class="btn ghost small" id="btn-logout">Sair</button>
@@ -1274,6 +1315,7 @@
               const interessados = interessadosDoCheckin(c.id);
               const souInteressado = jaTenhoInteresse(c.id);
               const souDono = state.session && c.user_id === state.session.user.id;
+              const podeGerenciar = souDono || (state.profile && state.profile.role === "admin");
               return `
               <div class="checkin-row" style="flex-wrap:wrap;">
                 <img src="${avatarDoUsuario(c.user_id, nomeDoUsuario(c.user_id))}" alt="" />
@@ -1284,7 +1326,12 @@
                   ${c.notas ? `<div style="font-style:italic;margin-top:2px;">"${esc(c.notas)}"</div>` : ''}
                   ${interessados.length > 0 ? `<div style="margin-top:6px;font-size:12px;color:var(--gold);">🙋 ${interessados.length} interessado${interessados.length===1?'':'s'}: ${interessados.map(i => esc(nomeDoUsuario(i.user_id))).join(", ")}</div>` : ''}
                 </div>
-                ${!souDono ? `<button class="btn ${souInteressado?'ghost':''} small" onclick="window.__deckToggleInteresse('${c.id}')">${souInteressado ? '✓ Vou jogar' : 'Quero jogar'}</button>` : ''}
+                ${!podeGerenciar ? `<button class="btn ${souInteressado?'ghost':''} small" onclick="window.__deckToggleInteresse('${c.id}')">${souInteressado ? '✓ Vou jogar' : 'Quero jogar'}</button>` : `
+                  <div style="display:flex;gap:8px;">
+                    <button class="btn ghost small" onclick="window.__deckEditCheckin('${c.id}')">Editar</button>
+                    <button class="btn ghost small" style="border-color:var(--red);color:var(--red);" onclick="window.__deckDeleteCheckin('${c.id}')">Excluir</button>
+                  </div>
+                `}
               </div>
             `;
             }).join("")}
@@ -1364,6 +1411,7 @@
       ${state.showAdminPanel ? renderAdminPanel() : ''}
       ${state.showFriendsPanel ? renderFriendsPanel() : ''}
       ${state.showDmModal ? renderDmModal() : ''}
+      ${state.showEditProfile ? renderEditProfileModal() : ''}
       <footer>
         Deck e Dados &middot; feito por jogadores, pra jogadores
         <div class="social-links">
@@ -1467,13 +1515,14 @@
   }
   function renderPostModal(){
     const d = state.postDraft;
+    const editing = !!state.postEditId;
     const games = gamesByTipo(d.tipo);
     return `
       <div class="overlay" id="overlay-post">
         <div class="modal">
           <button class="close-x" id="close-post">&times;</button>
-          <h3 class="display">Marcar partida</h3>
-          <p class="sub" id="pick-status">📍 Local selecionado no mapa. Preencha os dados da partida.</p>
+          <h3 class="display">${editing ? 'Editar partida' : 'Marcar partida'}</h3>
+          <p class="sub" id="pick-status">${editing ? 'Atualize os dados da partida.' : '📍 Local selecionado no mapa. Preencha os dados da partida.'}</p>
           <div class="field"><label>Tipo</label>
             <select id="post-tipo">
               <option value="Card Game" ${d.tipo==='Card Game'?'selected':''}>Card Game</option>
@@ -1497,7 +1546,7 @@
           <div class="field"><label>Data</label><input id="post-data" type="date" value="${d.data}" /></div>
           <div class="field"><label>Observações (opcional)</label><textarea id="post-notas">${d.notas}</textarea></div>
           <div id="post-error" class="error-text"></div>
-          <div class="modal-actions"><button class="btn" id="save-post">Publicar no mapa</button></div>
+          <div class="modal-actions"><button class="btn" id="save-post">${editing ? 'Salvar alterações' : 'Publicar no mapa'}</button></div>
         </div>
       </div>
     `;
@@ -1584,6 +1633,31 @@
             <input id="dm-input" type="text" placeholder="Escreva uma mensagem..." maxlength="500" />
             <button class="btn" id="btn-dm-send">Enviar</button>
           </div>
+        </div>
+      </div>
+    `;
+  }
+  function renderEditProfileModal(){
+    const d = state.profileEditDraft;
+    return `
+      <div class="overlay" id="overlay-edit-profile">
+        <div class="modal">
+          <button class="close-x" id="close-edit-profile">&times;</button>
+          <h3 class="display">Editar perfil</h3>
+          <div class="field">
+            <label>Sua foto</label>
+            <div class="avatar-upload">
+              <img class="avatar-preview" id="edit-avatar-preview" src="${d.avatar || fallbackAvatar(d.name)}" />
+              <input type="file" id="edit-avatar-file" accept="image/*" />
+            </div>
+          </div>
+          <div class="field"><label>Seu nome ou apelido</label><input id="edit-profile-name" type="text" value="${d.name.replace(/"/g,'&quot;')}" /></div>
+          <div class="field">
+            <label>Você joga...</label>
+            <div class="chip-group">${ALL_GAMES.map(g => `<div class="chip ${d.games.includes(g)?'selected':''}" data-edit-game="${g}">${g}</div>`).join("")}</div>
+          </div>
+          ${state.profileEditError ? `<div class="error-text">${state.profileEditError}</div>` : ''}
+          <div class="modal-actions"><button class="btn" id="btn-save-profile">Salvar alterações</button></div>
         </div>
       </div>
     `;
@@ -1878,6 +1952,40 @@
     if ($("overlay-dm")) $("overlay-dm").onclick = (e) => { if(e.target.id==="overlay-dm"){ state.showDmModal=false; state.dmActiveFriend=null; render(); } };
     if ($("btn-dm-send")) $("btn-dm-send").onclick = sendDm;
     if ($("dm-input")) $("dm-input").onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); sendDm(); } };
+    if ($("btn-edit-profile")) $("btn-edit-profile").onclick = openEditProfile;
+    if ($("close-edit-profile")) $("close-edit-profile").onclick = () => { state.showEditProfile = false; render(); };
+    if ($("overlay-edit-profile")) $("overlay-edit-profile").onclick = (e) => { if(e.target.id==="overlay-edit-profile"){ state.showEditProfile=false; render(); } };
+    if ($("edit-profile-name")) $("edit-profile-name").oninput = (e) => { state.profileEditDraft.name = e.target.value; };
+    if ($("edit-avatar-file")) $("edit-avatar-file").onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const size = 120;
+          canvas.width = size; canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          const minSide = Math.min(img.width, img.height);
+          const sx = (img.width - minSide)/2, sy = (img.height - minSide)/2;
+          ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+          state.profileEditDraft.avatar = canvas.toDataURL("image/jpeg", 0.75);
+          render();
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+    document.querySelectorAll("[data-edit-game]").forEach(el => {
+      el.onclick = () => {
+        const g = el.getAttribute("data-edit-game");
+        const idx = state.profileEditDraft.games.indexOf(g);
+        if (idx>-1) state.profileEditDraft.games.splice(idx,1); else state.profileEditDraft.games.push(g);
+        render();
+      };
+    });
+    if ($("btn-save-profile")) $("btn-save-profile").onclick = doSaveProfile;
     if ($("btn-complete-submit")) $("btn-complete-submit").onclick = doCompleteProfile;
     if ($("btn-fab-partida")) $("btn-fab-partida").onclick = () => { state.pickMode = "partida"; state.pickedLatLng = null; render(); };
     if ($("btn-fab-loja")) $("btn-fab-loja").onclick = () => { state.pickMode = "loja"; state.pickedLatLng = null; render(); };
@@ -1923,9 +2031,20 @@
     if ($("post-data")) $("post-data").oninput = (e) => { state.postDraft.data = e.target.value; };
     if ($("post-notas")) $("post-notas").oninput = (e) => { state.postDraft.notas = e.target.value; };
     if ($("save-post")) $("save-post").onclick = async () => {
-      if (!state.pickedLatLng) { $("post-error").textContent = "Clique no mapa pra escolher o local antes de publicar."; return; }
       const d = state.postDraft;
       const qtd = parseInt(d.qtdJogadores, 10) || 1;
+      if (state.postEditId) {
+        const { error } = await supabase.from("checkins").update({
+          tipo: d.tipo, jogo: d.jogo, local: d.local.trim(), loja_id: d.lojaId || null,
+          qtd_jogadores: qtd, data: d.data || null, notas: d.notas.trim()
+        }).eq("id", state.postEditId);
+        if (error) { $("post-error").textContent = "Erro ao salvar: " + error.message; return; }
+        state.postEditId = null;
+        closePickModal("post");
+        await loadMapData();
+        return;
+      }
+      if (!state.pickedLatLng) { $("post-error").textContent = "Clique no mapa pra escolher o local antes de publicar."; return; }
       const { error } = await supabase.from("checkins").insert({
         user_id: state.session.user.id, tipo: d.tipo, jogo: d.jogo, local: d.local.trim(),
         loja_id: d.lojaId || null, qtd_jogadores: qtd,
@@ -1990,7 +2109,7 @@
   function closePickModal(which){
     if (which === "post") state.showPost = false; else state.showLoja = false;
     state.pickMode = null; state.pickedLatLng = null;
-    state.lojaEditId = null;
+    state.lojaEditId = null; state.postEditId = null;
     if (pickMarker) { pickMarker.setMap(null); pickMarker = null; }
     render();
   }
