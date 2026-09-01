@@ -1496,6 +1496,15 @@
       <div class="field">
         <label>Você joga...</label>
         <div class="chip-group">${ALL_GAMES.map(g => `<div class="chip ${d.games.includes(g)?'selected':''}" data-game="${g}">${g}</div>`).join("")}</div>
+        ${d.games.filter(g => !ALL_GAMES.includes(g)).length > 0 ? `
+          <div class="chip-group" style="margin-top:8px;">
+            ${d.games.filter(g => !ALL_GAMES.includes(g)).map(g => `<div class="chip selected" data-game="${g}">${g} ✕</div>`).join("")}
+          </div>
+        ` : ''}
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <input id="signup-custom-game" type="text" placeholder="Outro jogo (não está na lista)" style="flex:1;" />
+          <button type="button" class="btn small ghost" id="signup-add-custom-game">Adicionar</button>
+        </div>
       </div>
       <div class="field checkbox">
         <input type="checkbox" id="signup-lojista" ${d.isLojista?'checked':''} />
@@ -1655,6 +1664,15 @@
           <div class="field">
             <label>Você joga...</label>
             <div class="chip-group">${ALL_GAMES.map(g => `<div class="chip ${d.games.includes(g)?'selected':''}" data-edit-game="${g}">${g}</div>`).join("")}</div>
+            ${d.games.filter(g => !ALL_GAMES.includes(g)).length > 0 ? `
+              <div class="chip-group" style="margin-top:8px;">
+                ${d.games.filter(g => !ALL_GAMES.includes(g)).map(g => `<div class="chip selected" data-edit-game="${g}">${g} ✕</div>`).join("")}
+              </div>
+            ` : ''}
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <input id="edit-custom-game" type="text" placeholder="Outro jogo (não está na lista)" style="flex:1;" />
+              <button type="button" class="btn small ghost" id="edit-add-custom-game">Adicionar</button>
+            </div>
           </div>
           ${state.profileEditError ? `<div class="error-text">${state.profileEditError}</div>` : ''}
           <div class="modal-actions"><button class="btn" id="btn-save-profile">Salvar alterações</button></div>
@@ -1924,6 +1942,14 @@
         render();
       };
     });
+    if ($("signup-add-custom-game")) $("signup-add-custom-game").onclick = () => {
+      const input = $("signup-custom-game");
+      const val = (input.value || "").trim();
+      if (!val) return;
+      if (!state.signupDraft.games.includes(val)) state.signupDraft.games.push(val);
+      render();
+    };
+    if ($("signup-custom-game")) $("signup-custom-game").onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); $("signup-add-custom-game").click(); } };
     document.querySelectorAll("[data-loja-tipo]").forEach(el => {
       el.onclick = () => {
         const t = el.getAttribute("data-loja-tipo");
@@ -1985,6 +2011,14 @@
         render();
       };
     });
+    if ($("edit-add-custom-game")) $("edit-add-custom-game").onclick = () => {
+      const input = $("edit-custom-game");
+      const val = (input.value || "").trim();
+      if (!val) return;
+      if (!state.profileEditDraft.games.includes(val)) state.profileEditDraft.games.push(val);
+      render();
+    };
+    if ($("edit-custom-game")) $("edit-custom-game").onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); $("edit-add-custom-game").click(); } };
     if ($("btn-save-profile")) $("btn-save-profile").onclick = doSaveProfile;
     if ($("btn-complete-submit")) $("btn-complete-submit").onclick = doCompleteProfile;
     if ($("btn-fab-partida")) $("btn-fab-partida").onclick = () => { state.pickMode = "partida"; state.pickedLatLng = null; render(); };
