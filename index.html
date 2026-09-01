@@ -1710,6 +1710,16 @@
           <button class="close-x" id="close-admin">&times;</button>
           <h3 class="display">Painel admin</h3>
           <p class="sub">Altere o papel, remova ou bloqueie o e-mail de qualquer usuário.</p>
+          <div style="display:flex;gap:20px;margin-bottom:20px;">
+            <div style="flex:1;background:var(--felt);border:1px solid var(--line);border-radius:8px;padding:14px;text-align:center;">
+              <div style="font-size:26px;font-weight:700;color:var(--gold);">${state.allProfiles.length}</div>
+              <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">jogadores cadastrados</div>
+            </div>
+            <div style="flex:1;background:var(--felt);border:1px solid var(--line);border-radius:8px;padding:14px;text-align:center;">
+              <div style="font-size:26px;font-weight:700;color:var(--gold);">${state.lojas.length}</div>
+              <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">lojas cadastradas</div>
+            </div>
+          </div>
           ${pendentes.length > 0 ? `
             <div class="list-title">🏪 Pedidos de lojista pendentes</div>
             ${pendentes.map(p => `
