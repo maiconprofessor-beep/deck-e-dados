@@ -274,6 +274,7 @@
     eventos: [],
     interesses: [],
     inscricoesEventos: [],
+    lojaBannerIndex: 0,
     showEvento: false,
     eventoDraft: { lojaId:"", titulo:"", jogo:"", data:"", hora:"", descricao:"" }
   };
@@ -282,6 +283,7 @@
   let chatChannel = null;
   let mapChannel = null;
   let dmChannel = null;
+  let lojaBannerTimer = null;
   let searchResultMarker = null;
   let checkinMarkers = [], lojaMarkers = [], pickMarker = null, activeInfoWindow = null;
   function svgLogo(size){
@@ -442,6 +444,7 @@
     await loadFriendRequests();
     await loadDmMessages();
     subscribeDm();
+    startLojaBannerTimer();
     if (state.profile && state.profile.role === "admin") await loadAllProfiles();
   }
   // ===================== CHAT AO VIVO =====================
@@ -722,6 +725,7 @@
     if (chatChannel) { supabase.removeChannel(chatChannel); chatChannel = null; }
     if (mapChannel) { supabase.removeChannel(mapChannel); mapChannel = null; }
     if (dmChannel) { supabase.removeChannel(dmChannel); dmChannel = null; }
+    if (lojaBannerTimer) { clearInterval(lojaBannerTimer); lojaBannerTimer = null; }
     state.session = null; state.profile = null; state.checkins = []; state.lojas = [];
     render();
   }
@@ -1101,6 +1105,31 @@
     if (error) { alert("Erro ao excluir loja: " + error.message); return; }
     await loadMapData();
   };
+  function lojasComBanner(){
+    return state.lojas.filter(l => l.logo && l.site_url);
+  }
+  function startLojaBannerTimer(){
+    if (lojaBannerTimer) return;
+    lojaBannerTimer = setInterval(() => {
+      const anunciantes = lojasComBanner();
+      if (anunciantes.length > 1) {
+        state.lojaBannerIndex = (state.lojaBannerIndex + 1) % anunciantes.length;
+        render();
+      }
+    }, 4500);
+  }
+  function renderLojaBanner(){
+    const anunciantes = lojasComBanner();
+    if (anunciantes.length === 0) return '';
+    const idx = state.lojaBannerIndex % anunciantes.length;
+    const l = anunciantes[idx];
+    return `
+      <a href="${esc(l.site_url)}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;justify-content:center;background:var(--felt-2);border-bottom:1px solid var(--line);padding:8px 16px;text-decoration:none;color:var(--chalk);font-size:13px;">
+        <img src="${l.logo}" style="width:26px;height:26px;border-radius:50%;object-fit:cover;border:1.5px solid var(--gold);flex-shrink:0;" />
+        <span><strong style="color:var(--gold);">${esc(l.nome)}</strong> — visite o site</span>
+      </a>
+    `;
+  }
   window.__deckEditLoja = function(id){
     const l = state.lojas.find(x => x.id === id);
     if (!l) return;
@@ -1177,6 +1206,7 @@
           `}
         </div>
       </nav>
+      ${logged ? renderLojaBanner() : ''}
       <div class="hero">
         <div class="eyebrow"><span class="pips"><span class="pip"></span><span class="pip"></span><span class="pip"></span></span> comunidade brasileira de mesa</div>
         <h1 class="display">Todo card game, toda miniatura,<br/><span>um mapa só</span></h1>
