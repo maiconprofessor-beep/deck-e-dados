@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RPG Solo | Deck e Dados</title>
+<meta name="description" content="RPG Solo no Deck e Dados: livros-jogos para jogar sozinho, direto no navegador, com dados, combates e Folha de Aventuras. Grátis.">
+<meta property="og:title" content="RPG Solo | Deck e Dados">
+<meta property="og:description" content="Livros-jogos para jogar sozinho, direto no navegador. Escolha sua aventura.">
+<meta property="og:image" content="https://deckedados.com.br/og-image.jpg">
+<meta property="og:url" content="https://deckedados.com.br/rpgsolo.html">
+<link rel="icon" href="/logo-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@700;800&family=Alegreya:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+/* Layout: estante de livros-jogos sobre o feltro do Deck e Dados — cada aventura é uma capa com a ficha ao lado. Tema escuro único, como o site. */
+:root{
+  --felt:#132c2a; --felt-2:#1b3a37; --felt-3:#234845; --ink:#f1ede2; --ink-2:#a9bab5; --rule:rgba(241,237,226,0.14);
+  --gold:#c9a24b; --gold-dim:#8a7134; --ok:#7cc59e;
+  --display:"Alegreya SC", Georgia, "Times New Roman", serif;
+  --body:"Alegreya", Georgia, "Times New Roman", serif;
+  --mono:"IBM Plex Mono", "Courier New", monospace;
+  --ui:-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--felt);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 56px;
+  background-image:radial-gradient(circle at 15% 0%,rgba(201,162,75,0.08),transparent 45%),radial-gradient(circle at 90% 10%,rgba(179,58,58,0.08),transparent 40%)}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.wrap{max-width:1040px;margin:0 auto}
+
+.site-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:14px;border-bottom:1px solid var(--rule)}
+.site-brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:1.05rem}
+.site-brand img{width:32px;height:32px;border-radius:50%;object-fit:cover}
+.site-links{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-family:var(--ui);font-size:.85rem;color:var(--ink-2)}
+.site-links b{color:var(--ink);font-weight:600}
+
+.intro{padding-block:48px 36px;max-width:62ch}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin:0 0 12px;display:flex;align-items:center;gap:10px}
+.pips{display:inline-flex;gap:4px}.pip{width:6px;height:6px;border-radius:50%;background:var(--gold)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(2.4rem,6vw,3.6rem);line-height:1;margin:0 0 16px;text-wrap:balance}
+.intro p{margin:0;color:var(--ink-2);font-size:1.1rem}
+.how{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:18px;font-family:var(--mono);font-size:.78rem;color:var(--ink-2)}
+.how span::before{content:"◆";color:var(--gold-dim);margin-right:8px;font-size:.7em;vertical-align:.15em}
+
+.shelf-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--rule);padding-bottom:10px;margin-bottom:24px}
+.shelf-head h2{font-family:var(--display);font-weight:700;font-size:1.3rem;margin:0}
+.shelf-head span{font-family:var(--mono);font-size:.75rem;color:var(--ink-2)}
+.shelf{display:grid;gap:28px}
+
+.book{display:grid;grid-template-columns:240px minmax(0,1fr);gap:32px;align-items:start;padding:22px;border:1px solid var(--gold-dim);border-radius:10px;background:rgba(27,58,55,0.55)}
+.cover{position:relative;aspect-ratio:2/3;max-width:100%;border-radius:4px 10px 10px 4px;overflow:hidden;text-decoration:none;display:block;
+  box-shadow:inset 6px 0 0 rgba(0,0,0,.35),0 14px 30px rgba(0,0,0,.35);transition:transform .25s}
+.cover:hover{transform:translateY(-3px) rotate(-.6deg)}
+.cover canvas{position:absolute;inset:0;width:100%;height:100%}
+.cover .ct{position:absolute;left:0;right:0;top:0;padding:18px 16px;text-align:center}
+.cover .ct small{display:block;font-family:var(--mono);font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(241,237,226,.7)}
+.cover .ct strong{display:block;font-family:var(--display);font-weight:800;font-size:1.55rem;line-height:1.05;margin-top:8px;color:var(--ink);text-shadow:0 2px 8px rgba(0,0,0,.6)}
+.cover .cb{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+
+.info{min-width:0}
+.genre{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 6px}
+.info h3{font-family:var(--display);font-weight:800;font-size:2rem;line-height:1.05;margin:0 0 6px}
+.byline{margin:0 0 14px;font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;color:var(--ink-2)}
+.byline b{color:var(--gold);font-weight:500}
+.info p{margin:0 0 16px;max-width:60ch}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin:0 0 18px}
+.fact{padding:10px 12px 10px 0}
+.fact dt{font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.fact dd{margin:2px 0 0;font-family:var(--ui);font-size:.92rem;font-variant-numeric:tabular-nums}
+
+.status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 16px;font-family:var(--ui);font-size:.88rem;color:var(--ink-2);min-height:1.4em}
+.chip{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:4px;border:1px solid currentColor}
+.chip.going{color:var(--gold)}
+.chip.new{color:var(--ink-2)}
+
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-block;background:var(--gold);color:var(--felt);border:1px solid var(--gold);padding:12px 24px;border-radius:6px;font-family:var(--ui);font-weight:700;font-size:.95rem;text-decoration:none}
+.btn:hover{filter:brightness(1.1)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--gold-dim)}
+
+.coming{margin-top:28px;padding:18px 22px;border:1px dashed var(--rule);border-radius:10px;color:var(--ink-2);font-size:.98rem}
+.coming b{color:var(--ink);font-family:var(--display)}
+
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--rule);font-family:var(--ui);font-size:.82rem;color:var(--ink-2);display:flex;gap:14px;flex-wrap:wrap}
+
+@media (max-width:720px){
+  .book{grid-template-columns:minmax(0,1fr);gap:20px;padding:16px}
+  .cover{max-width:220px;margin:0 auto;width:100%}
+  .info h3{font-size:1.7rem}
+}
+@media (prefers-reduced-motion:reduce){.cover{transition:none}.cover:hover{transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="site-nav">
+    <a class="site-brand" href="/"><img src="/logo-icon.png" alt="">Deck e Dados</a>
+    <div class="site-links"><span id="conta">Verificando login…</span><a href="/">Voltar ao site</a></div>
+  </nav>
+
+  <header class="intro">
+    <p class="eyebrow"><span class="pips"><span class="pip"></span><span class="pip"></span><span class="pip"></span></span>RPG Solo</p>
+    <h1>Escolha sua aventura</h1>
+    <p>Livros-jogos para jogar sozinho, direto no navegador. Você lê, decide o caminho e rola os dados. A Folha de Aventuras se preenche sozinha.</p>
+    <div class="how"><span>Grátis</span><span>Sem instalar nada</span><span>Funciona no celular</span><span>Logado, o progresso fica na sua conta</span></div>
+  </header>
+
+  <section aria-labelledby="estante">
+    <div class="shelf-head"><h2 id="estante">Aventuras disponíveis</h2><span id="contagem"></span></div>
+    <div class="shelf" id="shelf"></div>
+    <p class="coming"><b>Novas aventuras em breve.</b> Este espaço vai crescer com outras histórias de RPG Solo feitas para a comunidade.</p>
+  </section>
+
+  <footer>
+    <span>Deck e Dados · feito por jogadores, pra jogadores</span>
+    <a href="/privacidade.html">Privacidade</a>
+    <a href="/termos.html">Termos de uso</a>
+  </footer>
+</div>
+
+<script>
+(function(){
+/* =====================================================================
+   CATÁLOGO DO RPG SOLO
+   Para adicionar uma aventura nova:
+   1. Coloque o arquivo do jogo na pasta /rpgsolo/ (ex.: /rpgsolo/minha-aventura.html)
+   2. Copie um bloco abaixo e ajuste os dados. "id" precisa ser igual
+      ao AVENTURA usado dentro do arquivo do jogo.
+   ===================================================================== */
+const AVENTURAS = [
+  {
+    id: "castelo-de-vargrav",
+    titulo: "O Castelo de Vargrav",
+    autor: "Maicon Kuzer",
+    url: "/rpgsolo/castelo-de-vargrav.html",
+    genero: "Terror gótico",
+    resumo: "O inverno chegou cedo ao vale de Kessel, e a curandeira do vilarejo de Dravna foi levada pela carruagem sem cocheiro. Suba até o castelo da Baronesa Isolde Vargrav, que governa o vale há trezentos anos, e traga Mirela de volta antes da lua cheia.",
+    secoes: 400,
+    finais: 3,
+    duracao: "1 a 2 horas",
+    dificuldade: "Difícil",
+    atributos: "Habilidade, Energia, Sorte e Fé",
+    chaveLocal: "vargrav.progresso",
+    capa: { tipo: "castelo", ceu: ["#0d1a24", "#3a1820"], lua: "#e8dcc0", torre: "#070d0f" }
+  },
+  {
+    id: "farol-da-mare-negra",
+    titulo: "O Farol da Maré Negra",
+    autor: "Maicon Kuzer",
+    url: "/rpgsolo/farol-da-mare-negra.html",
+    genero: "Aventura no mar",
+    resumo: "Há nove noites, o farol do Rochedo do Corvo brilha com uma luz verde que atrai os barcos para os recifes. A frota de pesca de Porto Salgado volta antes do amanhecer. Atravesse a baía, enfrente o que mora na ilha e devolva a luz amarela ao farol antes que seja tarde.",
+    secoes: 400,
+    finais: 5,
+    duracao: "1 a 2 horas",
+    dificuldade: "Média",
+    atributos: "Habilidade, Energia e Sorte, com uma poção à escolha",
+    chaveLocal: "farol.progresso",
+    capa: { tipo: "farol", ceu: ["#06141c", "#123a3f"], lua: "#e9e4cf", torre: "#060c0e", luz: "#5fe39a" }
+  }
+];
+/* ===================================================================== */
+
+const SUPABASE_URL="https://baoquuhwoqftboziight.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhb3F1dWh3b3FmdGJvemlpZ2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0NTE1MjcsImV4cCI6MjEwMzAyNzUyN30.5ut-Gd9OWdy99sX2YnUQPimssfYCbtn0cLjBRERXO-w";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const progresso={}; // id -> {sec, ene, quando}
+
+function lerLocal(a){
+  try{
+    const j=JSON.parse(localStorage.getItem(a.chaveLocal)||'null');
+    if(j&&!j.fim&&j.S&&j.S.phase==='play'&&j.S.char&&!j.S.dead) return {sec:j.S.sec,ene:j.S.char.ene,quando:j.salvo_em?Date.parse(j.salvo_em):0};
+  }catch(e){}
+  return null;
+}
+function quandoTexto(t){
+  if(!t) return '';
+  const d=Math.round((Date.now()-t)/86400000);
+  if(d<=0) return 'hoje'; if(d===1) return 'ontem'; return `há ${d} dias`;
+}
+
+function render(){
+  $('#contagem').textContent=`${AVENTURAS.length} ${AVENTURAS.length===1?'aventura':'aventuras'}`;
+  $('#shelf').innerHTML=AVENTURAS.map(a=>{
+    const p=progresso[a.id];
+    const status=p
+      ? `<span class="chip going">Em andamento</span><span>Seção ${esc(p.sec)} · Energia ${esc(p.ene)}${p.quando?` · jogado ${quandoTexto(p.quando)}`:''}</span>`
+      : `<span class="chip new">Não iniciada</span>`;
+    return `<article class="book">
+      <a class="cover" href="${esc(a.url)}" aria-label="Jogar ${esc(a.titulo)}">
+        <canvas data-capa="${esc(a.id)}"></canvas>
+        <span class="ct"><small>RPG Solo</small><strong>${esc(a.titulo)}</strong></span>
+        <span class="cb">${a.autor?esc(a.autor):a.secoes+' seções'}</span>
+      </a>
+      <div class="info">
+        <p class="genre">${esc(a.genero)}</p>
+        <h3>${esc(a.titulo)}</h3>
+        ${a.autor?`<p class="byline">Escrito por <b>${esc(a.autor)}</b></p>`:''}
+        <p>${esc(a.resumo)}</p>
+        <dl class="facts">
+          <div class="fact"><dt>Seções</dt><dd>${a.secoes}</dd></div>
+          <div class="fact"><dt>Finais</dt><dd>${a.finais}</dd></div>
+          <div class="fact"><dt>Duração</dt><dd>${esc(a.duracao)}</dd></div>
+          <div class="fact"><dt>Dificuldade</dt><dd>${esc(a.dificuldade)}</dd></div>
+        </dl>
+        <p class="status">${status}</p>
+        <div class="actions">
+          <a class="btn" href="${esc(a.url)}">${p?'Continuar aventura':'Começar aventura'}</a>
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+  desenharCapas();
+}
+
+/* Capas desenhadas na hora: céu, lua, montanhas e castelo em silhueta. */
+function desenharCapas(){
+  document.querySelectorAll('canvas[data-capa]').forEach(cv=>{
+    const a=AVENTURAS.find(x=>x.id===cv.dataset.capa); if(!a) return;
+    const r=cv.getBoundingClientRect(), dpr=Math.min(2,window.devicePixelRatio||1);
+    const W=cv.width=Math.max(1,Math.round(r.width*dpr)), H=cv.height=Math.max(1,Math.round(r.height*dpr));
+    const g=cv.getContext('2d'), c=a.capa;
+    if(c.tipo==='farol'){ capaFarol(g,W,H,dpr,c); return; }
+    let seed=7; const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
+    const sky=g.createLinearGradient(0,0,0,H); sky.addColorStop(0,c.ceu[0]); sky.addColorStop(1,c.ceu[1]); g.fillStyle=sky; g.fillRect(0,0,W,H);
+    for(let i=0;i<70;i++){g.fillStyle=`rgba(241,237,226,${.15+rnd()*.5})`;g.fillRect(rnd()*W,rnd()*H*.6,dpr*(rnd()<.85?1:1.6),dpr*(rnd()<.85?1:1.6));}
+    const mx=W*.68,my=H*.42,mr=W*.13;
+    const halo=g.createRadialGradient(mx,my,mr*.6,mx,my,mr*3); halo.addColorStop(0,'rgba(232,220,192,.25)'); halo.addColorStop(1,'rgba(232,220,192,0)');
+    g.fillStyle=halo; g.fillRect(0,0,W,H);
+    g.fillStyle=c.lua; g.beginPath(); g.arc(mx,my,mr,0,Math.PI*2); g.fill();
+    g.fillStyle='rgba(0,0,0,.08)'; g.beginPath(); g.arc(mx-mr*.3,my-mr*.2,mr*.25,0,Math.PI*2); g.fill();
+    g.fillStyle='rgba(10,20,22,.85)'; g.beginPath(); g.moveTo(0,H*.78);
+    for(let x=0;x<=W;x+=W/12) g.lineTo(x,H*(.66+rnd()*.12)); g.lineTo(W,H); g.lineTo(0,H); g.fill();
+    g.fillStyle=c.torre; const base=H*.74, u=W/100;
+    const torre=(x,w,h,ponta)=>{g.fillRect(x*u,base-h*u,w*u,h*u+H);g.beginPath();g.moveTo((x-1.5)*u,base-h*u);g.lineTo((x+w/2)*u,base-(h+ponta)*u);g.lineTo((x+w+1.5)*u,base-h*u);g.fill();};
+    g.fillRect(14*u,base-26*u,62*u,40*u);
+    for(let x=14;x<76;x+=6) g.fillRect(x*u,base-30*u,3*u,4*u);
+    torre(10,10,58,16); torre(30,8,44,12); torre(48,12,70,20); torre(68,9,50,14);
+    g.fillStyle='rgba(232,190,110,.85)';
+    [[52,base-50*u],[13.5,base-40*u],[71,base-34*u],[33,base-30*u]].forEach(([x,y])=>{g.fillRect(x*u,y,1.8*u,3*u);});
+    g.fillStyle='#0a1416'; g.beginPath(); g.moveTo(0,H*.86);
+    for(let x=0;x<=W;x+=W/8) g.lineTo(x,H*(.84+rnd()*.06)); g.lineTo(W,H); g.lineTo(0,H); g.fill();
+    const fog=g.createLinearGradient(0,H*.7,0,H); fog.addColorStop(0,'rgba(169,186,181,0)'); fog.addColorStop(1,'rgba(169,186,181,.18)'); g.fillStyle=fog; g.fillRect(0,H*.7,W,H*.3);
+    const vig=g.createLinearGradient(0,0,0,H*.35); vig.addColorStop(0,'rgba(0,0,0,.55)'); vig.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=vig; g.fillRect(0,0,W,H*.35);
+  });
+}
+
+function capaFarol(g,W,H,dpr,c){
+  let seed=11; const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
+  const sky=g.createLinearGradient(0,0,0,H*.62); sky.addColorStop(0,c.ceu[0]); sky.addColorStop(1,c.ceu[1]); g.fillStyle=sky; g.fillRect(0,0,W,H);
+  for(let i=0;i<60;i++){g.fillStyle=`rgba(233,228,207,${.15+rnd()*.5})`;g.fillRect(rnd()*W,rnd()*H*.5,dpr,dpr);}
+  const mx=W*.22,my=H*.42,mr=W*.065; g.fillStyle=c.lua; g.beginPath(); g.arc(mx,my,mr,0,Math.PI*2); g.fill();
+  const sea=g.createLinearGradient(0,H*.6,0,H); sea.addColorStop(0,'#0b2a2e'); sea.addColorStop(1,'#03090b'); g.fillStyle=sea; g.fillRect(0,H*.6,W,H*.4);
+  g.strokeStyle='rgba(233,228,207,.18)'; g.lineWidth=dpr;
+  for(let i=0;i<14;i++){const y=H*(.63+rnd()*.33),x=rnd()*W; g.beginPath(); g.moveTo(x,y); g.lineTo(x+W*(.05+rnd()*.12),y); g.stroke();}
+  g.fillStyle='rgba(233,228,207,.35)'; g.fillRect(mx-mr*.15,H*.61,mr*.3,H*.25);
+  const u=W/100, tx=64*u, base=H*.6;
+  g.fillStyle=c.torre; g.beginPath(); g.moveTo(38*u,H*.66); g.lineTo(46*u,H*.58); g.lineTo(58*u,H*.55); g.lineTo(80*u,H*.56); g.lineTo(90*u,H*.64); g.lineTo(96*u,H*.66); g.closePath(); g.fill();
+  const tb=base-2*u, top=H*.40, wb=8*u, wt=5.5*u;
+  const bx=x=>x; g.fillStyle='#d9d3bf'; g.beginPath(); g.moveTo(tx-wb,tb); g.lineTo(tx-wt,top); g.lineTo(tx+wt,top); g.lineTo(tx+wb,tb); g.closePath(); g.fill();
+  g.fillStyle='#8f2f2a'; for(let k=0;k<3;k++){const y1=top+(tb-top)*(.18+k*.28), y2=y1+(tb-top)*.12; const w1=wt+(wb-wt)*((y1-top)/(tb-top)), w2=wt+(wb-wt)*((y2-top)/(tb-top)); g.beginPath(); g.moveTo(tx-w1,y1); g.lineTo(tx+w1,y1); g.lineTo(tx+w2,y2); g.lineTo(tx-w2,y2); g.closePath(); g.fill();}
+  g.fillStyle='rgba(0,0,0,.35)'; g.beginPath(); g.moveTo(tx+1*u,top); g.lineTo(tx+wt,top); g.lineTo(tx+wb,tb); g.lineTo(tx+2*u,tb); g.closePath(); g.fill();
+  g.fillStyle=c.torre; g.fillRect(tx-wt-1.5*u,top-1.2*u,2*(wt+1.5*u),1.4*u);
+  const lampY=top-5*u;
+  const beam=g.createLinearGradient(tx,lampY,0,lampY); beam.addColorStop(0,'rgba(95,227,154,.55)'); beam.addColorStop(1,'rgba(95,227,154,0)');
+  g.fillStyle=beam; g.beginPath(); g.moveTo(tx,lampY); g.lineTo(0,lampY-H*.12); g.lineTo(0,lampY+H*.10); g.closePath(); g.fill();
+  const halo=g.createRadialGradient(tx,lampY,0,tx,lampY,W*.18); halo.addColorStop(0,'rgba(95,227,154,.65)'); halo.addColorStop(1,'rgba(95,227,154,0)'); g.fillStyle=halo; g.fillRect(0,0,W,H);
+  g.fillStyle=c.luz; g.fillRect(tx-4*u,lampY-2.5*u,8*u,5*u);
+  g.fillStyle=c.torre; g.beginPath(); g.moveTo(tx-5*u,lampY-2.5*u); g.lineTo(tx,lampY-7*u); g.lineTo(tx+5*u,lampY-2.5*u); g.closePath(); g.fill();
+  g.strokeStyle='rgba(95,227,154,.25)'; for(let i=0;i<6;i++){const y=H*(.66+i*.05); g.beginPath(); g.moveTo(tx-12*u-i*3*u,y); g.lineTo(tx-2*u,y); g.stroke();}
+  const vig=g.createLinearGradient(0,0,0,H*.35); vig.addColorStop(0,'rgba(0,0,0,.55)'); vig.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=vig; g.fillRect(0,0,W,H*.35);
+}
+
+async function conta(){
+  const el=$('#conta');
+  let sb=null; try{ if(window.supabase) sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY); }catch(e){}
+  if(!sb){ el.textContent='Jogando sem conta'; return; }
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(!session){ el.innerHTML='Jogando sem conta · <a href="/">Entrar</a>'; return; }
+    let nome=''; try{ const {data}=await sb.from('profiles').select('name').eq('id',session.user.id).maybeSingle(); nome=data&&data.name||''; }catch(e){}
+    el.innerHTML='Jogando como <b></b>'; el.querySelector('b').textContent=nome||session.user.email||'você';
+    const {data:rows}=await sb.from('rpgsolo_saves').select('aventura,estado,atualizado_em').eq('user_id',session.user.id);
+    (rows||[]).forEach(r=>{
+      const j=r.estado; if(!(j&&!j.fim&&j.S&&j.S.phase==='play'&&j.S.char&&!j.S.dead)) return;
+      const q=j.salvo_em?Date.parse(j.salvo_em):Date.parse(r.atualizado_em)||0;
+      if(!progresso[r.aventura]||q>=progresso[r.aventura].quando) progresso[r.aventura]={sec:j.S.sec,ene:j.S.char.ene,quando:q};
+    });
+    render();
+  }catch(e){}
+}
+
+AVENTURAS.forEach(a=>{const p=lerLocal(a); if(p) progresso[a.id]=p;});
+render();
+let rt=0; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(desenharCapas,150);});
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(desenharCapas);
+conta();
+})();
+</script>
+</body>
+</html>

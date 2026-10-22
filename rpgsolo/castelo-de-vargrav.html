@@ -1,0 +1,2996 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="RPG Solo no Deck e Dados: jogue O Castelo de Vargrav, um livro-jogo de terror gótico com dados, combates e Folha de Aventuras. Grátis, direto no navegador.">
+<meta property="og:title" content="RPG Solo — O Castelo de Vargrav">
+<meta property="og:description" content="Um livro-jogo de terror gótico com 400 seções. Jogue grátis no Deck e Dados.">
+<meta property="og:image" content="https://deckedados.com.br/og-image.jpg">
+<meta property="og:url" content="https://deckedados.com.br/rpgsolo/castelo-de-vargrav.html">
+<link rel="icon" href="/logo-icon.png">
+<meta name="author" content="Maicon Kuzer">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Game","name":"O Castelo de Vargrav","genre":"Livro-jogo de terror gótico","author":{"@type":"Person","name":"Maicon Kuzer"},"publisher":{"@type":"Organization","name":"Deck e Dados","url":"https://deckedados.com.br/"},"url":"https://deckedados.com.br/rpgsolo/castelo-de-vargrav.html","inLanguage":"pt-BR","isAccessibleForFree":true}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<title>RPG Solo — O Castelo de Vargrav | Deck e Dados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700;800&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: livro aberto sobre a mesa de feltro do Deck e Dados — leitura à esquerda, Folha de Aventuras à direita; empilha no celular. Tema escuro único, como o site. */
+:root{
+  --paper:#132c2a; --paper-2:#1b3a37; --sheet:#173230; --ink:#f1ede2; --ink-2:#a9bab5; --rule:rgba(241,237,226,0.14);
+  --accent:#c9a24b; --accent-soft:rgba(201,162,75,0.14); --on-accent:#132c2a; --ok:#7cc59e; --bad:#e58a7e; --edge:#8a7134;
+  --display:"Alegreya SC", Georgia, "Times New Roman", serif;
+  --body:"Alegreya", Georgia, "Times New Roman", serif;
+  --mono:"IBM Plex Mono", "Courier New", monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.wrap{max-width:1120px;margin:0 auto}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:22px 18px;border-bottom:1px solid var(--rule);margin-bottom:28px}
+.brand{font-family:var(--display);font-weight:800;font-size:1.45rem;letter-spacing:.02em;margin:0;line-height:1}
+.brand small{display:block;font-family:var(--body);font-weight:400;font-size:.85rem;color:var(--ink-2);letter-spacing:0;margin-top:6px}
+.tabs{display:flex;border:1px solid var(--rule);border-radius:999px;padding:3px;gap:2px;background:var(--paper-2)}
+.controls{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.audio{display:flex;gap:8px;align-items:center}
+.audio input{width:90px;accent-color:var(--accent)}
+#musica[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.tab{border:0;background:transparent;padding:7px 18px;border-radius:999px;cursor:pointer;font-family:var(--display);font-weight:700;font-size:1rem;color:var(--ink-2)}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--ink);background:transparent;color:var(--ink);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:1rem;line-height:1.2;text-align:left}
+.btn:hover:not(:disabled){background:var(--accent-soft)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:500}
+.btn.primary:hover:not(:disabled){filter:brightness(1.08);background:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.small{padding:5px 11px;font-size:.88rem}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+.play{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:40px;align-items:start}
+.page{min-width:0;max-width:68ch}
+.secnum{font-family:var(--display);font-weight:800;font-size:4.2rem;line-height:1;text-align:center;color:var(--accent);margin:4px 0 22px;font-variant-numeric:lining-nums}
+.secnum::after{content:"";display:block;width:56px;height:1px;background:var(--rule);margin:18px auto 0}
+.text p{margin:0 0 1em}
+.byline{margin:-10px 0 18px;font-family:var(--mono);font-size:.8rem;letter-spacing:.06em;color:var(--ink-2)}
+.byline b{color:var(--accent);font-weight:500}
+.book-title{font-family:var(--display);font-weight:800;font-size:clamp(2rem,5vw,2.9rem);line-height:1.05;margin:0 0 18px;text-wrap:balance}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+.notes{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 18px}
+.chip{font-family:var(--mono);font-size:.78rem;padding:3px 9px;border-radius:4px;border:1px solid var(--rule);background:var(--paper-2)}
+.chip.good{color:var(--ok);border-color:currentColor}
+.chip.bad{color:var(--bad);border-color:currentColor}
+
+.choices{list-style:none;padding:0;margin:26px 0 0;display:grid;gap:10px}
+.choice{width:100%;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:baseline;padding:12px 16px;border:1px solid var(--rule);background:var(--sheet);border-radius:6px;cursor:pointer;text-align:left}
+.choice:hover:not(:disabled){border-color:var(--accent)}
+.choice .n{font-family:var(--display);font-weight:800;font-size:1.25rem;color:var(--accent);min-width:2ch;text-align:right;font-variant-numeric:tabular-nums}
+.choice .req{display:block;font-family:var(--mono);font-size:.75rem;color:var(--ink-2);margin-top:2px}
+.choice:disabled{cursor:not-allowed;opacity:.55}
+
+.panel{border:1px solid var(--ink);border-radius:8px;padding:18px;margin:24px 0 0;background:var(--sheet)}
+.panel h3{font-family:var(--display);font-weight:700;font-size:1.2rem;margin:0 0 12px}
+.tablewrap{overflow-x:auto;margin-bottom:14px}
+.foes{width:100%;border-collapse:collapse;font-size:.95rem}
+.foes th{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);font-weight:500;text-align:left;padding:4px 6px;border-bottom:1px solid var(--rule)}
+.foes td{padding:7px 6px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+.foes td.num,.foes th.num{text-align:right;font-family:var(--mono)}
+.foes tr.grp td{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);padding-top:12px}
+.foes tr.down td{color:var(--ink-2);text-decoration:line-through}
+.foes tr.later td{color:var(--ink-2)}
+.foes tr.now td:first-child{font-weight:700}
+.foes .tag{font-family:var(--mono);font-size:.7rem;color:var(--accent);margin-left:6px;text-decoration:none}
+.log{font-family:var(--mono);font-size:.82rem;line-height:1.55;background:var(--paper-2);border-radius:6px;padding:10px 12px;margin-bottom:14px;overflow-x:auto}
+.log>div+div{margin-top:6px;padding-top:6px;border-top:1px dashed var(--rule)}
+.die{display:inline-grid;place-items:center;width:1.6em;height:1.6em;border:1.5px solid var(--ink);border-radius:5px;font-family:var(--mono);font-weight:600;font-size:.85rem;margin-right:3px;background:var(--sheet);vertical-align:middle}
+.res-ok{color:var(--ok);font-weight:600}.res-bad{color:var(--bad);font-weight:600}
+.target{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;font-size:.95rem}
+.target select{padding:6px 10px;border:1px solid var(--ink);border-radius:6px;background:var(--sheet)}
+
+.endcard{text-align:center;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:28px 8px;margin-top:28px}
+.endcard .big{font-family:var(--display);font-weight:800;font-size:1.8rem;margin:0 0 8px}
+.endcard p{margin:0 auto 18px;max-width:46ch;color:var(--ink-2)}
+
+.rollgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin:22px 0}
+.rollcell{border:1px solid var(--rule);border-radius:8px;padding:12px;background:var(--sheet);min-width:0}
+.rollcell .v{font-family:var(--display);font-weight:800;font-size:2rem;line-height:1.1}
+.rollcell .how{font-family:var(--mono);font-size:.72rem;color:var(--ink-2)}
+.rules{font-size:.92rem;color:var(--ink-2);border-left:2px solid var(--rule);padding-left:14px;margin:18px 0}
+.rules p{margin:0 0 6px}
+
+.authorbar{margin-top:36px;padding-top:14px;border-top:1px dashed var(--rule);font-size:.88rem;color:var(--ink-2)}
+.authorbar input{width:5.5em;padding:5px 8px;border:1px solid var(--rule);border-radius:5px;background:var(--sheet);font-family:var(--mono);font-size:.88rem}
+
+.sheet{position:sticky;top:max(16px,env(safe-area-inset-top,0px));background:var(--sheet);border:1px solid var(--ink);border-radius:8px;padding:16px 18px;font-size:.95rem;min-width:0}
+.sheet h2{font-family:var(--display);font-weight:800;font-size:1.15rem;margin:0 0 12px;border-bottom:2px solid var(--ink);padding-bottom:8px}
+.stat{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:8px;padding:6px 0;border-bottom:1px solid var(--rule)}
+.stat .k{font-family:var(--display);font-weight:700}
+.stat .val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
+.stat .val small{color:var(--ink-2);font-weight:400}
+.bar{grid-column:1/-1;height:5px;border-radius:3px;background:var(--paper-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.sheet h4{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);font-weight:500;margin:14px 0 6px}
+.items{margin:0;padding-left:1.1em}
+.items li{margin:2px 0}
+.items .b{font-family:var(--mono);font-size:.78rem;color:var(--ink-2)}
+.afl li{color:var(--bad)}
+.empty{color:var(--ink-2);font-style:italic;margin:0}
+.trail{font-family:var(--mono);font-size:.8rem;color:var(--ink-2);line-height:1.6;word-break:break-word}
+.sheet textarea{width:100%;min-height:80px;border:1px solid var(--rule);border-radius:5px;background:var(--paper);padding:8px;font-size:.9rem;resize:vertical}
+
+.editor{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:28px;align-items:start}
+.ed-main{min-width:0;display:grid;gap:12px}
+#src{width:100%;min-height:62vh;border:1px solid var(--ink);border-radius:8px;background:var(--sheet);padding:16px;font-family:var(--mono);font-size:.88rem;line-height:1.6;resize:vertical;tab-size:2}
+.status{font-family:var(--mono);font-size:.78rem;color:var(--ink-2);min-height:1.2em}
+.ed-side{display:grid;gap:18px;min-width:0}
+.box{border:1px solid var(--rule);border-radius:8px;padding:14px 16px;background:var(--sheet);min-width:0}
+.box h3{font-family:var(--display);font-weight:700;font-size:1.1rem;margin:0 0 10px}
+.check-ok{color:var(--ok)}
+.problems{margin:0;padding-left:1.1em;font-size:.9rem}
+.problems li{margin:4px 0}
+.problems li.err{color:var(--bad)}
+.counts{font-family:var(--mono);font-size:.8rem;color:var(--ink-2);margin-bottom:8px}
+.ref{font-size:.88rem}
+.ref h4{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);font-weight:500;margin:16px 0 0}
+.ref h4:first-of-type{margin-top:0}
+.ref dl{margin:0}
+.ref dt{font-family:var(--mono);font-size:.8rem;background:var(--paper-2);padding:3px 7px;border-radius:4px;margin-top:10px;overflow-x:auto;white-space:pre}
+.ref dd{margin:4px 0 0;color:var(--ink-2)}
+code{font-family:var(--mono);font-size:.85em}
+
+@media (max-width:860px){
+  .play,.editor{grid-template-columns:minmax(0,1fr)}
+  .sheet{position:static;order:-1}
+  .secnum{font-size:3.4rem}
+}
+@media (max-width:440px){ body{font-size:17px} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.panel,.sheet,.choice{border-color:var(--edge)}
+.btn{border-color:var(--edge)}
+.die{border-color:var(--ink-2);background:var(--paper)}
+.site-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:14px;border-bottom:1px solid var(--rule)}
+.site-brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:1.05rem}
+.site-brand img{width:32px;height:32px;border-radius:50%;object-fit:cover}
+.site-links{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:.85rem}
+.site-links a{color:var(--ink-2)}
+.conta{color:var(--ink-2)}
+.conta b{color:var(--ink);font-weight:600}
+.brand .kicker{display:block;text-decoration:none;font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.savestate{font-family:var(--mono);font-size:.75rem;color:var(--ink-2)}
+.savestate.ok{color:var(--ok)}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <nav class="site-nav">
+    <a class="site-brand" href="/"><img src="/logo-icon.png" alt="">Deck e Dados</a>
+    <div class="site-links"><span class="conta" id="conta">Verificando login…</span><a href="/rpgsolo.html">Todas as aventuras</a><a href="/">Voltar ao site</a></div>
+  </nav>
+  <header class="top">
+    <h1 class="brand"><a class="kicker" href="/rpgsolo.html">RPG Solo</a>O Castelo de Vargrav<small>Um livro-jogo de terror gótico · 400 seções · escrito por Maicon Kuzer</small></h1>
+    <div class="controls">
+      <div class="audio">
+        <button class="btn small" id="musica" data-act="music" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 3v11.1A3.5 3.5 0 1 0 11 17V8h8v6.1A3.5 3.5 0 1 0 21 17V3z"/></svg><span>Ligar música</span></button>
+        <input type="range" id="volume" min="0" max="100" value="55" aria-label="Volume da música">
+      </div>
+    </div>
+  </header>
+  <main id="app"></main>
+</div>
+
+<input type="file" id="arquivo" accept=".txt,.md,text/plain" hidden>
+
+<script type="text/plain" id="aventura">
+Título: O Castelo de Vargrav
+Autor: Maicon Kuzer
+Habilidade: 1d6+6
+Energia: 2d6+12
+Sorte: 1d6+6
+Fé: 1d6+3
+Equipamento: Espada, Armadura de couro, Lanterna
+Provisões: 10
+Ouro: 10
+
+O inverno chegou cedo ao vale de Kessel. Você subiu as montanhas atrás de trabalho para a sua espada, mas a diligência o deixa em Dravna, um vilarejo de casas de pedra encolhidas sob a neve. No alto do penhasco, acima das nuvens baixas, as torres negras do Castelo de Vargrav parecem vigiar cada telhado.
+
+A estalagem se chama O Sino Calado. Ninguém ri, ninguém canta, e quando você entra todas as conversas morrem. O estalajadeiro serve sopa sem dizer palavra. Só depois do terceiro copo de vinho quente um rapaz de mãos calejadas se senta à sua frente.
+
+"Ela levou Mirela", ele diz, baixinho. "Nossa curandeira. Anteontem à noite veio a carruagem sem cocheiro, puxada por cavalos brancos de olhos vermelhos. Ninguém teve coragem de sair."
+
+Ela é a Baronesa Isolde Vargrav. Os velhos dizem que governa o vale há trezentos anos e nunca envelheceu um dia. A cada inverno, alguém some. Ninguém voltou.
+
+O padre do vilarejo, um homem magro chamado Ivo, se aproxima da mesa. "O senhor tem cara de quem já enfrentou coisas piores que lobos. Não temos muito, mas o que tivermos é seu. Traga Mirela de volta. E se puder... ponha fim a isso."
+
+Você aceita. Durma bem esta noite, porque amanhã começa a subida.
+
+## 1
+Você acorda com o sino da capela tocando uma única vez, abafado pela neve. Dravna amanhece cinzenta. O dia é curto nas montanhas, e a estrada até o castelo leva quase o dia inteiro. Antes de partir, você pode se preparar no vilarejo.
+-> 166 Sair para a praça e se preparar
+-> 346 Partir imediatamente para o castelo
+
+## 2
+Liesl é rápida e desesperada.
+combate: Liesl, a Noiva | 9 | 10
+-> 168 Ver o que aconteceu
+
+## 3
+Você está num corredor estreito de celas, iluminado por tochas fracas. As portas são de madeira grossa com janelinhas gradeadas e têm números pintados: um, dois e três. No fim do corredor há uma porta maior, com um cheiro de ferro e queimado. Um vulto arrastando os pés faz a ronda com um molho de chaves na cintura.
+-> 391 Enfrentar o vulto
+-> 23 Esconder-se num vão e esperar ele passar
+-> 381 Espiar a cela um
+-> 217 Espiar a cela dois
+-> 57 Espiar a cela três
+
+## 4
+A maioria dos vidros guarda chás comuns. Mas num canto há um maço de flores azuis secas com um rótulo cuidadoso: "Acônito. Contra a febre do lobo. Uma pitada na língua." Você guarda um punhado. Também encontra um bálsamo para feridas e o aplica nos dedos rachados de frio.
+ganha: Acônito Seco
+energia: +1
+-> 52 Continuar procurando
+
+## 5
+Você avança sobre o mordomo. Os convidados fantasmas se levantam e se desfazem, e Ansgar tira da casaca uma faca longa e fina.
+-> 51 Lutar
+
+## 6
+O vinho virou quase vinagre, mas ainda aquece. Você bebe um pouco.
+energia: +2
+-> 158 Continuar
+
+## 7
+O gelo estala sob suas botas.
+teste de sorte: 313 | 302
+
+## 8
+Liesl treme, lutando contra a fome. "Vá embora. Por favor." Mas o corpo dela não obedece. Ela salta em sua direção.
+teste de fé: 91 | 2
+
+## 9
+Você chega a uma capela subterrânea de abóbadas baixas. As paredes são cobertas de afrescos de anjos e cavaleiros, e uma luz azul e suave vem de lugar nenhum. No centro, sobre um túmulo de mármore branco, jaz a estátua de um cavaleiro com as mãos cruzadas sobre o cabo de uma espada de prata. A espada é de verdade.
+-> 242 [!Espada Aurora] Aproximar-se do túmulo
+-> 87 Examinar o altar
+-> 244 Voltar por onde veio
+
+## 10
+O homem embrulha pão, queijo duro e tiras de carne seca. Dá para três refeições.
+-> 271 [ouro 2+] Pagar 2 moedas
+-> 392 Desistir
+
+## 11
+O estalajadeiro olha para os lados antes de responder. "A carruagem vem pela estrada velha, e às vezes para na encruzilhada da forca, esperando alguém. Quem sobe nela não precisa andar até o castelo." Ele estremece. "Mas também não escolhe onde desce."
+anota: Boato da Carruagem
+-> 34 Agradecer
+
+## 12
+Corvin estica o braço até a prateleira mais próxima e lhe entrega um frasco de líquido vermelho. "Um tônico. É o que eu alcanço. Se encontrar uma chave, volte."
+energia: +3
+-> 328 Prometer voltar
+
+## 13
+Na metade da subida, uma pedra se solta. Você escorrega vários metros antes de se segurar num arbusto. Desiste da escalada e desce até a trilha de cabras.
+energia: -3
+-> 268 Seguir até o jardim
+
+## 14
+As servas não param de cantar, mas seus rostos se viram para você, todos ao mesmo tempo.
+-> 327 [Crucifixo] Erguer o crucifixo
+-> 129 [Alho] Mostrar o alho
+-> 397 Abrir caminho com a espada
+
+## 15
+Você avança com a espada. Os cavalos empinam e relincham com vozes que não são de cavalo. Um deles avança com os dentes à mostra.
+combate: Cavalo do Castelo | 8 | 9
+fuga -> 161
+-> 46 Ver o que acontece com a carruagem
+
+## 16
+O quarto da Baronesa é luxuoso e gelado. Há uma cama de dossel vermelho que nunca foi usada, uma penteadeira com espelho coberto por um pano preto, um guarda-roupa enorme e, no centro do quarto, sobre um estrado, um caixão de ébano com alças de prata. Está fechado.
+-> 269 Abrir o caixão
+-> 76 Examinar a penteadeira
+-> 395 Abrir o guarda-roupa
+-> 58 Olhar pela janela
+-> 328 Sair da ala leste
+
+## 17
+Com a roseira cortada até o chão, você colhe a última flor. As pétalas pulsam como se tivessem coração. Talvez sirva para alguma coisa; talvez seja melhor não saber.
+ganha: Rosa Negra
+-> 268 Voltar ao centro do jardim
+
+## 18
+Num gancho na parede há um molho de chaves pequenas e uma lamparina. Na mesa, debaixo das cartas, um bilhete: "Troca da guarda à meia-noite. Não abram a ala leste. Ordens do mordomo." A escada da torre desce para o interior do castelo.
+ganha: Chaves da Guarda
+-> 186 Descer a escada da torre
+
+## 19
+O ossuário é uma sala abobadada onde milhares de crânios estão empilhados nas paredes, formando desenhos de flores e cruzes. Um brilho de fungos verdes ilumina o lugar. Três passagens saem daqui: uma com degraus que sobem, uma que desce em rampa e uma porta de ferro com uma pequena janela gradeada.
+-> 378 Subir os degraus
+-> 205 Descer a rampa
+-> 3 Abrir a porta de ferro
+
+## 20
+As pedras são frias e escorregadias.
+teste de habilidade: 345 | 71
+
+## 21
+O molho de chaves tem uma chave para cada cela.
+ganha: Chave das Celas
+-> 32 Voltar ao corredor das celas
+
+## 22
+"Duas moedas por rodada", diz um lenhador. "Quem tirar mais leva tudo."
+-> 163 [ouro 2+] Apostar 2 moedas
+-> 34 Desistir
+
+## 23
+Você se encolhe num vão entre duas colunas.
+teste de sorte: 236 | 391
+
+## 24
+O sol nasce sobre o vale de Kessel. Atrás de vocês, as torres negras do Castelo de Vargrav desabam uma por uma, levantando uma nuvem de neve e poeira. Os cavalos brancos do estábulo saem galopando pelo portão aberto e somem na luz, livres. Mirela respira fundo o ar frio. "Vamos para casa."
+-> 115 Descer até Dravna
+
+## 25
+"Sir Aldric foi sepultado na cripta da capela, que fica debaixo do jardim, com a espada sobre o peito", diz Lukas. "A Baronesa mandou selar a capela, mas não pôde destruí-la. A espada só aceita quem tem um coração firme na fé. Os outros ela queima."
+anota: Segredo da Capela
+-> 356 Continuar
+
+## 26
+Um degrau se parte e você cai na água gelada do fundo. Afunda, sobe engasgando e consegue se agarrar à beira de uma abertura na parede.
+energia: -3
+-> 153 Ver se a lanterna sobreviveu
+
+## 27
+O portão é feito de barras de ferro retorcidas em forma de galhos e espinhos. Nos pilares de cada lado, duas gárgulas de pedra seguram tochas apagadas. Atrás das grades você vê um pátio coberto de neve e as grandes portas de bronze do castelo. Há uma corrente presa a um sino ao lado do portão.
+-> 60 [Chave do Portão] Usar a chave de ferro
+-> 267 Tocar o sino
+-> 277 Tentar forçar as grades
+-> 171 Recuar e procurar outra entrada
+
+## 28
+No fundo da cova há um caixão quebrado e, entre ossos roídos, uma bolsinha com moedas antigas.
+ouro: +4
+-> 185 Voltar
+
+## 29
+O pó de prata explode no rosto dela numa nuvem brilhante. Isolde grita e cobre os olhos, que fumegam. Cega, ela golpeia o ar à sua volta. Você acerta dois golpes antes que ela se recupere, e ela já não tem a força de antes.
+perde: Pó de Prata
+-> 298 Ela começa a mudar de forma
+
+## 30
+Depois da clareira, a trilha sobe pela encosta até o pé do penhasco. O castelo está bem acima de você. A trilha termina numa trilha de cabras que contorna a rocha até os fundos do jardim.
+-> 308 Escalar o penhasco direto
+-> 268 Seguir a trilha de cabras até o jardim
+
+## 31
+A carruagem atravessa o portão aberto e para no pátio do castelo. A porta se abre. Não há ninguém à sua espera, só o vento e o barulho dos portões se fechando atrás de você. Você está dentro, mas ela sabe disso.
+ganha: Convite da Baronesa
+-> 202 Descer da carruagem
+
+## 32
+O corredor das celas está em silêncio agora. Você ouve só a respiração difícil de alguém e o pingar da água.
+-> 381 Ir à cela um
+-> 217 Ir à cela dois
+-> 57 Ir à cela três
+-> 370 Abrir a porta maior no fim do corredor
+-> 19 Seguir para o ossuário
+-> 247 Seguir para a escada em espiral
+
+## 33
+A terceira chave abre o cadeado. A porta dá para um depósito de ferramentas de jardim e, depois dele, para a cozinha do castelo.
+-> 318 Entrar
+
+## 34
+De dia, O Sino Calado está vazio, exceto por dois lenhadores jogando dados num canto. O estalajadeiro limpa copos que já estão limpos.
+-> 22 Jogar dados com os lenhadores
+-> 11 [!Boato da Carruagem] Perguntar ao estalajadeiro sobre a carruagem
+-> 166 Sair para a praça
+
+## 35
+O Guardião se parte em pedaços com um estrondo que sacode a cripta inteira. Poeira cai do teto. Você está ferido e cansado, mas a porta de bronze está livre.
+-> 315 [provisões 1+] Comer antes de entrar
+-> 348 Abrir a porta de bronze
+
+## 36
+Você para. Seus braços pesam como chumbo. A Baronesa se aproxima sem pressa e morde seu ombro, bebendo com calma. A dor o acorda, e você a empurra para longe, mas perdeu muito sangue.
+energia: -5
+-> 254 Lutar com o que lhe resta
+
+## 37
+Matthias desenha com carvão num pedaço de couro. "A estrada da carruagem é longa e vigiada. Pela mata há uma trilha de caçador que corta pela metade, mas passa perto da ravina e do território da fera." Ele lhe entrega o mapa. "Não durma na mata."
+ganha: Mapa da Floresta
+-> 324 Continuar a conversa
+
+## 38
+A fera é rápida e furiosa. Se ela cravar os dentes em você, a maldição pode passar.
+combate: Lobisomem | 9 | 10
+-> 256 Examinar o corpo
+
+## 39
+A Baronesa ataca, mas os movimentos dela estão mais lentos. Ela olha de relance para a terra escura do caixão, como quem procura descanso, e você aproveita cada abertura.
+combate: Isolde, a Baronesa | 10 | 9
+-> 263 Vê-la tombar
+
+## 40
+Você prende a corda na roda do poço e desce devagar, apoiando os pés nos degraus. Lá embaixo, um pouco acima da água, há uma abertura na parede, que leva a um túnel.
+-> 154 Entrar no túnel
+
+## 41
+A porta de ferro é fria como gelo. Gravado nela está o brasão de Vargrav, o morcego com a rosa, e abaixo uma inscrição: "Aqui dorme a senhora desta casa. Que ninguém perturbe seu descanso." A fechadura é grande demais para qualquer chave comum.
+-> 74 [Chave de Ferro] Usar a chave de ferro
+-> 368 Tentar arrombar
+-> 102 Deixar a porta
+
+## 42
+O túnel desemboca na antecâmara da cripta. É um salão redondo com colunas, iluminado por tochas de chama verde. Uma fila de mulheres de camisola branca, de olhos vazios, caminha em círculo, cantando baixinho. São servas mortas da Baronesa. No fundo do salão, diante de uma porta de bronze, está uma estátua enorme de cavaleiro, com uma espada de pedra apoiada no chão: o Guardião. Nas paredes laterais há três nichos com caixões de madeira.
+-> 14 Passar pelo meio das servas
+-> 50 Examinar os caixões nos nichos
+-> 239 Aproximar-se do Guardião
+
+## 43
+Você corta o arame e espera. Quando a última luz some no horizonte, você puxa o badalo com a mão. O sino de prata soa claro e puro, e o som se espalha pelo vale inteiro. De dentro do castelo, lá embaixo, vem um grito de dor e fúria que faz as pedras tremerem. Ela acordou, e acordou ferida.
+anota: Sino Tocado
+fé: +1
+-> 328 Descer depressa
+
+## 44
+A despensa tem prateleiras de pão, queijos, presuntos e potes de mel. Tudo parece normal, o que é estranho num castelo onde quase ninguém come. Num canto, um alçapão de madeira leva à adega.
+-> 382 Comer e pegar provisões
+-> 107 Descer à adega
+-> 318 Voltar à cozinha
+
+## 45
+Num cesto há plantas antigas do castelo. Uma delas mostra os andares de baixo: a adega ligada às masmorras, o poço do jardim descendo até o ossuário e, no fundo de tudo, uma sala redonda marcada com uma rosa negra. Você guarda o desenho.
+ganha: Planta do Castelo
+sorte: +1
+-> 169 Continuar
+
+## 46
+O cavalo se desfaz em fumaça branca e cheiro de enxofre. O outro dispara puxando a carruagem vazia de volta para o castelo, e o barulho das rodas some na escuridão. Agora ela sabe que você vem.
+sorte: +1
+-> 161 Seguir a pé
+
+## 47
+Você arranca os olhos do retrato com um esforço enorme. Seu coração bate como se você tivesse corrido. Ela sabe exatamente onde você está.
+-> 367 Continuar
+
+## 48
+Depois de muitos tropeções, seus dedos encontram as barras de uma grade. Do outro lado há um brilho fraco e esverdeado.
+energia: -1
+-> 19 Passar pela grade
+
+## 49
+A escada de serviço é estreita e sobe em curvas. Os degraus de madeira rangem. No meio da subida há um patamar com uma janelinha e um banco onde os criados descansavam.
+-> 207 Sentar e comer uma refeição
+-> 328 Continuar subindo
+
+## 50
+Os três caixões são simples, de madeira escura, e estão cheios de terra preta até a borda. É terra do túmulo original de Isolde, trazida de algum lugar distante. Ela se alimenta dessa terra para dormir.
+-> 61 [Água-benta] Profanar a terra com água-benta
+-> 61 [Água Clara] Profanar a terra com a água clara
+-> 84 Esvaziar os caixões no chão
+-> 204 Deixar os caixões
+
+## 51
+Ansgar luta com uma precisão fria, sem desperdiçar um movimento. Ele não respira.
+combate: Ansgar, o Mordomo | 9 | 10
+-> 284 Examinar o mordomo
+
+## 52
+A porta da casa de ervas está apenas encostada. Lá dentro, maços de plantas secas pendem das vigas, e vidros etiquetados enchem as prateleiras. Há uma escrivaninha com papéis espalhados e um baú aos pés da cama.
+-> 4 [!Acônito Seco] Procurar entre as ervas
+-> 297 [!Diário de Mirela] Ler os papéis na escrivaninha
+-> 83 Abrir o baú
+-> 166 Sair e voltar à praça
+
+## 53
+Encostada à parede do castelo há uma porta baixa de madeira, a porta do jardineiro. Ela está trancada com um cadeado velho.
+-> 33 [Chaves da Guarda] Experimentar as chaves pequenas
+-> 112 Quebrar o cadeado com a espada
+-> 268 Deixar a porta
+
+## 54
+Os lobos não ligam para o alho e o atacam do mesmo jeito. Pelo menos agora você sabe que são lobos de verdade.
+energia: -1
+combate: Lobo Cinzento | 7 | 6
+combate junto: Lobo de Cicatriz | 6 | 7
+-> 321 Continuar a subida
+
+## 55
+Seu pé escorrega na borda gelada e você bate com o peito na pedra antes de conseguir se puxar para cima. O ar some dos seus pulmões por um longo minuto.
+energia: -2
+-> 290 Seguir pela estrada
+
+## 56
+Greta sai da cela tropeçando e beija suas mãos. "Que os santos te guardem." Ela lhe dá a única coisa que tem: um pedaço de pão escondido na manga e um conselho. "Se a coisa ficar feia, os caixões dos lados têm terra do túmulo dela. Sem terra, ela enfraquece." Greta some pela escada, devagar mas decidida.
+provisões: +1
+anota: Conselho de Greta
+-> 32 Voltar ao corredor
+
+## 57
+Pela janelinha da cela três você vê uma jovem sentada no chão, abraçando os joelhos. Cabelo castanho preso numa trança, avental de ervas manchado. Ela ergue o rosto: está pálida, mas os olhos estão vivos e cheios de raiva. "Se veio me buscar para ela, eu vou morder você antes."
+-> 241 Dizer que veio do vilarejo para salvá-la
+-> 69 [Chave das Celas] Abrir a cela
+-> 371 Arrombar a porta
+
+## 58
+Lá fora, o sol desapareceu atrás das montanhas. O céu está roxo e as primeiras estrelas aparecem. Ela vai acordar a qualquer momento. Lá embaixo, no pátio, você vê uma fila de figuras de branco atravessando a neve em direção à porta da cripta.
+-> 16 Afastar-se da janela
+
+## 59
+É uma carroça de mercador. Os cavalos sumiram; só restam os arreios cortados. Debaixo da lona há caixotes quebrados e, caído de bruços na neve, um homem de casaco de pele. Quando você o vira, os olhos dele se abrem: brancos, sem pupila. Os dedos azulados agarram seu braço.
+combate: Mercador Morto | 6 | 7
+fuga -> 133
+-> 358 Revistar os caixotes
+
+## 60
+A chave gira com um rangido que ecoa pelas montanhas. O portão se abre. Atrás de você, as gárgulas viram a cabeça de pedra com um som de moinho e abrem as asas.
+-> 122 Enfrentar as gárgulas
+-> 390 Correr para dentro do pátio
+
+## 61
+Você espalha a água sagrada sobre a terra dos três caixões. A terra chia, solta fumaça e fica cinzenta como cinza velha. Do outro lado da porta de bronze, alguém geme alto, um gemido de dor e surpresa.
+anota: Terra Profanada
+fé: +1
+-> 204 Voltar ao centro do salão
+
+## 62
+O Guardião hesita. A espada de pedra treme. Depois ele dá um passo para o lado, devagar, e fica parado como estátua de novo. Você passa rente a ele, sem respirar.
+-> 348 Abrir a porta de bronze
+
+## 63
+Você agarra a mão de Mirela e corre.
+teste de sorte: 117 | 121
+
+## 64
+Você arrebenta as correntes de prata com três golpes de espada. Mirela pula do altar, esfregando os pulsos. "Demorou", ela diz, mas está sorrindo. "Agora corre!"
+anota: Mirela Libertada
+-> 136 Olhar em volta
+
+## 65
+Seus dedos encontram cada fenda. Depois de muito tempo, você chega a uma sacada estreita com uma janela sem vidro.
+-> 120 Entrar pela janela
+
+## 66
+O tronco é largo, mas está coberto de musgo congelado.
+teste de habilidade: 142 | 97
+
+## 67
+Você corre pela antecâmara, pelos túneis e pelas escadas, com Mirela ao seu lado. O castelo geme e range como um navio na tempestade. À frente, um trecho do teto está desabando.
+-> 63 Passar correndo antes que caia
+-> 220 Esperar e procurar outro caminho
+
+## 68
+Você cai pelo buraco, escorrega por uma rampa de pedra e aterrissa com força num lugar escuro e úmido. Está nas masmorras.
+energia: -4
+-> 3 Levantar-se
+
+## 69
+A chave gira e a porta se abre.
+-> 314 Entrar na cela
+
+## 70
+O cozinheiro tomba sobre a própria tábua. Você não olha dentro do caldeirão. Sobre a mesa há um molho de chaves de despensa e, presa num gancho, uma bolsa de couro com moedas.
+ouro: +3
+-> 44 Entrar na despensa
+-> 49 Subir a escada de serviço
+-> 102 Sair para o salão
+
+## 71
+Você está quase no alto quando uma pedra se solta e você despenca no chão de neve. A queda é feia.
+energia: -4
+-> 360 Tentar de novo ou procurar outra coisa
+
+## 72
+A água é fria e tem gosto de manhã de primavera. Seus ferimentos param de doer e sua cabeça fica leve e clara.
+energia: +5
+cura: Marca da Baronesa
+-> 9 Voltar ao centro da capela
+
+## 73
+O gelo se parte com o punho da espada. A água por baixo é límpida e não congela no frasco.
+ganha: Água-benta
+-> 377 Continuar
+
+## 74
+A chave gira sem esforço, como se a fechadura quisesse ser aberta. Atrás da porta, degraus de pedra descem para a escuridão. Um cheiro de terra úmida e flores mortas sobe do fundo.
+-> 247 Descer
+
+## 75
+O anel é grande demais para o seu dedo, mas você o põe no polegar. O metal fica quente, como se reconhecesse a mão de um Vargrav.
+ganha: Anel de Sinete
+-> 76 Continuar
+
+## 76
+Sobre a penteadeira há pentes de marfim, frascos de perfume e uma caixa de joias de prata. Dentro da caixa, entre colares de pérolas, há um anel pesado de ouro com um sinete: o morcego com a rosa.
+-> 75 [!Anel de Sinete] Pegar o anel de sinete
+-> 292 [!Joias da Baronesa] Pegar também as pérolas
+-> 100 Tirar o pano preto do espelho
+-> 16 Deixar a penteadeira
+
+## 77
+"O senhor é esperado", diz Ansgar, com uma reverência rígida. "A senhora Baronesa desperta ao pôr do sol. Até lá, sinta-se em casa. Mas não desça à cripta. E não incomode a senhorita Liesl."
+-> 181 Perguntar por Mirela
+-> 260 Sentar-se à mesa
+-> 102 Sair
+
+## 78
+Com a corda presa em pontas de rocha, você sobe em segurança, devagar. No alto, chega a uma sacada estreita com uma janela sem vidro.
+-> 120 Entrar pela janela
+
+## 79
+Você chuta e empurra até o ombro doer. A porta não cede, e o barulho ecoa por todo o corredor. Passos pesados se aproximam.
+energia: -2
+-> 391 Virar-se para enfrentar quem vem
+
+## 80
+A tampa bate, e a música para. O barão fantasma abre os olhos, magoado, e se desfaz sem dizer nada. Do cravo sai um grito agudo, e as cordas arrebentam uma por uma, chicoteando o ar.
+energia: -2
+-> 328 Sair da sala
+
+## 81
+Você escorrega e uma das pontas de ferro rasga sua coxa. Mesmo assim, consegue passar para o outro lado.
+energia: -3
+-> 160 Seguir até as portas brancas
+
+## 82
+O vinho é delicioso e quente. Só depois do terceiro gole você percebe o gosto de cobre. Sua cabeça gira e você ouve os convidados rirem pela primeira vez.
+energia: +2
+fé: -2
+-> 310 Tentar se levantar
+
+## 83
+O baú está cheio de roupas dobradas e um cobertor de lã. No fundo, embrulhado num lenço, há um pequeno espelho de prata, com o nome Liesl gravado no cabo.
+-> 399 [!Espelho de Prata] Levar o espelho
+-> 52 Deixar tudo como estava
+
+## 84
+Você vira os caixões e espalha a terra pelo chão com os pés. É um trabalho cansativo, e a terra parece pesar mais do que deveria, como se resistisse. Quando termina, está exausto.
+energia: -3
+anota: Terra Profanada
+-> 204 Voltar ao centro do salão
+
+## 85
+Você caminha tateando a parede úmida. Seu pé chuta algo que rola com barulho de osso. Depois, uma coisa fria e seca se fecha no seu tornozelo.
+combate: Mão Rastejante | 5 | 5
+-> 48 Continuar tateando
+
+## 86
+Você corre. Às suas costas, a gargalhada da Baronesa enche a cripta.
+-> 176 Fugir do castelo
+
+## 87
+Sobre o altar há um cálice de prata e um frasco de cristal cheio de água que brilha suavemente. Uma inscrição diz: "Bebe quem está cansado da escuridão."
+-> 72 Beber do frasco
+-> 264 [!Água Clara] Levar o frasco
+-> 9 Voltar ao centro da capela
+
+## 88
+As pegadas levam a uma toca debaixo de uma árvore caída. Há ossos espalhados e um pedaço de camisa rasgada. Um rosnado sai do buraco escuro, mas parece mais um soluço que um rosnado.
+-> 197 Chamar quem estiver lá dentro
+-> 90 Enfiar a espada na toca
+-> 159 Afastar-se em silêncio
+
+## 89
+Você pisa de tábua em tábua, de braços abertos. No meio da ponte, o vento sopra forte.
+teste de habilidade: 349 | 92
+
+## 90
+A ponta da espada encontra carne. Um uivo terrível sacode a mata, e uma fera de pelo negro, meio homem e meio lobo, explode para fora da toca.
+-> 38 Lutar contra a fera
+
+## 91
+Você ergue a mão e diz o nome dela com firmeza. Liesl para no meio do salto, cai de joelhos e chora. "Eu ainda sou eu? Eu ainda sou eu." Quando se acalma, ela fala de Mirela.
+-> 118 Ouvir
+
+## 92
+Uma tábua cede. Você cai, mas consegue se agarrar a um cabo da ponte e fica pendurado sobre o abismo. Com muito esforço, se arrasta até o outro lado, raspando joelhos e cotovelos no gelo.
+energia: -3
+-> 290 Seguir pela estrada
+
+## 93
+Quando ela estende a mão, você golpeia. A lâmina rasga o vestido e a pele branca, e a Baronesa recua com um silvo de surpresa. Pela primeira vez em séculos alguém a feriu primeiro. Mas o ferimento já está fechando.
+-> 270 Continuar o ataque
+
+## 94
+Você joga o pano por cima com as mãos tremendo. Mesmo coberto, você ouve uma unha arranhando o vidro por dentro, devagar.
+-> 16 Afastar-se
+
+## 95
+"Olhe para você", diz Isolde, andando em volta. "Uma espada de aluguel, sujo de lama, vivendo de moedas. Eu posso lhe dar o que nenhum rei pode: tempo. Séculos. Este vale inteiro. Basta um beijo." Ela para diante de você, muito perto. Ela tem cheiro de rosas e de terra.
+-> 132 Aceitar
+-> 291 Recusar
+
+## 96
+O líquido escuro ferve e se transforma em vapor, que sobe gritando até o teto. As velas negras derretem sozinhas. Você sente que tirou algo da Baronesa: uma parte da força que ela bebia deste altar.
+anota: Altar Purificado
+fé: +1
+-> 42 Seguir em frente
+
+## 97
+Você escorrega e cai no fundo da ravina, quicando em galhos e pedras. Quando para, está coberto de arranhões, e a subida do outro lado leva uma hora.
+energia: -4
+-> 353 Arrastar-se até a clareira
+
+## 98
+Sem luz, você não vê os nichos. Só percebe o que há neles quando os panos começam a se mexer e mãos secas agarram seus braços dos dois lados.
+energia: -2
+combate: Múmia do Nicho | 6 | 7
+combate junto: Múmia do Nicho | 6 | 6
+-> 147 Seguir em frente
+
+## 99
+É uma lista de tarefas, escrita numa letra antiga. "Trocar as velas. Alimentar os cães. Levar a moça para a cela três. Lembrar a senhora: o caixão verdadeiro precisa de terra nova até o fim do inverno. O Guardião obedece ao anel." Não há nada sobre qual anel.
+ganha: Notas do Mordomo
+-> 102 Voltar ao salão de entrada
+
+## 100
+O espelho reflete o quarto inteiro, mas não reflete você. Atrás do seu reflexo ausente há uma mulher de vermelho, de pé, olhando para você. Quando você se vira, não há ninguém. Quando volta a olhar, ela está mais perto.
+-> 157 Quebrar o espelho
+-> 94 Cobrir o espelho de novo
+
+## 101
+Atrás do caixão há um altar de pedra. Deitada sobre ele, amarrada com correntes de prata, está Mirela, de olhos abertos e cheios de raiva. "Chegou bem na hora", diz Isolde. "Ia começar agora. Quer assistir? Ou prefere ser o prato principal?" Ela passa uma unha longa pelo pescoço de Mirela, sem cortar.
+-> 387 [Liesl Libertada] Chamar por Liesl
+-> 224 [Convite da Baronesa] Fingir que aceitou o convite dela
+-> 240 Atacar imediatamente
+
+## 102
+O grande salão de entrada é alto como uma igreja. Tapeçarias vermelhas cobrem as paredes, e um lustre de ferro com velas acesas pende do teto, embora você não veja ninguém para acendê-las. Uma escadaria de mármore negro sobe ao andar de cima. Há portas a oeste e a leste, um corredor ao norte e, debaixo da escadaria, uma porta de ferro com fechadura enorme.
+-> 365 Abrir a porta oeste
+-> 169 Abrir a porta leste
+-> 367 Seguir pelo corredor norte
+-> 259 Subir a escadaria
+-> 41 Examinar a porta de ferro
+
+## 103
+O quarto redondo está em silêncio. A escova de cabelo continua sobre a penteadeira sem espelho, e os desenhos a carvão tremem com o vento que entra pela janela.
+-> 328 Descer
+
+## 104
+Os olhos de Mirela se enchem de lágrimas. "Ela ainda está lá dentro? Minha irmã ainda está lá dentro?" Ela enxuga o rosto com as costas da mão, rápida e brava. "Então vamos acabar com isso de uma vez."
+sorte: +2
+-> 32 Seguir em frente
+
+## 105
+O estábulo cheira a feno podre. Nas baias, cavalos brancos estão parados, imóveis demais, de olhos fechados. A carruagem negra está no fundo. Num canto, um tonel com aveia e um gancho com arreios.
+-> 218 Revistar a carruagem
+-> 188 Aproximar-se dos cavalos
+-> 202 Sair
+
+## 106
+Mirela entra correndo na cripta com uma perna de cadeira quebrada, a ponta lascada como uma lança, e o rosário de contas de madeira da mãe dela enrolado na mão. "Segura ela!" Você segura os braços da Baronesa com todo o seu peso enquanto Mirela, de olhos fechados e rezando, crava a madeira no peito dela.
+fé: +1
+-> 108 Olhar
+
+## 107
+A adega é escura e cheira a mofo e vinho. Barris enormes se alinham nas paredes. No fundo, uma grade de ferro dá para um corredor de pedra que desce ainda mais.
+-> 372 [Lanterna] Iluminar com a lanterna e abrir a grade
+-> 372 [Luz da Aurora] Iluminar com a espada Aurora e abrir a grade
+-> 187 Seguir no escuro
+-> 44 Voltar
+
+## 108
+A Baronesa solta um grito que atravessa a pedra, a terra e a noite. A pele dela escurece e racha como papel queimado, o cabelo negro vira cinza, e o corpo se desfaz em pó. Em poucos segundos, no caixão de mármore negro, só restam terra, poeira e um vestido vermelho vazio. Trezentos anos terminaram num instante.
+fé: +2
+sorte: +2
+-> 275 [Liesl Libertada] Procurar Liesl
+-> 136 Olhar em volta
+
+## 109
+Sua espada passa pelas grades e atinge o ombro do mordomo. Ele nem sangra. Ansgar olha o ferimento, depois olha você, e sorri. "A senhora será informada da sua falta de modos." Ele dá meia-volta e some dentro do castelo, deixando o portão trancado.
+-> 171 Procurar outra entrada
+
+## 110
+A placa diz: "Sir Aldric Vargrav, cavaleiro da Ordem da Aurora." Ele segura uma espada de prata de lâmina larga, e a mão esquerda aponta para baixo, para o chão. Você sente uma calma estranha ao olhar para o rosto dele.
+fé: +1
+-> 367 Continuar na galeria
+
+## 111
+Na lama da margem há pegadas enormes. Começam como patas de lobo e, poucos passos depois, viram pés humanos descalços. Depois voltam a ser patas. Você sente os pelos da nuca se arrepiarem.
+-> 88 Seguir as pegadas
+-> 159 Evitar as pegadas e seguir o mapa até a ravina
+
+## 112
+O cadeado está podre e se parte no segundo golpe, mas o barulho ecoa pelo jardim. Uma janela se acende no alto do castelo e depois se apaga.
+sorte: -1
+-> 318 Entrar depressa
+
+## 113
+Você empurra a estátua com toda a força. Ela não se move, mas a asa quebrada cai e acerta seu ombro.
+energia: -1
+-> 124 Desistir
+
+## 114
+Num nicho maior, um cavaleiro de Vargrav dorme de armadura, com as mãos cruzadas. Sobre o peito dele há uma cota de malha fina, dobrada com cuidado, como uma oferenda. Você pede licença ao morto e a veste por baixo da armadura de couro. Ela pesa nos ombros, mas protege bem.
+ganha: Cota de Malha
+energia inicial: +2
+-> 147 Continuar
+
+## 115
+A descida é fácil, sem lobos nem sombras. Quando vocês chegam a Dravna, o vilarejo inteiro está na praça. Alguém viu o castelo cair. Quando reconhecem Mirela ao seu lado, um grito sobe da multidão, e depois outro, e depois todos estão falando e chorando ao mesmo tempo.
+-> 285 [Amuleto de Pavel] Procurar a ferreira Hanka
+-> 373 Procurar o padre Ivo
+
+## 116
+"Ela marcou você", diz Corvin, sério. "Assim ela o encontra em qualquer lugar do castelo." Ele queima a marca com um ferro em brasa mergulhado em sal. Você grita, mas a pele fica limpa.
+cura: Marca da Baronesa
+energia: -2
+-> 149 Perguntar sobre a Baronesa
+
+## 117
+As pedras caem logo atrás de vocês. Vocês saem pela porta de ferro, cruzam o salão e chegam ao pátio, cobertos de poeira, rindo como loucos.
+-> 24 Recuperar o fôlego
+
+## 118
+"Mirela está na cela três, nas masmorras", diz Liesl. "Hoje à meia-noite a Baronesa vai beber dela até o fim, e depois ela vai ser como eu." Ela tira uma chave do decote e a entrega a você. "A chave das celas. Roubei há um ano e nunca tive coragem." Ela segura sua mão com os dedos gelados. "Quando chegar a hora, eu vou estar lá. Eu vou segurá-la, nem que seja por um instante."
+ganha: Chave das Celas
+anota: Liesl Libertada
+anota: Liesl Encontrada
+-> 208 Sair da torre
+
+## 119
+Você desce a escadaria de mármore negro, pisando com cuidado perto do topo.
+-> 102 Chegar ao salão de entrada
+
+## 120
+Você passa pela janela e entra num quarto redondo, no alto de uma torre. É um quarto de moça, com cortinas azuis, uma cama arrumada e desenhos a carvão pregados nas paredes.
+-> 170 Olhar em volta
+
+## 121
+Uma pedra acerta seu ombro e você cai. Mirela o puxa para cima com uma força que você nunca imaginaria e os dois chegam ao pátio meio arrastados, meio correndo.
+energia: -3
+-> 24 Recuperar o fôlego
+
+## 122
+As duas gárgulas descem dos pilares, pesadas como rochas.
+combate: Gárgula da Esquerda | 8 | 9
+combate junto: Gárgula da Direita | 8 | 9
+-> 276 Entrar no pátio
+
+## 123
+Você golpeia o corpo no caixão, mas o ferimento fecha no mesmo instante. Isolde ri de olhos fechados. "Aço, querido? Aço é para homens." Em mais alguns instantes ela vai se levantar, curada.
+-> 106 [Mirela Libertada] Gritar por Mirela
+-> 86 Fugir enquanto ainda pode
+
+## 124
+São sete anjos de pedra. Seis têm cabeça e olham para o castelo. O sétimo não tem cabeça, e as mãos dele apontam para o chão.
+-> 369 [Segredo do Anjo] Girar o anjo sem cabeça para a esquerda
+-> 113 Empurrar a estátua
+-> 268 Voltar
+
+## 125
+Lukas olha para a porta antes de responder. "Ela precisa dormir na terra do próprio túmulo. Se o caixão verdadeiro for profanado com água-benta, ela fica fraca. Para destruí-la, só uma estaca no coração, enquanto um símbolo sagrado a prende, ou uma lâmina santa. A espada Aurora é as duas coisas ao mesmo tempo."
+anota: Fraqueza da Baronesa
+-> 356 Continuar
+
+## 126
+Hanka examina sua lâmina contra a luz do fogo. "Posso dar um banho de prata no fio. Não é uma espada santa, mas morto-vivo nenhum gosta de prata. Seis moedas, por causa do metal."
+-> 237 [ouro 6+] Pagar 6 moedas de ouro
+-> 338 Recusar
+
+## 127
+"O jardim morto tem um poço velho e estátuas de anjos", diz Odo. "O anjo sem cabeça esconde uma porta: gire-o para a esquerda. E cuidado com as roseiras negras. Elas bebem sangue."
+anota: Segredo do Anjo
+-> 178 Continuar a conversa
+
+## 128
+A criatura voa em sua direção, gélida e veloz.
+combate: Espectro Chorão | 8 | 7
+-> 289 Recuperar o fôlego
+
+## 129
+As servas recuam do cheiro de alho com caretas de nojo, mas não vão embora. Elas formam um círculo à sua volta, e as mais próximas atacam com unhas compridas.
+combate: Serva Morta | 6 | 6
+combate junto: Serva Morta | 6 | 5
+-> 204 Olhar em volta
+
+## 130
+A argola está presa à parede com um cadeado grosso.
+-> 249 [Chaves da Guarda] Experimentar as chaves pequenas
+-> 249 [Chave das Celas] Experimentar a chave das celas
+-> 329 Arrancar a argola da parede
+
+## 131
+Você se cobre com o braço e aguenta as mordidas. Mas a nuvem treme e se desmancha no ar. As badaladas do sino de prata ainda doem nela, e ela não consegue manter a forma por muito tempo. Os morcegos caem e voltam a se juntar no centro da cripta, de novo como mulher.
+energia: -1
+-> 279 Encarar a Baronesa de novo
+
+## 132
+Você fecha os olhos. Os lábios frios dela tocam o seu pescoço, e uma dor doce e escura se espalha pelo corpo. O mundo some.
+-> 180 Deixar acontecer
+
+## 133
+A estrada termina na beira de um desfiladeiro. Uma ponte de madeira atravessa o abismo, mas várias tábuas caíram, e as que restam estão cobertas de gelo. Lá embaixo, um rio corre entre pedras pontudas.
+-> 89 Atravessar com cuidado
+-> 376 [Corda] Amarrar-se com a corda e atravessar
+-> 303 Procurar outro caminho pela beira do desfiladeiro
+
+## 134
+Você tira uma maça de guerra da parede. É pesada e bem balanceada. Assim que a ergue, ouve o barulho de metal atrás de você: a armadura negra está se mexendo.
+arma: Maça de Guerra | +1
+-> 394 Virar-se
+
+## 135
+Odo baixa a voz. "Ela dorme de dia num caixão que muda de lugar. Mas o verdadeiro, o que tem a terra do túmulo dela, fica no fundo da cripta, atrás do Guardião de pedra. Ela também tem uma noiva, Liesl, uma moça do vilarejo que ela transformou. Liesl ainda chora às vezes. Eu ouvia."
+anota: Segredo da Cripta
+-> 178 Continuar a conversa
+
+## 136
+O chão da cripta treme. Rachaduras correm pelas paredes, e pedaços do teto começam a cair. Sem a Baronesa, o castelo que ela sustentava por pura vontade está desmoronando.
+-> 64 [!Mirela Libertada] Soltar Mirela das correntes do altar
+-> 331 [Mirela Libertada] Pegar o que puder do baú ao lado do altar
+-> 67 [Mirela Libertada] Correr para a saída
+
+## 137
+Os trilhos terminam num salão desmoronado. Ratos enormes, do tamanho de gatos, se viram para você com olhos vermelhos e avançam em bando.
+combate: Ratazanas | 6 | 9
+fuga -> 211
+-> 211 Voltar e subir os degraus
+
+## 138
+A placa diz apenas: "Liesl." É a única pintura recente da galeria. A moça loira tem o mesmo queixo e os mesmos olhos de alguém que você conhece de algum lugar. Na parte de baixo da moldura alguém arranhou, com a ponta de uma unha: "Mirela, me perdoa."
+-> 367 Continuar na galeria
+
+## 139
+O crucifixo brilha na sua mão como uma brasa branca. Isolde para no meio do salto e cai no chão, rastejando para trás. Você avança e acerta um golpe antes que ela consiga se levantar.
+-> 298 Ela começa a mudar de forma
+
+## 140
+Sir Aldric balança a cabeça com tristeza. "Ainda não. A espada queimaria sua mão." Ele se desfaz em luz. Ao menos, ele deixa algo para trás: um pequeno broche de prata com o sol nascente, o símbolo da ordem dele.
+ganha: Broche da Aurora
+fé: +1
+-> 9 Voltar ao centro da capela
+
+## 141
+Ivo põe as mãos sobre a sua cabeça e reza em voz baixa. Uma calma estranha se espalha pelo seu peito. Ao terminar, ele pendura no seu pescoço uma medalha de estanho gasta. "Não vale nada em ouro. Mas era da minha mãe, e ela nunca teve medo do escuro."
+ganha: Medalha da Capela
+fé: +1
+-> 183 Agradecer
+
+## 142
+Você atravessa com passos curtos e firmes e salta para a terra do outro lado.
+-> 353 Ir até a clareira
+
+## 143
+A medalha de estanho do padre Ivo brilha, fraca mas firme, na sua mão esquerda. A Baronesa tenta se erguer e não consegue. "Uma medalha de estanho?", ela sibila, incrédula. Você crava a estaca.
+-> 108 Olhar
+
+## 144
+Você arranca os olhos dos dela com um esforço que quase o derruba. O feitiço se parte como vidro. A Baronesa recua um passo, surpresa.
+-> 254 Atacar
+
+## 145
+O fantasma estuda o seu rosto por um longo momento. "Palavras são fáceis. Mostre-me o que há no seu coração."
+teste de fé: 213 | 140
+
+## 146
+Vocês sobem com Liesl apoiada nos ombros de Mirela. Quando chegam ao pátio, o céu já clareia atrás das montanhas. Liesl olha para o horizonte e o primeiro raio de sol a toca. Ela não grita. Ela sorri, e vira luz, e some no ar frio da manhã. Mirela chora em silêncio, mas não de tristeza.
+fé: +1
+-> 24 Ficar ali até o sol subir
+
+## 147
+Você passa entre os nichos sem perturbar os mortos. Numa encruzilhada de túneis, há uma capelinha mortuária, com um altar de pedra e velas negras apagadas. A passagem segue em frente na direção do canto.
+-> 359 Examinar a capelinha
+-> 114 [!Cota de Malha] Examinar um nicho maior que os outros
+-> 42 Seguir na direção do canto
+
+## 148
+"Ela vai descer à cripta à meia-noite para me buscar", diz Mirela. "Quando não me encontrar, vai ficar furiosa. Se você vai mesmo atrás dela, é a hora." Ela respira fundo. "Eu vou com você até a porta da cripta. Depois disso, eu me escondo. Não sou guerreira, mas sei fechar feridas."
+-> 104 [Liesl Libertada] Contar que Liesl vai ajudar
+-> 32 Seguir com ela
+
+## 149
+Corvin abre uma gaveta escondida e tira um saquinho de couro. "Prata em pó, misturada com cinzas de sálvia. Jogue nos olhos dela e ela fica cega por um tempo. Guardei por seis anos esperando alguém como você." Ele aperta sua mão. "Vou para o vilarejo pela escada de serviço. Que Deus o acompanhe."
+ganha: Pó de Prata
+-> 328 Despedir-se
+
+## 150
+Os degraus aguentam até o fim. Pouco acima da água há uma abertura na parede do poço que leva a um túnel de pedra.
+-> 154 Entrar no túnel
+
+## 151
+Você se joga para a frente e se agarra ao corrimão no último instante. O degrau falso cai num buraco escuro, e você ouve o barulho dele lá embaixo muito tempo depois.
+-> 328 Chegar ao andar de cima
+
+## 152
+O rosto do fantasma endurece. "Então volte para o ouro." Uma luz branca explode do túmulo e o arremessa contra a parede da capela.
+energia: -4
+fé: -1
+-> 9 Levantar-se, atordoado
+
+## 153
+A lanterna está encharcada e não acende mais. No escuro do castelo isso pode ser um problema sério. Você tateia até o túnel.
+perde: Lanterna
+-> 154 Entrar no túnel às cegas
+
+## 154
+O túnel que sai do poço é baixo e alagado. Você anda curvado, com água até as canelas, por um longo trecho. A água fica para trás quando o túnel começa a subir, e as paredes de rocha bruta dão lugar a tijolos. Você está debaixo do castelo.
+-> 222 [Lanterna] Acender a lanterna
+-> 222 [Luz da Aurora] Erguer a espada Aurora para iluminar
+-> 85 Seguir tateando no escuro
+
+## 155
+Os morcegos que sobram fogem para o centro da cripta e se fundem de novo num corpo. A Baronesa está de pé, com o vestido em farrapos e o rosto cheio de cortes, mas ainda muito perigosa.
+-> 279 Encará-la
+
+## 156
+Você bate a espada numa viga. Uma nuvem de morcegos acorda e se lança sobre você, guinchando, arranhando e mordendo.
+combate: Nuvem de Morcegos | 7 | 9
+-> 304 [!Sino Tocado] Ir até o sino de prata
+-> 328 Descer da torre
+
+## 157
+O vidro explode em mil pedaços. Um grito de raiva sai de dentro da moldura. Os cacos cortam suas mãos, mas algo pesado sai do quarto, como se o ar ficasse mais leve.
+energia: -2
+sorte: +2
+-> 16 Continuar
+
+## 158
+O porão está alagado até o tornozelo com água gelada. Barris de vinho apodrecem nas prateleiras. Um barril está intacto, e ao lado dele um alçapão de ferro no chão.
+-> 6 Provar o vinho
+-> 306 Abrir o alçapão
+-> 164 Subir
+
+## 159
+A trilha chega à beira de uma ravina estreita e funda. Um tronco caído serve de ponte. Do outro lado, a trilha sobe até uma clareira onde sai fumaça de uma chaminé.
+-> 66 Atravessar pelo tronco
+-> 354 Descer até o fundo e subir do outro lado
+
+## 160
+As portas brancas se abrem para uma antecâmara forrada de seda. Dois cães enormes, negros como carvão e com olhos de brasa, se levantam de almofadas de veludo. Eles não latem mais. Apenas rosnam.
+-> 311 Enfrentar os cães
+-> 233 [provisões 2+] Jogar comida para os cães
+-> 283 [Rosa Negra] Mostrar a rosa negra
+
+## 161
+A estrada segue em zigue-zague pela encosta. O frio aperta e o céu escurece. Na curva seguinte, sombras cinzentas saem do meio das árvores: dois lobos enormes, com o pelo eriçado e os dentes à mostra.
+-> 307 Enfrentar os lobos
+-> 235 [provisões 2+] Jogar comida para eles
+-> 54 [Alho] Esfregar alho na roupa e avançar devagar
+-> 223 Correr de volta
+
+## 162
+Ansgar abre o portão com uma chave do próprio cinto e o conduz pelo pátio sem dizer mais nada. Os passos dele não fazem barulho na neve. Ele abre as portas de bronze e o leva até um salão de jantar iluminado.
+ganha: Convite da Baronesa
+-> 365 Entrar no salão de jantar
+
+## 163
+Os dados rolam pela mesa de madeira.
+teste de sorte: 326 | 212
+
+## 164
+A estalagem do Cervo Branco está abandonada. A porta pende de uma dobradiça e a neve entrou até o balcão. Lá dentro há mesas viradas, uma lareira apagada e uma escada que sobe para os quartos.
+-> 337 Acender a lareira e descansar
+-> 393 Subir aos quartos
+-> 158 Descer ao porão
+-> 290 Voltar à encruzilhada
+
+## 165
+O laboratório está vazio. As chamas azuis se apagaram, e a corrente de Corvin está caída no chão, aberta. Numa bancada, ele deixou um bilhete: "Obrigado. Deixei um tônico para você na prateleira de baixo." Você o encontra e bebe.
+energia: +2
+-> 328 Sair
+
+## 166
+A praça de Dravna é um quadrado de lama congelada em volta de um poço. Daqui você vê a capela de pedra, a fumaça da forja, as barracas do mercado, a casa de ervas da curandeira com a porta fechada e, mais adiante, a cabana do velho caçador na beira da mata. Um mendigo encolhido no canto do poço ergue a mão para você.
+-> 183 Ir à capela
+-> 338 Ir à forja
+-> 392 Ir ao mercado
+-> 52 Ir à casa de ervas de Mirela
+-> 324 Ir à cabana do caçador
+-> 172 Falar com o mendigo
+-> 34 Voltar à estalagem
+-> 346 Seguir para o portão do vilarejo
+
+## 167
+A sala de armas tem lanças, alabardas e escudos nas paredes, e armaduras completas em suportes de madeira. Uma das armaduras, negra e enorme, está no centro da sala, com uma espada de duas mãos apoiada no chão.
+-> 134 Procurar uma arma melhor
+-> 388 Examinar a armadura negra
+-> 367 Voltar à galeria
+
+## 168
+Liesl cai e, antes de virar pó, sorri. "Obrigada. Diga a Mirela que eu sinto muito." O corpo dela se desfaz como cinza ao vento, e só fica o vestido azul. No bolso do vestido há uma chave pequena.
+fé: -1
+ganha: Chave das Celas
+anota: Liesl Encontrada
+-> 208 Sair da torre
+
+## 169
+A biblioteca tem estantes do chão ao teto, com escadas de rodinhas. A poeira é espessa, mas uma mesa de leitura perto da lareira está limpa, com um livro aberto e uma vela acesa. Uma figura de óculos, translúcida e encurvada, folheia páginas que não se mexem.
+-> 356 Falar com a figura
+-> 262 Procurar nas estantes
+-> 364 Ler o livro aberto na mesa
+-> 45 [!Planta do Castelo] Examinar os mapas enrolados num cesto
+-> 102 Sair
+
+## 170
+Diante de uma penteadeira sem espelho, uma moça loira de vestido azul escova o cabelo devagar. Ela é a moça do retrato da galeria, e a pele dela é branca como neve. Ela fala sem se virar: "Você não devia estar aqui. Ela vai sentir seu cheiro em mim."
+-> 272 [Diário de Mirela] Dizer que leu o diário da irmã dela
+-> 214 [Espelho de Prata] Mostrar a ela o espelho com o nome dela
+-> 175 Perguntar quem ela é
+-> 261 Atacá-la antes que ela ataque você
+
+## 171
+A estrada termina diante do Castelo de Vargrav. Muralhas de pedra negra sobem até se perder na névoa, e um portão de ferro trabalhado fecha a entrada. À esquerda, a muralha segue pela beira do penhasco. À direita, há um jardim morto, cercado por grades de ferro.
+-> 27 Ir até o portão
+-> 360 Seguir pela muralha à esquerda
+-> 268 Ir até o jardim cercado
+
+## 172
+O mendigo é cego, com os olhos cobertos por uma faixa suja. Ele estende a tigela. "Uma moeda para um velho, senhor? Em troca, um conselho que vale mais que ouro."
+-> 294 [ouro 1+] Dar uma moeda
+-> 166 Ignorá-lo
+
+## 173
+Liesl recua, com nojo. "Você tem cheiro de lobo. Cheiro dos cães dela!" Ela se lança sobre você, com as unhas e os dentes à mostra.
+-> 2 Defender-se
+
+## 174
+Enquanto você reza, a chama da vela cresce e fica branca por um instante. Ivo sorri e lhe entrega o crucifixo. "Ele sabe quem é você. Mostre-o a ela, e ela vai lembrar o que é o medo."
+ganha: Crucifixo
+-> 183 Levantar-se
+
+## 175
+"Meu nome é Liesl. Ou era." Ela larga a escova. "Ela me levou há dez anos. Agora eu sou dela." Ela vira o rosto, e os olhos dela ficam vermelhos. Ela sente o cheiro do seu sangue.
+-> 173 [Licantropia] Ver a reação dela
+-> 8 Esperar
+
+## 176
+Você sobe as escadas, atravessa o castelo e só para de correr no portão. Atrás de você, as velas se acendem em todas as janelas. Você sobreviveu, mas a Baronesa também. Em Dravna, o sino da capela vai continuar calado por muitos invernos.
+fim: Você fugiu com vida, mas a Baronesa de Vargrav continua a reinar no vale.
+
+## 177
+Os morcegos mordem seu rosto, suas mãos, seu pescoço. Cada golpe da espada derruba alguns, mas há sempre mais.
+combate: Enxame da Baronesa | 9 | 8
+-> 155 Ver o que acontece
+
+## 178
+O velho se chama Odo. "Fui jardineiro do castelo por trinta anos, até ela me mandar embora porque eu ficava velho e ela não." Ele o convida para entrar, serve sopa de raízes e um pão escuro.
+energia: +4
+-> 127 Perguntar sobre o jardim do castelo
+-> 135 Perguntar sobre a Baronesa
+-> 293 [Licantropia] Mostrar a mordida no braço
+-> 30 Agradecer e seguir caminho
+
+## 179
+O Guardião olha o anel no seu polegar. Por um longo momento, nada acontece. Depois ele abaixa a espada, dá um passo pesado para o lado e se ajoelha, como um cavaleiro diante do seu senhor. A porta de bronze fica livre.
+-> 348 Abrir a porta de bronze
+
+## 180
+Você acorda em uma caixa de terra, com fome. Uma fome que nenhuma comida vai matar. Ansgar está à sua espera com uma casaca nova do seu tamanho. Dizem, em Dravna, que agora há dois vultos na carruagem negra, e que um deles carrega uma espada.
+fim: Você se tornou um servo da Baronesa. A aventura termina aqui.
+
+## 181
+O rosto de cera de Ansgar não se mexe. "A moça do vilarejo está sendo preparada. É uma grande honra." Ele inclina a cabeça. "Talvez o senhor queira se juntar a ela." De repente, ele salta por cima da mesa.
+-> 51 Defender-se
+
+## 182
+Entre os barões, há um retrato virado para a parede. Você o desvira: um homem de barba grisalha, com olhos bondosos e um anel de sinete no dedo. A placa diz: "Konrad, último barão de Vargrav." Alguém riscou o rosto dele com as unhas, várias vezes. Ela o odiava, ou não suportava lembrar.
+-> 367 Continuar na galeria
+
+## 183
+A capela é fria e cheira a cera. O padre Ivo está ajoelhado diante de um altar simples, onde arde uma única vela. Ele se levanta ao vê-lo. "Então vai mesmo. Que posso fazer por você?"
+-> 206 [!Lenda de Vargrav] Perguntar sobre a Baronesa
+-> 141 [!Medalha da Capela] Pedir uma bênção
+-> 301 [!Crucifixo] Pedir algo que sirva contra mortos-vivos
+-> 344 [!Água-benta] Pedir um pouco de água-benta
+-> 166 Voltar à praça
+
+## 184
+Ela ataca com toda a força de três séculos de ódio.
+combate: Isolde, a Baronesa | 12 | 12
+-> 263 Vê-la tombar
+
+## 185
+As lápides estão tortas e cobertas de neve. A maioria tem o mesmo sobrenome: Vargrav. A porta da capelinha está aberta. Perto do muro, uma cova recente foi cavada de dentro para fora.
+-> 377 Entrar na capelinha
+-> 199 Examinar a cova aberta
+-> 171 Sair e seguir para o castelo
+
+## 186
+A escada em caracol desce até uma porta estreita que dá para um corredor do andar de cima do castelo.
+-> 328 Sair no corredor
+
+## 187
+Sem luz, você tateia pelas paredes. Algo pequeno e peludo sobe pela sua perna e morde. Depois outro. Depois muitos.
+energia: -3
+-> 383 Lutar no escuro
+
+## 188
+Quando você chega perto, todos os cavalos abrem os olhos ao mesmo tempo. São olhos vermelhos e brilhantes. Um deles bate o casco e relincha um som que parece um grito humano.
+combate: Cavalo do Castelo | 8 | 9
+fuga -> 202
+-> 202 Sair do estábulo
+
+## 189
+Você ergue o cartão diante do portão, sem esperança. O cadeado se abre sozinho com um clique. A Baronesa está brincando com você.
+-> 160 Seguir até as portas brancas
+
+## 190
+O corpo fica imóvel. Das chaves, só uma parece importante: grande, de ferro escuro, com o brasão de Vargrav, um morcego segurando uma rosa. Deve abrir o portão principal.
+ganha: Chave do Portão
+-> 290 Voltar à encruzilhada
+
+## 191
+A porta cede ao segundo chute. Num canto, uma mulher de camisola branca chora de costas para você. "Me ajude", ela sussurra. "Estou com tanto frio." Quando ela se vira, o rosto é só pele esticada sobre o crânio, e a boca se abre até o peito.
+-> 198 [Crucifixo] Erguer o crucifixo
+-> 128 Lutar com a criatura
+
+## 192
+Você reza pelo escudeiro morto há três séculos. Por um instante, sente uma mão no ombro, e uma voz sussurra: "A porta da capela do castelo se abre para quem tem a medalha do meu senhor ou uma fé que não se curva."
+fé: +1
+anota: Segredo do Escudeiro
+-> 185 Sair da capelinha
+
+## 193
+Hanka para de martelar pela primeira vez. "Meu irmão, Pavel, trabalhava na manutenção do poço velho do castelo, antes de tudo isso. Ele dizia que o poço do jardim desce até as masmorras, e que há uma escada de ferro presa na parede. Ele sumiu há dois invernos." Ela volta ao martelo, com força demais.
+anota: Pista do Poço
+-> 338 Continuar na forja
+
+## 194
+O portão é alto e cheio de pontas.
+teste de habilidade: 160 | 81
+
+## 195
+A maioria dos ganchos está vazia. Num deles há uma chave pequena e enferrujada com uma etiqueta: "Celas". Num outro, uma etiqueta diz "Cripta", mas o gancho está vazio. Ansgar deve carregá-la com ele.
+ganha: Chave das Celas
+-> 258 Continuar
+
+## 196
+Você reza, mas só ouve o vento batendo nas janelas. Ivo suspira e guarda o crucifixo. "Não é falta sua. Às vezes a fé chega tarde." Ele lhe dá um frasco pequeno, de vidro grosso. "Água-benta. Ao menos isto."
+ganha: Água-benta
+-> 166 Voltar à praça
+
+## 197
+Uma voz rouca responde da escuridão. "Vá embora, enquanto eu ainda sou eu." Um homem magro sai engatinhando: barba emaranhada, unhas compridas, olhos amarelos. "Meu nome era Bertram. Fui mordido no verão. A lua cheia é amanhã."
+-> 299 [Acônito Seco] Oferecer o acônito
+-> 278 Perguntar sobre o castelo
+-> 159 Deixá-lo e seguir caminho
+
+## 198
+A coisa grita e se desfaz como fumaça presa pelo vento. Sobre a cama fica uma bolsa de couro com moedas e um anel de rubi.
+ouro: +5
+ganha: Anel de Rubi
+-> 164 Descer
+
+## 199
+A terra está remexida e há marcas de unhas na borda. Você ouve um rosnado abafado atrás de você. Um vulto curvado, de pele cinzenta e boca enorme, salta de trás de uma lápide.
+combate: Carniçal | 7 | 8
+-> 28 Examinar a cova depois da luta
+
+## 200
+"O Guardião foi esculpido pelos meus avós para proteger os mortos da família", diz Konrad. "Ele obedece a quem usa o anel de sinete de Vargrav. Isolde guarda o meu anel na penteadeira dela, como um troféu." Ele fecha os olhos de novo. "Se encontrá-lo, use-o por mim."
+anota: Segredo do Anel
+-> 219 Agradecer ao barão
+
+## 201
+Você endireita as costas e ordena, com toda a frieza que consegue: "Afaste-se. A senhora quer ficar sozinha."
+teste de sorte: 62 | 362
+
+## 202
+O pátio é grande e coberto de neve sem pegadas. Do lado esquerdo há um estábulo com a porta batendo ao vento. Em frente ficam as portas de bronze da entrada principal. À direita, uma porta menor dá para a ala de serviço, de onde sai fumaça.
+-> 105 Entrar no estábulo
+-> 102 Abrir as portas de bronze
+-> 318 Entrar pela porta de serviço
+
+## 203
+O interior é forrado de veludo vermelho e cheira a rosas murchas. A porta se fecha, e a carruagem dispara. Pela janela você vê a estrada passar rápida demais, como num sonho. Numa almofada há um cartão escrito em letra elegante: "Seja bem-vindo. Estávamos à sua espera. I.V."
+fé: -1
+-> 31 Esperar a viagem terminar
+
+## 204
+O salão está quieto agora, a não ser pelas tochas de chama verde. O Guardião de pedra continua imóvel diante da porta de bronze. Nos nichos laterais, os três caixões esperam.
+-> 50 Examinar os caixões nos nichos
+-> 239 Aproximar-se do Guardião
+
+## 205
+A rampa desce até as catacumbas. São corredores estreitos com nichos dos dois lados, cada um com um corpo enrolado em panos. O ar é parado e pesado. Em algum lugar à frente, uma luz verde e um canto baixo, como uma reza ao contrário.
+-> 147 [Lanterna] Acender a lanterna e seguir
+-> 147 [Luz da Aurora] Seguir à luz da espada Aurora
+-> 98 Seguir na direção do canto, no escuro
+
+## 206
+Ivo abre um livro de registros tão velho que as páginas estalam. "Isolde Vargrav casou-se com o barão há três séculos. Quando ele morreu, ela não aceitou a morte. Fez um pacto com algo que vive debaixo do castelo. Desde então, ela dorme de dia num caixão escondido e caça à noite."
+
+Ele baixa a voz. "Contam que o irmão do barão, Sir Aldric, tentou destruí-la. Era um cavaleiro santo, com uma espada de prata chamada Aurora. Morreu lá dentro. Dizem que foi enterrado na capela do castelo, e que a espada está com ele."
+anota: Lenda de Vargrav
+-> 183 Continuar a conversa
+
+## 207
+Você come um pouco das suas provisões olhando a neve cair pela janelinha. Lá fora, o céu escurece. Falta pouco para o pôr do sol.
+-> 286 [provisões 1+] Comer (gasta 1 provisão)
+-> 328 Continuar subindo sem comer
+
+## 208
+Da torre, você pode descer a escada até o corredor do andar de cima, ou sair pela janela e voltar pelo penhasco.
+-> 328 Descer até o corredor
+
+## 209
+Na terceira tentativa a corda prende num merlão. Você sobe com facilidade e chega ao adarve.
+-> 345 Seguir pelo adarve
+
+## 210
+"Bruno", diz o fantasma, e a voz dele treme. "Ele me seguiu até a porta e não me deixou entrar sozinho. Se ele falou com você, é porque o seu coração é limpo." A espada se solta da pedra.
+-> 213 Pegar a espada
+
+## 211
+Os degraus terminam numa parede de tijolos com uma portinhola de madeira. Do outro lado você ouve o crepitar de um fogo e o tilintar de panelas. Parece a cozinha do castelo.
+-> 318 Abrir a portinhola
+
+## 212
+Um e dois. O lenhador recolhe suas moedas com um sorriso torto.
+ouro: -2
+-> 34 Continuar
+
+## 213
+Você ergue a Aurora. A lâmina é leve como uma pluma e brilha com uma luz branca suave, que ilumina toda a capela. Você nunca mais precisará de lanterna no escuro. O fantasma de Sir Aldric põe a mão no seu ombro e desaparece. "Ela teme esta luz. Lembre-se disso."
+arma: Espada Aurora | +3
+anota: Luz da Aurora
+fé: +2
+-> 244 Sair da capela
+
+## 214
+Você ergue o espelho de prata com o nome dela no cabo. Liesl se vê pela primeira vez em dez anos: branca, magra, com os olhos vermelhos. Ela solta um grito longo e depois fica muito quieta. "Era meu. Mirela guardou." Ela toca o espelho com a ponta dos dedos. "Diga o que preciso fazer."
+-> 118 Explicar o seu plano
+
+## 215
+Você fica parado diante do retrato sem saber quanto tempo. Quando finalmente desperta, está com frio e fraco, e há duas pequenas marcas no seu pulso que você não sabe como apareceram.
+energia: -3
+aflição: Marca da Baronesa
+-> 367 Afastar-se
+
+## 216
+Você rasteja e caminha curvado por muito tempo. O túnel sobe sempre. Em certo ponto ele se divide: um ramo tem trilhos de vagonete, o outro tem degraus talhados na rocha.
+-> 137 Seguir os trilhos
+-> 211 Subir os degraus
+
+## 217
+Pela janelinha, uma velha de cabelos brancos se agarra às grades. "Água! Ou morte, tanto faz!" Ela está viva, magra como um galho, de olhos muito claros.
+-> 56 [Chave das Celas] Abrir a cela
+-> 225 Falar com ela pela janelinha
+-> 32 Afastar-se
+
+## 218
+Dentro da carruagem, entre as almofadas de veludo, você encontra um lenço bordado com as letras M.K. É de Mirela. Está manchado de lama, não de sangue. Ela estava viva quando chegou.
+sorte: +1
+-> 105 Continuar
+
+## 219
+A sala de música tem um cravo, uma harpa e cadeiras de veludo dispostas como para um concerto. O cravo está tocando sozinho, uma melodia triste e lenta. Na cadeira da frente, um homem de barba grisalha e roupas antigas ouve com os olhos fechados. Ele é translúcido.
+-> 288 Sentar-se ao lado dele
+-> 80 Fechar a tampa do cravo
+-> 328 Sair em silêncio
+
+## 220
+Vocês voltam e seguem por um túnel lateral. É mais longo, mas o teto ali está firme. Vocês saem pelo poço do jardim, subindo os degraus de ferro, enquanto o castelo ruge lá dentro.
+-> 24 Sair no jardim
+
+## 221
+Você ergue a estaca sem nada sagrado para segurá-la. Isolde abre os olhos e agarra seu pulso com uma força terrível. É a sua fé contra a dela.
+teste de fé: 246 | 300
+
+## 222
+A luz revela marcas de unhas nas paredes e um caminho de ossos pequenos no chão: ossos de ratos, de pássaros e, às vezes, de outra coisa. O túnel termina numa grade que dá para o ossuário do castelo.
+-> 19 Passar pela grade
+
+## 223
+Lobos correm na neve muito melhor do que você. Um deles crava os dentes na sua perna antes que você se vire para lutar.
+energia: -2
+combate: Lobo Cinzento | 7 | 6
+combate junto: Lobo de Cicatriz | 6 | 7
+-> 321 Continuar a subida
+
+## 224
+Você faz uma reverência. "Vim a convite, senhora. Não para lutar." Isolde ri, encantada. "Que educado." Ela se afasta do altar e vem até você, estendendo a mão para ser beijada. Mirela, às costas dela, balança a cabeça freneticamente.
+-> 95 Beijar a mão dela e ouvir
+-> 93 Atacar quando ela estiver perto
+
+## 225
+"Sou Greta, a lavadeira", diz a velha. "Lavei os lençóis dela por quarenta anos. Quando fiquei velha demais, ela me jogou aqui." Ela cospe no chão. "O Guardião da cripta é de pedra, e pedra não se cansa. Mas ele é burro. Obedece ao anel. Ou a quem fala como ela."
+-> 32 Afastar-se
+
+## 226
+"Primeiro, isto." Ele lhe dá um frasco de líquido dourado. "Poção de cura. Beba quando estiver perto do fim." Ele hesita. "E se tiver alguma maldição no corpo, eu cuido disso agora."
+energia: +6
+-> 379 [Licantropia] Mostrar a mordida do lobisomem
+-> 116 [Marca da Baronesa] Mostrar a marca no pulso
+-> 149 Perguntar se ele tem algo contra a Baronesa
+
+## 227
+A Baronesa fixa os olhos verdes nos seus. Eles crescem, brilham, puxam. É como cair num poço sem fundo.
+-> 319 [Aviso do Cocheiro] Lembrar o conselho do cocheiro e desviar os olhos
+teste de fé: 144 | 36
+
+## 228
+Você empurra a mesa e se joga para trás. A cadeira cai, os candelabros tombam, e você fica de pé com a espada na mão. Os fantasmas somem como fumaça soprada. Só Ansgar continua ali.
+-> 51 Lutar com Ansgar
+
+## 229
+O laboratório é cheio de fumaça amarela. Frascos borbulham sobre chamas azuis, e há crânios, raízes e animais em potes em todas as prateleiras. Um homem de cabelo grisalho, magro como um esqueleto, trabalha numa bancada. Uma corrente de ferro prende o tornozelo dele a uma argola na parede. Ele se assusta ao vê-lo. "Você é vivo! Por todos os santos, você é vivo!"
+-> 280 Falar com ele
+-> 130 Tentar soltá-lo
+-> 328 Sair
+
+## 230
+São contas de trezentos anos, em letras cada vez mais tortas. Velas, vinho, carvão. E nomes de pessoas do vilarejo, com datas. A última linha é de três dias atrás: "Mirela K., curandeira. Cela três. Para a noite de lua cheia." Lua cheia é amanhã. Você ainda tem tempo.
+sorte: +1
+-> 258 Fechar o livro
+
+## 231
+A escada da torre oeste é estreita e sobe em espiral. As paredes são cobertas de desenhos a carvão: flores, um rio, uma casinha com uma chaminé. Desenhos de alguém com saudade de casa. No topo há uma porta azul.
+-> 170 [!Liesl Encontrada] Bater à porta azul
+-> 103 [Liesl Encontrada] Abrir a porta azul
+-> 328 Descer
+
+## 232
+Você ergue a Aurora com as duas mãos e a desce com toda a força. A lâmina entra no peito da Baronesa como se entrasse em água. A luz branca explode de dentro do caixão e sobe até o teto da cripta. Isolde abre os olhos uma última vez, e por um instante parece só uma mulher cansada.
+-> 108 Olhar
+
+## 233
+Os cães cheiram a comida e a ignoram. Eles não comem carne seca. Eles comem você.
+provisões: -2
+-> 311 Lutar
+
+## 234
+"Freixo. É o que mata essas coisas", diz Hanka, escolhendo um pedaço de madeira clara. Em poucos minutos ela entalha e endurece a ponta no fogo. "Três moedas. É o preço da madeira; meu trabalho é de graça."
+-> 309 [ouro 3+] Pagar 3 moedas de ouro
+-> 338 Dizer que não pode pagar
+
+## 235
+Você joga duas porções de carne seca na neve. Os lobos hesitam, cheiram e se lançam sobre a comida, rosnando um para o outro. Você passa por eles sem tirar a mão da espada.
+provisões: -2
+-> 321 Continuar a subida
+
+## 236
+O vulto passa a um palmo de você, arrastando uma perna morta. É um carcereiro de uniforme podre, com a cabeça pendendo para o lado. Ele vira a esquina e some. Você tem alguns minutos.
+-> 32 Sair do esconderijo
+
+## 237
+Ela trabalha por uma hora inteira. Quando lhe devolve a espada, o fio brilha como lua. Você sente o peso equilibrado na mão.
+ouro: -6
+arma: Espada Prateada | +1
+-> 338 Agradecer
+
+## 238
+A fechadura salta no terceiro chute, e a porta se abre com estrondo.
+-> 314 Entrar na cela
+
+## 239
+Quando você chega a três passos, o Guardião ergue a cabeça de pedra com um ruído de moinho. Os olhos dele são buracos vazios. A espada de pedra se levanta do chão.
+-> 179 [Anel de Sinete] Erguer a mão com o anel de sinete
+-> 201 [Conselho de Greta] Falar com voz de comando, como a Baronesa
+-> 362 Enfrentar o Guardião
+
+## 240
+Você avança. A Baronesa nem se mexe. Com um gesto da mão, as velas da cripta se apagam todas ao mesmo tempo, e na escuridão você ouve Mirela gritar. Quando as velas voltam a acender, Isolde está bem à sua frente.
+energia: -2
+-> 227 Recuperar o equilíbrio
+
+## 241
+"O padre Ivo mandou você?" Mirela se levanta devagar e chega à janelinha. "Então ainda tem alguém lá embaixo com coragem." Ela olha o corredor por cima do seu ombro. "As chaves estão com o carcereiro. Ou com Liesl." Ela hesita no nome. "Minha irmã."
+-> 69 [Chave das Celas] Abrir a cela
+-> 371 Arrombar a porta
+-> 32 Prometer voltar com a chave
+
+## 242
+Quando você estende a mão para a espada, uma figura de luz se forma ao lado do túmulo: um homem de armadura branca, com o rosto do retrato da galeria. Sir Aldric olha para você em silêncio. "Por que veio buscar a Aurora?"
+-> 295 [Medalha da Capela] Mostrar a medalha do padre Ivo
+-> 210 [Segredo do Escudeiro] Falar do escudeiro Bruno
+-> 145 Dizer que veio destruir Isolde e salvar Mirela
+-> 152 Dizer que veio pelos tesouros do castelo
+
+## 243
+Uma das chaves abre o portão. O rangido ecoa pelo corredor, e você ouve latidos do outro lado.
+-> 160 Seguir até as portas brancas
+
+## 244
+Da capela partem duas passagens: os degraus que sobem até o jardim, sob o anjo sem cabeça, e uma escada estreita em caracol que sobe até a biblioteca do castelo.
+-> 268 Subir ao jardim
+-> 169 Subir à biblioteca
+
+## 245
+Odo ergue o machado de lenha com uma calma assustadora. "Achei que você fosse diferente." Você hesita, e nessa hesitação sente vergonha. Você abaixa a espada e vai embora sem olhar para trás.
+fé: -1
+-> 30 Seguir caminho
+
+## 246
+Você não recua. Com um grito, empurra a estaca para baixo contra a força dela, centímetro por centímetro, até ela entrar no coração.
+-> 108 Olhar
+
+## 247
+Os degraus atrás da porta de ferro descem em espiral até um corredor iluminado por tochas de chama verde. Daqui você ouve, de um lado, gemidos e correntes; do outro, um canto baixo, como uma reza ao contrário.
+-> 3 Seguir na direção dos gemidos
+-> 42 Seguir na direção do canto
+
+## 248
+A argola não cede, e você distende um músculo das costas. Corvin suspira. "Não se culpe. Eu tento há seis anos."
+energia: -2
+-> 12 Perguntar se ele pode ajudar mesmo preso
+
+## 249
+O cadeado se abre e a corrente cai. Corvin chora e ri ao mesmo tempo, andando pela sala como quem reaprende a andar. Depois ele se recompõe e começa a pegar frascos.
+anota: Corvin Libertado
+-> 226 Ver o que ele tem a oferecer
+
+## 250
+Este é o único momento em que ela pode ser destruída para sempre.
+-> 232 [Espada Aurora] Cravar a espada Aurora no coração dela
+-> 339 [Estaca de Freixo] [Crucifixo] Cravar a estaca enquanto ergue o crucifixo
+-> 143 [Estaca de Freixo] [Medalha da Capela] Cravar a estaca segurando a medalha do padre Ivo
+-> 333 [Estaca de Freixo] [Broche da Aurora] Cravar a estaca segurando o broche de Sir Aldric
+-> 246 [Estaca de Freixo] [Escudo do Escudeiro] Cravar a estaca protegido pelo escudo de Bruno
+-> 221 [Estaca de Freixo] Cravar a estaca só com a força dos braços
+-> 123 Golpear com o que tiver nas mãos
+
+## 251
+A trança de alho bate no peito da Baronesa e cai no chão. Ela olha para o alho, olha para você e ri de verdade. "Alho? Que provinciano." Mas ela se afasta um passo do cheiro, e esse passo lhe dá tempo para atacar.
+-> 270 Atacar
+
+## 252
+As rezas estão escritas ao contrário. Ao ler a primeira linha em voz alta, sem querer, você sente o chão balançar e uma voz no seu ouvido diz: "Mais." Você fecha o livro com força.
+fé: -2
+-> 359 Afastar-se do livro
+
+## 253
+Com os morcegos espantados, você finalmente descansa. Quando acorda, o fogo virou brasa e você se sente mais forte.
+energia: +3
+-> 164 Levantar-se
+
+## 254
+A Baronesa avança com as unhas estendidas, rápida como um gato. Você tem um instante para agir antes que ela o alcance.
+-> 29 [Pó de Prata] Jogar o pó de prata nos olhos dela
+-> 296 [Espelho de Prata] Erguer o espelho de prata diante dela
+-> 139 [Crucifixo] Erguer o crucifixo
+-> 340 [Água-benta] Atirar a água-benta
+-> 251 [Alho] Jogar o alho nela
+-> 270 Atacar com a espada
+
+## 255
+A terra chia e solta fumaça. Em algum lugar do castelo, alguém solta um gemido de dor.
+perde: Água-benta
+anota: Descanso Profanado
+-> 258 Continuar
+
+## 256
+A fera tomba e, aos poucos, volta a ser um homem magro e barbudo. Você sente uma ardência no antebraço: há marcas de dentes ali, que você não lembra de ter sofrido. A pele em volta já está quente.
+aflição: Licantropia
+-> 317 [Acônito Seco] Mastigar o acônito imediatamente
+-> 159 Enfaixar o braço e seguir
+
+## 257
+O corvo levanta voo. O enforcado usa um molho de chaves preso ao cinto. Quando você estica a mão para pegá-lo, a corda range, e a cabeça do morto gira devagar para encará-lo.
+combate: Enforcado | 7 | 6
+-> 190 Pegar as chaves
+
+## 258
+A placa diz "Mordomo". O quarto é pequeno e arrumado como um quartel. Não há cama, só uma caixa comprida de madeira com terra no fundo, encostada à parede. Sobre uma mesinha há um livro de contas, e na parede um quadro com ganchos para chaves.
+-> 195 Examinar o quadro de chaves
+-> 230 Ler o livro de contas
+-> 336 Examinar a caixa de terra
+-> 328 Sair
+
+## 259
+A escadaria de mármore negro sobe em curva até um patamar com uma janela de vitral. Os degraus são largos e frios.
+-> 265 [Aviso do Cocheiro] Lembrar o conselho do terceiro degrau
+-> 361 Subir normalmente
+
+## 260
+Assim que você se senta, um criado fantasma enche seu cálice com um vinho escuro e denso. Os convidados erguem os cálices em silêncio, esperando que você beba.
+-> 82 Beber o vinho
+-> 325 Recusar educadamente
+-> 366 [Água-benta] Pingar água-benta no cálice
+
+## 261
+Você avança. Liesl se vira com um silvo, e a moça triste se torna um bicho de dentes e unhas.
+-> 2 Lutar
+
+## 262
+Há livros de história, de botânica, de astronomia e de coisas que é melhor não ler. Uma estante de poetas fica num canto, com um volume vermelho mais gasto que os outros.
+-> 396 [Segredo da Estante] Puxar o volume vermelho
+-> 384 Pegar um livro qualquer e folhear
+-> 169 Parar de procurar
+
+## 263
+A Baronesa cai de joelhos. Mas, antes que você possa dar o golpe final, o corpo dela se desfaz numa névoa vermelha que escorre pelo chão, sobe pelo estrado e entra no caixão de mármore negro. Quando você chega lá, ela está deitada sobre a terra, de olhos fechados, com as feridas começando a fechar. No caixão, ela está quase indefesa. Mas não por muito tempo.
+-> 250 Agir depressa
+
+## 264
+Você guarda o frasco com cuidado. A luz dele não se apaga mesmo dentro da mochila.
+ganha: Água Clara
+-> 9 Voltar ao centro da capela
+
+## 265
+"O terceiro degrau de cima é falso." Você pula esse degrau. Quando olha para trás, vê que ele é só uma placa fina de mármore sobre um buraco escuro.
+sorte: +1
+-> 328 Chegar ao andar de cima
+
+## 266
+Liesl entra no meio da nuvem de morcegos, abraçando-os, rasgando-os e gritando o nome da irmã. A nuvem guincha de fúria e se fecha sobre ela. Quando os morcegos se separam, Liesl está caída no chão, mas viva. A Baronesa volta à forma humana, com o rosto cheio de arranhões.
+-> 279 Encarar a Baronesa de novo
+
+## 267
+O sino toca uma nota grave. Depois de um longo minuto, a porta de bronze do castelo se abre e um homem alto e muito magro, de casaca preta, atravessa o pátio com uma lanterna. O rosto dele é cinzento como cera. "Sou Ansgar, mordomo da casa. A senhora Baronesa recebe hóspedes depois do pôr do sol. Queira entrar."
+-> 162 Aceitar o convite
+-> 109 Atacar o mordomo pelas grades
+
+## 268
+O jardim do castelo é um labirinto de canteiros secos e cercas vivas mortas. Estátuas de anjos de pedra, com as asas quebradas, vigiam caminhos cobertos de neve. No centro há um poço de pedra com uma roda de manivela. Num canto, roseiras de pétalas negras florescem em pleno inverno.
+-> 334 Ir até as roseiras negras
+-> 398 Examinar o poço
+-> 124 Examinar as estátuas de anjos
+-> 53 Procurar uma porta para o castelo
+
+## 269
+Você levanta a tampa com o coração disparado. O caixão está vazio, forrado de cetim branco, sem um grão de terra. Uma armadilha? Um aviso? Num cantinho do cetim há um bilhete: "Aqui não, querido. Tente de novo. I."
+fé: -1
+-> 16 Continuar
+
+## 270
+A Baronesa luta com unhas e dentes, rápida como uma sombra. A força dela é a de três homens.
+combate: Isolde Vargrav | 11 | 7
+-> 298 Ela começa a mudar de forma
+
+## 271
+Você guarda tudo na mochila. Em uma subida longa, comida nunca é demais.
+ouro: -2
+provisões: +3
+-> 392 Continuar no mercado
+
+## 272
+Liesl se vira, de olhos arregalados. "Mirela escreveu sobre mim?" Você conta o que leu. A moça cobre o rosto com as mãos, e os ombros dela tremem. "Ela me reconheceu. Eu a chamei na beira da mata, e ela me reconheceu. Foi por minha causa que a Baronesa a encontrou."
+-> 118 Dizer que ainda dá tempo de salvá-la
+
+## 273
+Você tenta soltar o sino da viga, mas ele é muito mais pesado do que parece. Quando você puxa com força, a viga podre estala e você quase cai pela abertura da torre.
+energia: -2
+-> 347 Desistir
+
+## 274
+A placa diz: "Isolde, Baronesa de Vargrav, senhora deste vale." Ela é linda e pálida, com cabelo negro preso numa rede de pérolas. Os olhos dela são verdes e muito vivos. Você não consegue desviar o olhar.
+-> 374 [Aviso do Cocheiro] Lembrar o conselho do cocheiro cego
+teste de fé: 47 | 215
+
+## 275
+Liesl está sentada no chão, encostada a uma coluna. Ela sorri, e não há nada de fome no sorriso dela. "Estou cansada", diz ela. "Mas é um cansaço bom." Mirela se ajoelha ao lado da irmã e segura as mãos dela. Liesl fecha os olhos. "Quero ver o sol. Só uma vez."
+-> 146 Levar Liesl até o pátio
+
+## 276
+As gárgulas se partem em pedaços sobre a neve. Entre os destroços de uma delas brilha uma pedra preciosa verde, que estava no lugar do olho.
+ganha: Esmeralda
+-> 202 Entrar no pátio
+
+## 277
+Você apoia o ombro nas grades e empurra com toda a força. O ferro nem se mexe, mas os espinhos de metal rasgam suas mãos.
+energia: -2
+-> 27 Desistir
+
+## 278
+"O castelo tem três entradas que conheço", diz Bertram, coçando o braço com força demais. "O portão, que só a chave abre. A muralha, que um bom escalador sobe. E o poço do jardim, que desce até as masmorras." Ele começa a respirar rápido. "Agora vá. Por favor."
+-> 159 Ir embora
+
+## 279
+"Chega de brincar", diz Isolde, e a voz dela agora é baixa e rouca, sem nada de seda. As unhas dela crescem como facas. Esta é a luta final.
+-> 39 [Terra Profanada] Perceber que ela está fraca sem a força da terra
+-> 39 [Altar Purificado] Perceber que ela está fraca sem a força do altar
+-> 385 [Espada Aurora] Avançar com a espada Aurora brilhando
+-> 184 Lutar
+
+## 280
+"Sou Corvin, boticário de Varna. Ela me trouxe há seis anos para fazer o elixir dela, o que mantém a pele jovem durante o dia." Ele mostra a corrente. "Se me soltar, eu ajudo você no que puder. Conheço este castelo melhor do que gostaria."
+-> 130 Soltá-lo
+-> 282 Pedir ajuda primeiro
+-> 328 Ir embora
+
+## 281
+O escudo é leve e firme apesar da idade. Ao segurá-lo, você sente uma coragem que não é sua. Na parte de dentro há um nome gravado: Bruno.
+ganha: Escudo do Escudeiro
+fé: +1
+-> 320 Subir do outro lado
+
+## 282
+"Ajuda é o que eu tenho de sobra", diz Corvin, apontando para os frascos. "Mas a corrente me impede de alcançar metade das prateleiras. Me solte e eu lhe dou o melhor que tenho."
+-> 130 Soltá-lo
+-> 328 Ir embora
+
+## 283
+Os cães param ao sentir o cheiro da rosa negra. Abaixam as orelhas e voltam para as almofadas, como se você fosse a dona deles. Você atravessa a antecâmara sem tirar os olhos deles.
+-> 16 Abrir a porta do quarto
+
+## 284
+Ansgar desaba como um boneco de cordas cortadas. Debaixo da casaca, o corpo dele é seco como um galho velho. Pendurado no pescoço, por uma fita negra, há uma chave de ferro enorme com o brasão de Vargrav. No bolso há um caderninho de anotações.
+ganha: Chave de Ferro
+-> 99 Ler o caderninho
+-> 102 Voltar ao salão de entrada
+
+## 285
+Você encontra Hanka diante da forja e põe o pequeno martelo de prata na mão dela. Ela olha o amuleto por um longo tempo, fecha a mão e encosta a testa no seu ombro, sem dizer nada. Depois enxuga os olhos com o avental. "Ele vai ser enterrado aqui, perto da mãe. Obrigada por trazer ele de volta."
+fé: +1
+-> 373 Ir até a capela
+
+## 286
+A comida e o descanso devolvem um pouco de cor ao seu rosto.
+provisões: -1
+energia: +4
+-> 328 Continuar subindo
+
+## 287
+A velha escolhe a trança mais fedorenta. "Pendure no pescoço. Elas detestam." Você paga e guarda o alho na mochila.
+ouro: -1
+ganha: Alho
+-> 392 Continuar no mercado
+
+## 288
+O fantasma abre os olhos. "Sou Konrad, barão desta casa. Ou fui, até que minha esposa me matou para se tornar o que é." Ele aponta o cravo. "Ela compôs esta música quando ainda me amava. Agora toca para me lembrar." Ele sorri, cansado. "Ela tem medo de uma única coisa neste castelo: o sino de prata da torre. Foi abençoado no dia do nosso casamento. Se ele tocar quando ela acordar, ela vai sentir cada badalada como uma faca."
+anota: Segredo do Sino
+-> 200 Perguntar sobre o Guardião da cripta
+
+## 289
+O espectro se desfaz num último gemido. O frio que ele deixou entra nos seus ossos.
+energia: -1
+ouro: +5
+ganha: Anel de Rubi
+-> 164 Descer
+
+## 290
+A estrada se divide numa encruzilhada. No centro há uma forca de madeira negra, e dela pende um corpo vestido com o uniforme vermelho e preto do castelo. Um corvo bica alguma coisa no ombro dele. À esquerda, uma placa apodrecida aponta para uma estalagem. À direita, a estrada continua subindo.
+-> 257 Examinar o enforcado
+-> 164 Ir até a estalagem
+-> 161 Continuar subindo pela estrada
+-> 330 [Boato da Carruagem] Esperar pela carruagem
+
+## 291
+"Prefiro a lama", você diz. O sorriso de Isolde se desfaz devagar, e por trás dele aparece algo velho, frio e faminto. "Então você vai morrer sujo."
+-> 227 Preparar-se
+
+## 292
+As pérolas valem uma fortuna. Mas quando você as guarda, elas ficam pesadas e frias como gelo na mochila.
+ganha: Joias da Baronesa
+ouro: +15
+fé: -1
+-> 76 Continuar
+
+## 293
+Odo examina a mordida e balança a cabeça. "Ainda dá tempo." Ele esmaga umas folhas num pilão e faz uma pasta que arde como fogo. Você aperta os dentes enquanto ele enfaixa o braço. "Acônito da minha horta. Agora vai passar."
+cura: Licantropia
+energia: -1
+-> 178 Agradecer
+
+## 294
+Ele aperta a moeda e se inclina. "Eu era cocheiro do castelo, antes de ela me tirar os olhos. Ouça: nunca olhe nos olhos dela. E na grande escadaria, o terceiro degrau de cima é falso." Ele ri baixinho. "Agora vá. Ela já sabe que você existe."
+ouro: -1
+anota: Aviso do Cocheiro
+sorte: +1
+-> 166 Voltar à praça
+
+## 295
+O fantasma olha a medalha de estanho e sorri pela primeira vez. "Esse símbolo eu conheço. Minha ordem fundou aquela capela." Ele toca a espada, e ela se solta das mãos de pedra. "Leve a Aurora. Termine o que eu não consegui."
+-> 213 Pegar a espada
+
+## 296
+Você ergue o espelho com o nome de Liesl. Isolde se vê pela primeira vez em trezentos anos. O grito que ela solta é de horror puro. Ela cobre o rosto e cambaleia para trás, e você acerta um golpe fundo no ombro dela.
+-> 298 Ela começa a mudar de forma
+
+## 297
+São páginas de um diário. As últimas entradas falam de uma mulher pálida que aparece na beira da mata, à noite, e chama Mirela pelo nome. "Ela tem o rosto de Liesl", escreveu Mirela. "Mas minha irmã sumiu há dez anos. Não pode ser ela. Não pode." A última frase está borrada, como se a pena tivesse tremido.
+ganha: Diário de Mirela
+-> 52 Continuar procurando
+
+## 298
+Ferida, a Baronesa abre os braços e se desfaz numa explosão de asas. Uma nuvem de morcegos vermelhos rodopia pela cripta, guinchando, e se lança sobre você de todos os lados.
+-> 131 [Sino Tocado] Resistir até a nuvem perder a força
+-> 266 [Liesl Libertada] Gritar por Liesl
+-> 357 [Luz da Aurora] Erguer a espada Aurora acima da cabeça
+-> 177 Lutar contra a nuvem de morcegos
+
+## 299
+Bertram olha as flores azuis como se fossem ouro. Ele as põe na língua e cai de joelhos, tremendo. Quando se levanta, os olhos dele são castanhos. "Você me devolveu a vida." Ele chora sem vergonha. "A Baronesa tem uma passagem secreta no jardim: a estátua do anjo sem cabeça gira. Vi os servos dela usarem. Vá com Deus."
+perde: Acônito Seco
+fé: +2
+sorte: +1
+anota: Segredo do Anjo
+-> 159 Seguir para a ravina
+
+## 300
+Ela torce seu pulso e a estaca cai. A Baronesa se senta no caixão, com as feridas quase fechadas.
+energia: -2
+-> 106 [Mirela Libertada] Ouvir passos correndo atrás de você
+-> 123 Continuar tentando
+
+## 301
+"Tenho um crucifixo de prata, o único objeto de valor desta capela", diz Ivo. "Mas prata na mão de quem não crê é só metal. Ajoelhe-se e reze comigo. Se o seu coração for firme, ele é seu."
+teste de fé: 174 | 196
+
+## 302
+O gelo se parte e você afunda até a cintura na água gelada. Sai tremendo e precisa parar para torcer a roupa antes que congele no corpo.
+energia: -3
+-> 111 Seguir a trilha, batendo os dentes
+
+## 303
+Você caminha pela beira do desfiladeiro por quase uma hora até encontrar um lugar onde as margens se aproximam. Ainda assim é preciso saltar.
+teste de sorte: 386 | 55
+
+## 304
+O sino de prata é pequeno, gravado com rosas e anéis entrelaçados. A corda dele foi cortada há muito tempo, e o badalo está amarrado com um arame grosso. Alguém não queria que ele tocasse nunca mais.
+-> 43 [Segredo do Sino] Soltar o badalo e tocar o sino ao anoitecer
+-> 273 Arrancar o sino para vender a prata
+-> 347 Deixar o sino
+
+## 305
+A escada externa desce até o pátio. Você desce em silêncio, colado à parede.
+-> 202 Chegar ao pátio
+
+## 306
+O alçapão se abre para um túnel estreito de terra, escorado com vigas. Uma corrente de ar frio sobe dele, e sinais de ferradura de cavalo marcam o chão. Parece um caminho de contrabandistas que segue na direção do castelo.
+-> 216 Entrar no túnel
+-> 158 Fechar o alçapão
+
+## 307
+Os lobos atacam juntos, um pela frente e outro pelo lado.
+combate: Lobo Cinzento | 7 | 6
+combate junto: Lobo de Cicatriz | 6 | 7
+-> 321 Continuar a subida
+
+## 308
+A rocha é áspera e cheia de fendas, mas o gelo deixa tudo traiçoeiro.
+-> 78 [Corda] Usar a corda
+teste de habilidade: 65 | 13
+
+## 309
+Ela embrulha a estaca num pano e a enfia na sua mochila. "No coração. E bata com força, porque ela não vai ficar parada esperando."
+ouro: -3
+ganha: Estaca de Freixo
+-> 338 Continuar na forja
+
+## 310
+O salão roda. Ansgar se aproxima por trás da cadeira e põe as mãos frias nos seus ombros. "A senhora ficará contente. Mais um à mesa." Você precisa reagir agora.
+teste de habilidade: 228 | 335
+
+## 311
+Os cães atacam juntos, com mordidas que queimam como fogo.
+combate: Cão Infernal | 8 | 8
+combate junto: Cão Infernal | 7 | 8
+-> 16 Abrir a porta do quarto
+
+## 312
+Dentro da torre há um braseiro apagado e uma mesa com cartas de baralho. Um soldado esquelético de uniforme vermelho e preto está sentado diante delas, como se ainda jogasse. Ao ouvir seus passos, ele pega a lança.
+combate: Sentinela Esquelético | 7 | 6
+-> 18 Revistar a torre
+
+## 313
+O gelo aguenta. Do outro lado, você reencontra a trilha, que sobe para o norte.
+-> 111 Seguir a trilha
+
+## 314
+Mirela segura seu braço com força para não cair. As pernas dela estão fracas, mas a voz não. "Obrigada." Ela vê suas feridas e franze a testa como uma curandeira. Do bolso do avental, tira um maço de folhas que os guardas não acharam. "Mastigue. Vai doer menos."
+anota: Mirela Libertada
+energia: +5
+-> 148 Perguntar o que ela quer fazer agora
+
+## 315
+Você se senta nos escombros e come em silêncio, pensando em Dravna, no padre Ivo, na ferreira Hanka. Quando se levanta, as mãos pararam de tremer.
+provisões: -1
+energia: +4
+-> 348 Abrir a porta de bronze
+
+## 316
+A névoa se desfaz em gotas no chão. Entre vestidos de três séculos, você encontra um diário de capa de couro vermelho. É de Isolde. A última página diz: "Meu leito verdadeiro está no fundo da cripta, sob a terra de Vargrav. O Guardião não deixa ninguém passar. E Liesl está ficando fraca. Chora pela irmã. Talvez eu deva trocá-la pela irmã."
+ganha: Diário da Baronesa
+-> 16 Continuar
+
+## 317
+O gosto do acônito é amargo como veneno. Você tem cólicas e vomita na neve, mas a ardência no braço some e as marcas fecham.
+perde: Acônito Seco
+cura: Licantropia
+energia: -2
+-> 159 Seguir para a ravina
+
+## 318
+A cozinha do castelo é enorme e quente. Um caldeirão ferve num fogão de pedra, e o cheiro é de carne. De costas para você, um cozinheiro gordo de avental sujo pica alguma coisa numa tábua, cantarolando. Há uma porta para a despensa, uma escada de serviço que sobe e uma porta que leva ao salão.
+-> 375 Falar com o cozinheiro
+-> 342 Atacá-lo pelas costas
+-> 44 Entrar na despensa
+-> 49 Subir a escada de serviço
+-> 102 Sair para o salão
+
+## 319
+"Nunca olhe nos olhos dela." Você baixa o olhar para os pés da Baronesa e segura a espada com força. Ela sibila, frustrada. "O cocheiro. Eu devia ter arrancado a língua também."
+-> 254 Atacar
+
+## 320
+A subida é cansativa, mas você chega à clareira antes de escurecer.
+energia: -1
+-> 353 Entrar na clareira
+
+## 321
+Mais acima, num platô, há um pequeno cemitério cercado por um muro baixo de pedra, com uma capela minúscula. A estrada passa ao lado. O castelo já está perto: dá para ver as luzes nas janelas mais altas.
+-> 185 Entrar no cemitério
+-> 171 Seguir direto para o castelo
+
+## 322
+Entre botas, chapéus e lenços, você encontra a mochila de algum viajante antes de você. Dentro há uma lanterna inteira, uma garrafa de óleo e um punhado de moedas.
+ganha: Lanterna
+ouro: +3
+-> 370 Continuar
+
+## 323
+Entre as ferramentas há uma estaca de ferro com a ponta de prata, gasta pelo uso. Ela foi feita para matar vampiros. Talvez a própria Baronesa a tenha confiscado de algum caçador.
+-> 355 [!Estaca de Freixo] Levar a estaca
+-> 370 Deixar
+
+## 324
+A cabana do caçador fica onde as casas acabam e as árvores começam. Matthias é um velho de barba branca e um olho só. Peles de lobo secam na varanda. "Vai subir pela estrada, como um tolo, ou quer saber o caminho de verdade?"
+-> 37 [!Mapa da Floresta] Pedir que ele explique o caminho
+-> 389 Perguntar sobre os lobos
+-> 166 Voltar à praça
+
+## 325
+Um silêncio de gelo cai sobre a mesa. Os convidados largam os cálices e começam a se desfazer, um por um. Ansgar suspira. "Que falta de educação. A senhora detesta falta de educação."
+-> 51 Preparar-se para lutar
+
+## 326
+Seis e cinco! Os lenhadores resmungam e empurram as moedas para você.
+ouro: +4
+-> 34 Continuar
+
+## 327
+As servas param de cantar. Uma por uma, elas se ajoelham diante do crucifixo e se desfazem em pó, com um suspiro que parece alívio.
+fé: +1
+-> 204 Olhar em volta
+
+## 328
+O corredor do andar de cima é coberto por um tapete vermelho desbotado. Tochas tremem em suportes de ferro. Há várias portas: uma porta simples com uma placa de latão, uma porta de carvalho de onde vem cheiro de enxofre, portas duplas de onde sai música, a ala leste fechada por um portão de ferro trabalhado, e duas escadas estreitas que sobem para as torres.
+-> 258 Abrir a porta com a placa de latão
+-> 229 [!Corvin Libertado] Abrir a porta que cheira a enxofre
+-> 165 [Corvin Libertado] Voltar ao laboratório
+-> 219 Abrir as portas duplas da música
+-> 363 Ir até o portão da ala leste
+-> 231 Subir a escada da torre oeste
+-> 347 Subir a escada da torre do sino
+-> 119 Descer a escadaria principal
+
+## 329
+Você apoia o pé na parede e puxa a argola com as duas mãos.
+teste de habilidade: 249 | 248
+
+## 330
+Você se encosta num pinheiro e espera. O sol desce rápido atrás das montanhas. Quando a última luz some, você ouve cascos na neve. Uma carruagem negra para diante da forca. Não há cocheiro. Os cavalos brancos viram os olhos vermelhos para você, e a porta se abre sozinha.
+-> 203 Entrar na carruagem
+-> 15 Atacar os cavalos
+-> 161 Recusar e seguir a pé
+
+## 331
+Ao lado do altar há um baú de ferro aberto, cheio de moedas antigas e joias. Você enche os bolsos com pressa, enquanto as pedras caem à sua volta.
+ouro: +20
+-> 67 Correr
+
+## 332
+"Você roubou o meu jantar", diz a Baronesa, com uma voz suave como seda. "E quebrou meu Guardião, ou o enganou. Trezentos anos, e ninguém chegou tão longe." Ela inclina a cabeça, curiosa. "Não precisa ser assim. Sente-se. Converse comigo."
+-> 95 Ouvir o que ela tem a dizer
+-> 227 Avançar sobre ela
+
+## 333
+O pequeno sol de prata do broche de Sir Aldric se acende na sua mão. Isolde reconhece o símbolo e grita: "Aldric! Você de novo!" A estaca entra no coração dela.
+-> 108 Olhar
+
+## 334
+As rosas negras são lindas e cheiram a ferro. Quando você se aproxima, os galhos se esticam como braços e os espinhos se cravam na sua roupa e na sua pele.
+combate: Roseira Sanguinária | 7 | 8
+-> 17 Colher uma rosa
+
+## 335
+Suas pernas não obedecem. Os dedos de Ansgar se fecham no seu pescoço, e você só se solta depois de uma luta desesperada, ferido e sem fôlego.
+energia: -4
+-> 51 Lutar com Ansgar
+
+## 336
+É ali que o mordomo dorme. Ele é algum tipo de morto-vivo, mas não um vampiro. Mesmo assim, profanar o descanso dele pode enfraquecê-lo.
+-> 255 [Água-benta] Jogar água-benta na terra
+-> 258 Deixar como está
+
+## 337
+Você junta pedaços de cadeira e acende um fogo. O calor é delicioso. Você come e quase cochila, até perceber que o teto está se mexendo. Dezenas de morcegos se desprendem das vigas e mergulham sobre a luz.
+combate: Bando de Morcegos | 6 | 8
+-> 253 Voltar para perto do fogo
+
+## 338
+O calor da forja é um alívio. Hanka, a ferreira, é uma mulher larga de braços queimados. Ela não para de martelar ao vê-lo. "Você é o forasteiro que vai subir. Precisa de quê?"
+-> 234 [!Estaca de Freixo] Pedir uma estaca de madeira
+-> 126 [!Espada Prateada] Pedir que banhe sua espada em prata
+-> 193 [!Pista do Poço] Perguntar o que ela sabe do castelo
+-> 166 Voltar à praça
+
+## 339
+Você apoia a ponta da estaca sobre o coração dela e ergue o crucifixo com a outra mão. Isolde abre os olhos e tenta se levantar, mas o crucifixo a prende ao caixão como um peso de montanha. Você bate com o punho da espada na estaca uma, duas, três vezes.
+-> 108 Olhar
+
+## 340
+A água-benta atinge o rosto e o vestido da Baronesa. A pele dela borbulha e solta fumaça. Ela urra de dor, e você aproveita a dor dela para atacar.
+perde: Água-benta
+-> 298 Ela começa a mudar de forma
+
+## 341
+A trilha do caçador entra na mata fechada. A neve aqui é mais rasa, porque as copas dos pinheiros seguram quase tudo. O silêncio é tão grande que você ouve o próprio coração. Seguindo o mapa de Matthias, chega a um riacho congelado.
+-> 111 Seguir a trilha pela margem
+-> 7 Atravessar o riacho sobre o gelo
+
+## 342
+Você ataca primeiro e o atinge nas costas antes que ele se vire. Mesmo assim ele não cai: vira-se com um rugido, e a metade podre do rosto se abre num sorriso.
+combate: Cozinheiro Carniçal | 8 | 7
+-> 70 Respirar
+
+## 343
+"Atrás da estante dos poetas há uma escada que desce até a capela de Aldric", ele sussurra. "Puxe o volume vermelho. Eu não disse nada."
+anota: Segredo da Estante
+-> 356 Continuar
+
+## 344
+Ivo enche um frasco na pia de pedra e o fecha com cera. "Uma gota queima a pele delas como ferro em brasa. Não desperdice."
+ganha: Água-benta
+-> 183 Agradecer
+
+## 345
+O adarve está deserto e coberto de neve. De um lado, o abismo; do outro, o pátio do castelo lá embaixo. A passagem leva a uma torre de vigia redonda, com a porta entreaberta.
+-> 312 Entrar na torre de vigia
+-> 305 Descer para o pátio por uma escada de pedra
+
+## 346
+O portão de Dravna é uma armação de madeira com uma cruz pregada no alto. Depois dele a estrada sobe serpenteando entre pinheiros cobertos de neve. O castelo, lá no alto, some e reaparece entre as nuvens.
+-> 350 Seguir pela estrada da carruagem
+-> 341 [Mapa da Floresta] Pegar a trilha do caçador pela mata
+-> 166 Voltar ao vilarejo antes de partir
+
+## 347
+A escada da torre do sino sobe por um longo tempo. O vento entra pelas frestas e assobia. No alto há uma câmara aberta para os quatro lados, com sinos de bronze pendurados em vigas grossas. No centro, menor que os outros, um sino de prata brilha fracamente. Morcegos dormem nas vigas.
+-> 304 [!Sino Tocado] Ir até o sino de prata
+-> 156 Espantar os morcegos primeiro
+-> 328 Descer
+
+## 348
+A porta de bronze se abre sem ruído. A cripta verdadeira é uma sala circular de pedra negra, iluminada por centenas de velas vermelhas. No centro, sobre um estrado, há um caixão de mármore preto sem tampa, cheio de terra escura. Ao lado dele, de pé, com um vestido vermelho que se arrasta pelo chão, está a mulher do retrato. Isolde Vargrav sorri para você. Os dentes dela são brancos e pontudos.
+-> 332 [Mirela Libertada] Encará-la
+-> 101 [!Mirela Libertada] Encará-la
+
+## 349
+Você chega ao outro lado sem olhar para baixo uma única vez. Seu coração só desacelera alguns passos depois.
+-> 290 Seguir pela estrada
+
+## 350
+A estrada da carruagem é larga o bastante para um coche, mas está tomada de neve fofa até os joelhos. Você sobe por uma hora entre pinheiros silenciosos. Nenhum pássaro canta. Numa curva, vê uma carroça tombada na vala, com uma lona rasgada batendo ao vento.
+-> 59 Examinar a carroça
+-> 133 Passar direto e continuar subindo
+
+## 351
+Você se ajoelha diante do irmão de Hanka. No pescoço do esqueleto há um pequeno martelo de prata pendurado numa corrente, um amuleto de ferreiro. Você o guarda para devolver à irmã dele, e faz uma oração curta.
+ganha: Amuleto de Pavel
+fé: +1
+-> 32 Sair da cela
+
+## 352
+A armadura desaba em peças espalhadas pelo chão. Do peitoral sai uma fumaça escura que some pela janela. Entre as peças, o elmo brilha: é leve, forte e se ajusta à sua cabeça como se fosse feito para você.
+ganha: Elmo Negro
+habilidade inicial: +1
+-> 367 Voltar à galeria
+
+## 353
+Na clareira há uma cabana de troncos com uma horta coberta de neve. Um velho de túnica marrom racha lenha na porta. Ele para e olha para você sem medo. "Você vai para o castelo. Todos que passam por aqui vão."
+-> 178 Falar com ele
+-> 245 Ameaçá-lo
+-> 30 Passar sem falar
+
+## 354
+A descida é lenta e escorregadia. No fundo da ravina, entre as pedras, você encontra o esqueleto de um cavaleiro de armadura enferrujada. Na mão ossuda há um escudo com uma cruz branca quase apagada.
+-> 281 Levar o escudo
+-> 320 Deixar tudo e subir do outro lado
+
+## 355
+A estaca é pesada e fria. Na base, alguém gravou uma pequena cruz.
+ganha: Estaca de Freixo
+-> 370 Continuar
+
+## 356
+O fantasma ergue os olhos por cima dos óculos. "Um leitor! Faz tanto tempo." Ele se chama Mestre Lukas e cuidava destes livros há duzentos anos. "Ela me deixou ficar porque eu sei onde tudo está. Pergunte. Mas fale baixo."
+-> 25 [Lenda de Vargrav] Perguntar sobre a espada Aurora
+-> 125 Perguntar como destruir a Baronesa
+-> 343 Perguntar se há passagens secretas
+-> 169 Agradecer
+
+## 357
+A lâmina de Aurora acende como o sol nascendo. A luz branca enche a cripta, e os morcegos queimam no ar, caindo como folhas secas. Os que sobram fogem para o centro da sala e se juntam de novo, numa Baronesa fumegante e trêmula.
+-> 279 Encarar a Baronesa de novo
+
+## 358
+O mercador desaba de vez, agora só um corpo. Nos caixotes quebrados você encontra um rolo de corda forte, um odre de conhaque e algumas moedas espalhadas pela neve.
+ganha: Corda
+ganha: Conhaque
+ouro: +3
+-> 133 Continuar a subida
+
+## 359
+No altar de pedra há um livro de rezas de capa preta e um cálice com um líquido escuro e grosso. As velas são feitas de alguma gordura que você não quer saber de onde veio.
+-> 252 Abrir o livro
+-> 96 [Água-benta] Despejar água-benta no cálice
+-> 96 [Água Clara] Despejar a água clara no cálice
+-> 42 Seguir em frente
+
+## 360
+A muralha segue a beira do penhasco. Num ponto, o vento e o gelo derrubaram algumas pedras do alto, e há fendas onde cabem mãos e pés. Lá em cima você vê o adarve, o caminho de ronda dos guardas.
+-> 209 [Corda] Jogar a corda num merlão e subir
+-> 20 Escalar pelas fendas
+-> 171 Voltar
+
+## 361
+Perto do topo, o degrau sob seu pé afunda com um estalo.
+teste de sorte: 151 | 68
+
+## 362
+O Guardião ataca. Cada golpe da espada de pedra arranca lascas do chão. Pedra não se cansa, e não sente dor.
+combate: Guardião de Pedra | 10 | 14
+-> 35 Passar pelos escombros
+
+## 363
+O portão de ferro que fecha a ala leste é trabalhado em forma de rosas e morcegos. Ele está trancado. Do outro lado, um corredor curto termina em portas brancas com puxadores de ouro.
+-> 243 [Chaves da Guarda] Usar as chaves da guarda
+-> 189 [Convite da Baronesa] Mostrar o convite da Baronesa
+-> 194 Escalar o portão
+-> 328 Voltar
+
+## 364
+O livro na mesa é um herbário. Está aberto numa ilustração de flores azuis: acônito. Ao lado, uma anotação recente, em tinta fresca, numa letra feminina e caprichada: "Para o meu irmão Bertram, se eu sair daqui. M." Mirela esteve aqui, e ainda tinha esperança.
+sorte: +1
+-> 169 Fechar o livro
+
+## 365
+O salão de jantar tem uma mesa comprida posta para vinte pessoas. Velas ardem em candelabros de prata. Em todas as cadeiras, menos uma, estão sentados convidados vestidos à moda de séculos atrás. Eles são transparentes como fumaça. Todos se viram para você ao mesmo tempo. Na cabeceira, de pé, está o mordomo Ansgar.
+-> 260 Sentar-se na cadeira vazia
+-> 77 Falar com Ansgar
+-> 5 Atacar Ansgar
+-> 102 Sair depressa
+
+## 366
+Você pinga uma gota de água-benta no cálice. O vinho ferve, borbulha e solta uma fumaça vermelha. Os convidados gritam sem som e desaparecem. Ansgar dá um passo para trás, com o rosto contorcido.
+fé: +1
+-> 51 Atacar Ansgar enquanto ele recua
+
+## 367
+O corredor norte é uma galeria de retratos em molduras douradas. Barões e baronesas de Vargrav, séculos deles, todos com o mesmo olhar duro. No fim da galeria, três retratos maiores se destacam: um cavaleiro de armadura branca, uma moça loira de vestido azul e uma mulher de vestido vermelho cujos olhos parecem segui-lo.
+-> 110 Examinar o retrato do cavaleiro
+-> 138 Examinar o retrato da moça loira
+-> 274 Examinar o retrato da mulher de vermelho
+-> 182 Procurar o retrato do barão, marido dela
+-> 167 Abrir a porta no fim da galeria
+-> 102 Voltar ao salão
+
+## 368
+Você golpeia a fechadura até seu braço doer. A porta nem treme. O eco dos golpes sobe pela escadaria, e lá do alto vem uma risada feminina, baixa e divertida.
+energia: -1
+sorte: -1
+-> 102 Desistir
+
+## 369
+A estátua gira com um estalo de mecanismo. Uma laje se afasta no chão, revelando degraus que descem. Uma luz azulada e fraca vem lá de baixo, e o ar cheira a incenso antigo.
+-> 9 Descer os degraus
+
+## 370
+A porta grande se abre para uma câmara de tortura. Correntes pendem do teto, há uma roda, uma cadeira de pregos e um braseiro ainda quente. O pior é o silêncio. Numa mesa estão as ferramentas, e no canto, uma pilha de pertences dos prisioneiros.
+-> 322 Revirar a pilha de pertences
+-> 323 Examinar as ferramentas
+-> 32 Sair depressa
+
+## 371
+A porta é de carvalho grosso, reforçada com ferro.
+teste de habilidade: 238 | 79
+
+## 372
+A grade está apenas encostada. Do outro lado, um corredor estreito desce em rampa. Pelas paredes escorre umidade, e o frio aumenta a cada passo. Você ouve, muito longe, alguém tossindo.
+-> 3 Seguir pelo corredor
+
+## 373
+O padre Ivo está na porta da capela, agarrado à corda do sino. "Eu não tinha coragem de tocar", ele diz. "Há trinta anos que eu não tinha coragem." Ele olha para você e para Mirela. "Agora eu tenho."
+-> 400 Ouvir o sino
+
+## 374
+"Nunca olhe nos olhos dela." Você fecha os olhos com força e se afasta do retrato. Quando volta a abri-los, o rosto pintado parece irritado.
+-> 367 Continuar
+
+## 375
+O cozinheiro se vira. Metade do rosto dele está podre, e a boca tem dentes demais. "Carne fresca!", ele grunhe, erguendo o cutelo.
+combate: Cozinheiro Carniçal | 8 | 9
+-> 70 Respirar
+
+## 376
+Você amarra a corda num poste e na cintura e atravessa devagar. Uma tábua se parte sob seu pé, mas a corda segura. Do outro lado, você recolhe a corda com as mãos trêmulas.
+-> 290 Seguir pela estrada
+
+## 377
+O interior da capelinha está em ruínas, mas a pia de água benta, esculpida em mármore, ainda guarda um pouco de água congelada. Na parede, uma placa diz: "Aqui jaz Bruno, escudeiro de Sir Aldric, que morreu à porta do castelo."
+-> 73 [!Água-benta] Quebrar o gelo e encher um frasco
+-> 192 Rezar pelo escudeiro
+-> 185 Sair
+
+## 378
+Os degraus sobem até uma porta de ferro trancada por fora. Pela fechadura, você vê o grande salão de entrada do castelo. Não há como abrir deste lado.
+-> 19 Voltar ao ossuário
+
+## 379
+Corvin examina a mordida, prepara uma pasta de acônito e prata e a espalha no ferimento. A dor é terrível, mas passa. "Pronto. A lua não manda mais em você."
+cura: Licantropia
+-> 149 Perguntar sobre a Baronesa
+
+## 380
+Os degraus estão podres de ferrugem. Alguns se dobram com o seu peso.
+teste de sorte: 150 | 26
+
+## 381
+Pela janelinha você vê um esqueleto encostado à parede, ainda de avental de couro de ferreiro. Na parede, riscados com um prego, há dezenas de traços contando dias, e um nome: Pavel.
+-> 351 [Chave das Celas] Abrir a cela
+-> 32 Afastar-se
+
+## 382
+Você come pão com mel e enche a mochila com queijo e presunto. É a refeição mais estranha da sua vida, e a mais saborosa em dias.
+energia: +3
+provisões: +2
+-> 44 Continuar
+
+## 383
+Você golpeia às cegas até os guinchos pararem.
+combate: Ratos da Adega | 5 | 8
+-> 372 Encontrar a grade tateando
+
+## 384
+Você pega um livro de capa preta. As páginas estão em branco, até que letras vermelhas começam a aparecer sozinhas, formando o seu nome. Você o larga com um arrepio, e o livro se fecha e voa de volta para a estante.
+fé: -1
+-> 262 Continuar procurando com mais cuidado
+
+## 385
+A luz de Aurora queima a pele da Baronesa a cada golpe que você dá. Ela luta com fúria, mas não consegue olhar diretamente para a lâmina.
+combate: Isolde, a Baronesa | 10 | 10
+-> 263 Vê-la tombar
+
+## 386
+Você aterrissa do outro lado com os dois pés firmes na pedra. Perdeu tempo, mas está inteiro. Através das árvores, você reencontra a estrada.
+-> 290 Seguir pela estrada
+
+## 387
+Uma sombra azul cruza a cripta como um raio. Liesl se joga sobre a Baronesa e as duas rolam pelo chão, rasgando e mordendo. "Mirela, corre!", grita Liesl. Você aproveita para arrebentar as correntes do altar com a espada. Mirela salta para o chão e se esconde atrás de uma coluna. Isolde arremessa Liesl contra a parede e se levanta, furiosa.
+anota: Mirela Libertada
+-> 227 Enfrentar a Baronesa
+
+## 388
+Por dentro do elmo não há nada, só escuridão. Quando você se aproxima, os dedos da manopla se fecham no cabo da espada de duas mãos.
+-> 394 Recuar e se preparar
+
+## 389
+"Lobos são lobos", diz Matthias. "Comem quando têm fome. Se jogar carne para eles, às vezes vão embora. Mas há uma coisa que anda com eles e não é lobo. Anda em duas pernas na lua cheia. Se ela morder você, o acônito da curandeira é a única cura que eu conheço."
+-> 324 Agradecer
+
+## 390
+Você corre para o pátio. As gárgulas voam atrás de você, mas não passam do portão: algo as prende ao lugar. Uma delas ainda o atinge nas costas com as garras.
+energia: -2
+-> 202 Seguir pelo pátio
+
+## 391
+O carcereiro é um morto-vivo enorme, de uniforme podre e mãos como pás. Ele solta um mugido e avança girando uma clava de ferro.
+combate: Carcereiro | 8 | 10
+-> 21 Pegar as chaves dele
+
+## 392
+Só três barracas estão abertas. Uma velha vende tranças de alho, um homem vende pão duro e carne seca, e um menino vende lenha. Todos olham para a sua espada e depois para o castelo, sem dizer nada.
+-> 287 [!Alho] Comprar alho (1 moeda)
+-> 10 Comprar provisões (2 moedas)
+-> 166 Voltar à praça
+
+## 393
+O corredor de cima tem quatro portas. Três estão escancaradas e os quartos estão vazios. A quarta está trancada por dentro, e você ouve um choro baixinho do outro lado.
+-> 191 Arrombar a porta
+-> 164 Descer de volta
+
+## 394
+A armadura vazia se move com um ruído de sino, lenta mas poderosa.
+combate: Armadura Animada | 9 | 12
+fuga -> 367
+-> 352 Ver o que restou
+
+## 395
+Quando você abre as portas do guarda-roupa, uma névoa vermelha escorre lá de dentro, se enrola nas suas pernas e sobe até o seu pescoço. Ela tem cheiro de sangue e é fria como a morte.
+combate: Névoa Sangrenta | 8 | 8
+-> 316 Procurar entre os vestidos
+
+## 396
+A estante gira sobre um eixo com um suspiro de pó. Atrás dela, uma escada estreita desce em caracol. Lá do fundo vem um brilho azulado.
+-> 9 Descer
+
+## 397
+As servas avançam todas juntas, frias e silenciosas.
+combate: Serva Morta | 6 | 6
+combate junto: Serva Morta | 6 | 5
+combate junto: Serva Morta | 7 | 5
+-> 204 Olhar em volta
+
+## 398
+O poço é largo e muito fundo. O balde sumiu, mas a corda velha ainda está presa na roda. Você joga uma pedrinha e demora para ouvi-la bater na água. Na parede interna há degraus de ferro enferrujados que descem para a escuridão.
+-> 380 Descer pelos degraus de ferro
+-> 40 [Corda] Descer pela sua própria corda
+-> 268 Deixar o poço
+
+## 399
+Você pede perdão em silêncio à dona da casa e guarda o espelho. Dizem que os vampiros não suportam ver o que se tornaram.
+ganha: Espelho de Prata
+-> 52 Continuar
+
+## 400
+O sino de Dravna toca. Toca uma vez, e depois outra, e depois sem parar, ecoando pelo vale inteiro, pelas montanhas e pelas ruínas fumegantes do castelo. Na estalagem, alguém troca a placa: O Sino Calado agora se chama O Sino Livre. Mirela volta à casa de ervas, e a porta fica aberta para quem precisar.
+
+Você fica em Dravna até o fim do inverno, e ninguém deixa você pagar por um único copo de vinho. Quando a neve derrete e você finalmente segue estrada abaixo, leva no bolso uma medalha, uma história e um lugar para onde voltar.
+fim: Você destruiu a Baronesa de Vargrav e devolveu a paz ao vale de Kessel. Vitória!
+</script>
+
+<script type="text/plain" id="exemplo">Título: A Torre do Relojoeiro
+Habilidade: 1d6+6
+Energia: 2d6+12
+Sorte: 1d6+6
+Fé: 1d6+3
+Equipamento: Espada, Armadura de couro, Lanterna
+Provisões: 10
+
+O relojoeiro Anselmo desapareceu há três noites, e com ele parou o grande relógio da vila de Vau Cinzento. Os moradores dizem que algo se mudou para a torre.
+
+Você aceitou subir até lá e descobrir o que aconteceu.
+
+## 1
+A porta da torre está entreaberta. Lá dentro, o ar cheira a óleo velho e ferrugem. Uma escada em espiral sobe para a escuridão. À esquerda, há uma pequena oficina com uma vela ainda acesa.
+-> 2 Entrar na oficina
+-> 3 Subir a escada imediatamente
+
+## 2
+A bancada está coberta de engrenagens. Sob um pano você encontra uma chave de latão com dentes em forma de roda dentada. Pendurado na parede há um martelo de relojoeiro, pesado e bem equilibrado.
+ganha: Chave de Engrenagem
+arma: Martelo do Relojoeiro | +1
+-> 3 Voltar e subir a escada
+
+## 3
+No meio da escada, um degrau range e cede sob o seu pé.
+teste de sorte: 4 | 5
+
+## 4
+Você se agarra ao corrimão bem a tempo. O degrau despenca no escuro e leva vários segundos até bater no chão.
+-> 6 Seguir até o topo
+
+## 5
+Você escorrega e torce o tornozelo na pedra antes de conseguir se segurar.
+energia: -2
+aflição: Tornozelo torcido
+-> 6 Mancar até o topo
+
+## 6
+A sala do mecanismo é enorme. Sobre o eixo principal está empoleirado um corvo feito de latão, do tamanho de um cão. Ao mesmo tempo, um rato de corda sai de trás de um pêndulo. Os dois atacam juntos.
+combate: Corvo de Latão | 7 | 8
+combate junto: Rato de Corda | 5 | 4
+fuga -> 9
+-> 7 Examinar o mecanismo
+
+## 7
+Com os autômatos desmontados no chão, você enxerga o problema: uma portinhola trancada no coração do mecanismo, de onde vêm batidas abafadas.
+-> 8 [Chave de Engrenagem] Usar a chave de latão
+-> 14 [fé 7+] Pôr a mão sobre a portinhola e rezar
+-> 10 Forçar a portinhola com as mãos
+
+## 8
+A chave gira com um estalo. Encolhido entre as engrenagens está o próprio Anselmo, faminto mas vivo. Ele construiu os autômatos para guardar a torre e acabou trancado pela própria criação.
+
+Juntos, vocês dão corda no grande relógio. Lá embaixo, a vila inteira ouve o primeiro badalo em três dias.
+ouro: +20
+fé: +1
+cura: Tornozelo torcido
+fim: Você salvou o relojoeiro e devolveu as horas a Vau Cinzento.
+
+## 9
+Você desce correndo e só para do lado de fora. A torre continua em silêncio.
+fim: Você sobreviveu, mas o relógio continua parado.
+
+## 10
+Você puxa a portinhola com toda a força. Uma engrenagem solta prende sua manga e arrasta seu braço para dentro do mecanismo.
+energia: -3
+teste de habilidade: 11 | 12
+
+## 11
+Com um puxão firme você se solta. Do outro lado da portinhola, uma voz rouca grita: *"A chave! Ficou na oficina!"*
+-> 13 Descer até a oficina
+
+## 12
+A engrenagem não solta. Quando finalmente se livra, você está ferido demais para continuar, e os moradores precisam carregá-lo de volta para a vila.
+fim: Sua aventura termina aqui.
+
+## 13
+Você desce pulando o degrau quebrado e encontra a chave de latão na bancada.
+ganha: Chave de Engrenagem
+-> 8 Voltar e abrir a portinhola
+
+## 14
+Por um instante as engrenagens param de girar. A portinhola se abre sozinha, como se o próprio mecanismo reconhecesse suas boas intenções.
+habilidade inicial: +1
+-> 8 Entrar
+</script>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const app=$('#app');
+const d6=()=>1+Math.floor(Math.random()*6);
+const KEY='livrojogo.texto.v2', NKEY='livrojogo.anotacoes';
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const exemplo=$('#exemplo').textContent.replace(/^\n/,'');
+const aventura=$('#aventura').textContent.replace(/^\n/,'');
+
+let src=aventura;
+let book, view='play', S, notesText=store.get(NKEY)||'';
+
+/* ---------- Trilha de suspense (sintetizada no navegador) ---------- */
+const Music=(()=>{
+  let ctx=null,master,bus,lp,on=false,combat=false,vol=0.55,timer=0,nextNote=0,nextBeat=0;
+  const AC=window.AudioContext||window.webkitAudioContext;
+  const SCALE=[62,63,65,67,69,70,72,74,75,77]; // ré frígio
+  const mtof=m=>440*Math.pow(2,(m-69)/12);
+  function impulse(sec){const n=ctx.sampleRate*sec,b=ctx.createBuffer(2,n,ctx.sampleRate);for(let c=0;c<2;c++){const d=b.getChannelData(c);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3);}return b;}
+  function osc(type,f,det,g,dest){const o=ctx.createOscillator();o.type=type;o.frequency.value=f;o.detune.value=det;const gn=ctx.createGain();gn.gain.value=g;o.connect(gn);gn.connect(dest);o.start();return gn;}
+  function build(){
+    ctx=new AC();
+    master=ctx.createGain();master.gain.value=0;master.connect(ctx.destination);
+    const verb=ctx.createConvolver();verb.buffer=impulse(5);const wet=ctx.createGain();wet.gain.value=0.7;verb.connect(wet);wet.connect(master);
+    const dry=ctx.createGain();dry.gain.value=0.55;dry.connect(master);
+    bus={verb,dry};
+    lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=200;lp.Q.value=5;lp.connect(dry);lp.connect(verb);
+    const lfo=ctx.createOscillator();lfo.frequency.value=0.045;const lg=ctx.createGain();lg.gain.value=110;lfo.connect(lg);lg.connect(lp.frequency);lfo.start();
+    osc('sawtooth',36.71,-8,0.16,lp);osc('sawtooth',36.71,8,0.16,lp);osc('sawtooth',55,-5,0.08,lp);osc('triangle',73.42,4,0.10,lp);
+    const dis=osc('sine',77.78,0,0,lp); // mi bemol: a dissonância que vai e volta
+    bus.dis=dis;
+    const nb=ctx.createBuffer(1,ctx.sampleRate*3,ctx.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
+    const ns=ctx.createBufferSource();ns.buffer=nb;ns.loop=true;
+    const bp=ctx.createBiquadFilter();bp.type='bandpass';bp.frequency.value=450;bp.Q.value=0.9;
+    const wg=ctx.createGain();wg.gain.value=0.035;ns.connect(bp);bp.connect(wg);wg.connect(verb);ns.start();
+    const wl=ctx.createOscillator();wl.frequency.value=0.07;const wlg=ctx.createGain();wlg.gain.value=280;wl.connect(wlg);wlg.connect(bp.frequency);wl.start();
+    nextNote=ctx.currentTime+2;nextBeat=ctx.currentTime;
+  }
+  function bell(f,t,amp,len){
+    [1,2.01,2.76,5.4].forEach((r,i)=>{const o=ctx.createOscillator();o.type='sine';o.frequency.value=f*r;const g=ctx.createGain();
+      g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(amp/(i+1.5),t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+len/(1+i*0.7));
+      o.connect(g);g.connect(bus.verb);if(i===0)g.connect(bus.dry);o.start(t);o.stop(t+len+0.1);});
+  }
+  function thump(t,amp){const o=ctx.createOscillator();o.frequency.setValueAtTime(95,t);o.frequency.exponentialRampToValueAtTime(38,t+0.16);
+    const g=ctx.createGain();g.gain.setValueAtTime(amp,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.28);o.connect(g);g.connect(bus.dry);o.start(t);o.stop(t+0.32);}
+  function tick(){
+    if(!on||!ctx) return;
+    const now=ctx.currentTime;
+    while(nextNote<now+0.5){
+      const n=1+Math.floor(Math.random()*(combat?3:2));
+      for(let i=0;i<n;i++){const m=SCALE[Math.floor(Math.random()*SCALE.length)]-(Math.random()<0.35?12:0);bell(mtof(m),nextNote+i*(combat?0.35:0.9),combat?0.09:0.06,combat?2.5:5);}
+      if(Math.random()<0.4){bus.dis.gain.cancelScheduledValues(nextNote);bus.dis.gain.setTargetAtTime(combat?0.12:0.07,nextNote,2);bus.dis.gain.setTargetAtTime(0,nextNote+5,3);}
+      nextNote+=combat?1.6+Math.random()*1.4:4+Math.random()*5;
+    }
+    if(combat){while(nextBeat<now+0.5){thump(nextBeat,0.55);thump(nextBeat+0.24,0.38);nextBeat+=0.82;}}
+    else nextBeat=now;
+  }
+  function level(){if(master&&ctx)master.gain.setTargetAtTime(on?vol*0.7:0,ctx.currentTime,0.6);}
+  return {
+    get on(){return on;},
+    toggle(){
+      if(!AC) return false;
+      try{ if(!ctx) build(); on=!on;
+        if(on){ctx.resume();nextNote=Math.max(nextNote,ctx.currentTime+0.5);clearInterval(timer);timer=setInterval(tick,200);}
+        else{clearInterval(timer);setTimeout(()=>{if(!on&&ctx)ctx.suspend();},2500);}
+        level(); return on;
+      }catch(e){on=false;return false;}
+    },
+    volume(v){vol=v;level();},
+    setCombat(c){
+      if(c===combat) return; combat=c;
+      if(ctx&&on){lp.frequency.cancelScheduledValues(ctx.currentTime);lp.frequency.setTargetAtTime(c?520:200,ctx.currentTime,1.2);nextNote=ctx.currentTime+0.3;}
+    },
+    sting(){ if(!ctx||!on) return; const t=ctx.currentTime+0.05; [50,51,57].forEach(m=>bell(mtof(m),t,0.16,7)); thump(t,0.9); },
+    fanfare(){ if(!ctx||!on) return; const t=ctx.currentTime+0.05; [62,66,69,74].forEach((m,i)=>bell(mtof(m),t+i*0.35,0.11,6)); }
+  };
+})();
+
+/* ---------- Leitor do formato ---------- */
+const STATKEY={habilidade:'hab',energia:'ene',sorte:'sor','fé':'fe',fe:'fe',ouro:'ouro','provisões':'prov',provisoes:'prov'};
+const NAME={hab:'Habilidade',ene:'Energia',sor:'Sorte',fe:'Fé',ouro:'Ouro',prov:'Provisões'};
+const sk=w=>STATKEY[w.toLowerCase()];
+const W='(habilidade|energia|sorte|f[éÉeE]|ouro|provis[õÕoO]es)';
+const RX={
+  formula:new RegExp('^'+W+'\\s*:\\s*(\\d+)\\s*d6\\s*(?:\\+\\s*(\\d+))?\\s*$','i'),
+  max:new RegExp('^'+W+'\\s+inicial\\s*:\\s*([+-]?\\d+)\\s*$','i'),
+  stat:new RegExp('^'+W+'\\s*:\\s*([+-]?\\d+)\\s*$','i'),
+  test:new RegExp('^teste\\s+de\\s+(sorte|habilidade|f[éÉeE])\\s*:\\s*(\\d+)\\s*\\|\\s*(\\d+)\\s*$','i'),
+  req:new RegExp('^'+W+'\\s+(\\d+)\\s*\\+$','i')
+};
+function parse(text){
+  const b={title:'Sem título',autor:'',intro:[],secs:{},order:[],errors:[],formula:{hab:[1,6],ene:[2,12],sor:[1,6]},equip:[],prov:10,ouro:0,pocoes:[]};
+  let cur=null;
+  text.split(/\r?\n/).forEach((raw,i)=>{
+    const t=raw.trim(), ln=i+1; let m;
+    if(!cur){
+      if(m=t.match(/^t[íÍiI]tulo\s*:\s*(.+)$/i)){b.title=m[1];return;}
+      if(m=t.match(/^autor\s*:\s*(.+)$/i)){b.autor=m[1].trim();return;}
+      if(m=t.match(RX.formula)){b.formula[sk(m[1])]=[+m[2],+(m[3]||0)];return;}
+      if(m=t.match(/^po[çÇcC][õÕoO]es\s*:\s*(.+)$/i)){b.pocoes=m[1].split(/[,;]/).map(s=>s.trim()).filter(Boolean);return;}
+      if(m=t.match(/^equipamento\s*:\s*(.+)$/i)){b.equip=m[1].split(/[,;]/).map(s=>s.trim()).filter(Boolean);return;}
+      if(m=t.match(/^provis[õÕoO]es\s*:\s*(\d+)\s*$/i)){b.prov=+m[1];return;}
+      if(m=t.match(/^ouro\s*:\s*(\d+)\s*$/i)){b.ouro=+m[1];return;}
+    }
+    if(m=t.match(/^#+\s*(\d+)\s*$/)){
+      if(b.secs[m[1]]) b.errors.push(`Seção ${m[1]} aparece duas vezes (linha ${ln}).`);
+      cur={id:m[1],lines:[],choices:[],effects:[],groups:[],tests:[],flee:null,end:null};
+      b.secs[m[1]]=cur;b.order.push(m[1]);return;
+    }
+    if(!cur){b.intro.push(raw);return;}
+    if(m=t.match(/^->\s*(\d+)\s*((?:\[[^\]]+\]\s*)*)(.*)$/)){const reqs=[...m[2].matchAll(/\[([^\]]+)\]/g)].map(x=>x[1].trim());cur.choices.push({to:m[1],reqs,label:m[3].trim()||('Vá para '+m[1])});return;}
+    if(/^->/.test(t)){b.errors.push(`Linha ${ln}: escolha sem número de destino.`);return;}
+    if(m=t.match(/^combate(\s+junto|\s*\+)?\s*:\s*(.+?)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*(?:->\s*(\d+))?\s*$/i)){
+      const foe={name:m[2],hab:+m[3],ene:+m[4]};
+      let g; if(m[1]&&cur.groups.length){g=cur.groups[cur.groups.length-1];g.foes.push(foe);} else {g={foes:[foe],to:null};cur.groups.push(g);}
+      if(m[5]) g.to=m[5]; return;
+    }
+    if(/^combate/i.test(t)&&/:/.test(t)){b.errors.push(`Linha ${ln}: combate fora do formato "Nome | HAB | ENE".`);return;}
+    if(m=t.match(/^fuga\s*->\s*(\d+)\s*$/i)){cur.flee=m[1];return;}
+    if(m=t.match(RX.test)){cur.tests.push({kind:sk(m[1]),ok:m[2],fail:m[3]});return;}
+    if(m=t.match(/^(ganha|perde)\s*:\s*(.+)$/i)){cur.effects.push({type:m[1].toLowerCase(),item:m[2].trim()});return;}
+    if(m=t.match(/^arma\s*:\s*(.+?)\s*(?:\|\s*([+-]?\d+))?\s*$/i)){cur.effects.push({type:'arma',item:m[1],n:+(m[2]||0)});return;}
+    if(m=t.match(/^afli[çÇcC][ãÃaA]o\s*:\s*(.+)$/i)){cur.effects.push({type:'afl',item:m[1].trim()});return;}
+    if(m=t.match(/^cura\s*:\s*(.+)$/i)){cur.effects.push({type:'cura',item:m[1].trim()});return;}
+    if(m=t.match(/^anota\s*:\s*(.+)$/i)){cur.effects.push({type:'anota',item:m[1].trim()});return;}
+    if(m=t.match(RX.max)){cur.effects.push({type:'max',stat:sk(m[1]),n:+m[2]});return;}
+    if(m=t.match(RX.stat)){cur.effects.push({type:'stat',stat:sk(m[1]),n:+m[2]});return;}
+    if(m=t.match(/^fim\s*(?::\s*(.*))?$/i)){cur.end=(m[1]||'').trim()||'Fim da aventura.';return;}
+    cur.lines.push(raw);
+  });
+  return b;
+}
+function targets(s){return [...s.choices.map(c=>c.to),...s.groups.map(g=>g.to).filter(Boolean),...(s.flee?[s.flee]:[]),...s.tests.flatMap(t=>[t.ok,t.fail])];}
+function check(b){
+  const probs=b.errors.map(e=>({err:true,msg:e}));
+  if(!b.order.length){probs.push({err:true,msg:'Nenhuma seção encontrada. Comece uma com "## 1".'});return probs;}
+  b.order.forEach(id=>{const s=b.secs[id];
+    targets(s).forEach(t=>{if(!b.secs[t])probs.push({err:true,msg:`Seção ${id} manda para ${t}, que não existe.`});});
+    s.tests.forEach(t=>{if(t.kind==='fe'&&!b.formula.fe)probs.push({err:true,msg:`Seção ${id} testa a Fé, mas o cabeçalho não tem "Fé: 1d6+3".`});});
+    if(!s.end && !s.choices.length && !s.tests.length && !s.groups.some(g=>g.to)) probs.push({err:false,msg:`Seção ${id} não tem saída nem "fim".`});
+  });
+  const seen=new Set([b.order[0]]),q=[b.order[0]];
+  while(q.length){const s=b.secs[q.shift()];targets(s).forEach(t=>{if(b.secs[t]&&!seen.has(t)){seen.add(t);q.push(t);}});}
+  const orphan=b.order.filter(id=>!seen.has(id));
+  if(orphan.length) probs.push({err:false,msg:`Ninguém chega a: ${orphan.join(', ')}.`});
+  return probs;
+}
+
+/* ---------- Estado de jogo ---------- */
+function freshState(){return {phase:'start',char:null,roll:null,sec:null,visited:[],fight:null,tests:{},notes:[],dead:false};}
+const STATS=['hab','ene','sor','fe'];
+function rollChar(){
+  const c={items:[...book.equip],weapons:{},afl:[],flags:[],ouro:book.ouro,prov:book.prov}; S.roll={};
+  STATS.forEach(k=>{const f=book.formula[k];if(!f)return;const r=Array.from({length:f[0]},d6);const v=r.reduce((a,x)=>a+x,0)+f[1];S.roll[k]=r;c[k]=v;c[k+'Max']=v;});
+  S.char=c;
+}
+const lc=s=>s.toLowerCase();
+const has=n=>[S.char.items,S.char.afl,S.char.flags].some(L=>L.some(i=>lc(i)===lc(n)));
+function reqOk(req){
+  if(!req) return true; let m;
+  if(m=req.match(RX.req)) return (S.char[sk(m[1])]||0)>=+m[2];
+  if(req.startsWith('!')) return !has(req.slice(1).trim());
+  return has(req);
+}
+function reqText(req,ok){
+  let m;
+  if(m=req.match(RX.req)) return `Requer ${NAME[sk(m[1])]} ${m[2]} ou mais`;
+  if(req.startsWith('!')) return ok?`Você não tem: ${req.slice(1).trim()}`:`Só sem: ${req.slice(1).trim()}`;
+  return ok?`Você tem: ${req}`:`Requer: ${req}`;
+}
+const bonus=()=>{const v=Object.values(S.char.weapons);return v.length?Math.max(...v):0;};
+const bestWeapon=()=>{let n=null,b=-99;for(const [k,v] of Object.entries(S.char.weapons)){if(v>b){b=v;n=k;}}return n;};
+function clamp(c){
+  ['hab','ene','sor'].forEach(k=>{c[k]=Math.max(0,Math.min(c[k],c[k+'Max']));});
+  if(c.fe!=null) c.fe=Math.max(0,c.fe);
+  c.ouro=Math.max(0,c.ouro);c.prov=Math.max(0,c.prov);
+}
+function enter(id){
+  const s=book.secs[id], c=S.char;
+  S.phase='play';S.sec=id;S.visited.push(id);S.tests={};S.notes=[];S.fight=null;
+  if(!s){render();return;}
+  const sign=n=>(n>=0?'+':'−')+Math.abs(n);
+  s.effects.forEach(f=>{
+    if(f.type==='ganha'){if(!has(f.item))c.items.push(f.item);S.notes.push({cls:'good',t:'Ganhou: '+f.item});}
+    else if(f.type==='anota'){if(!c.flags.some(i=>lc(i)===lc(f.item))){c.flags.push(f.item);S.notes.push({cls:'',t:'Anotado: '+f.item});}}
+    else if(f.type==='perde'){c.items=c.items.filter(i=>lc(i)!==lc(f.item));c.flags=c.flags.filter(i=>lc(i)!==lc(f.item));for(const k in c.weapons)if(lc(k)===lc(f.item))delete c.weapons[k];S.notes.push({cls:'bad',t:'Perdeu: '+f.item});}
+    else if(f.type==='arma'){if(!c.items.some(i=>lc(i)===lc(f.item)))c.items.push(f.item);c.weapons[f.item]=f.n;S.notes.push({cls:'good',t:`Arma: ${f.item}${f.n?' ('+sign(f.n)+' Habilidade)':''}`});}
+    else if(f.type==='afl'){if(!c.afl.some(i=>lc(i)===lc(f.item)))c.afl.push(f.item);S.notes.push({cls:'bad',t:'Aflição: '+f.item});}
+    else if(f.type==='cura'){if(c.afl.some(i=>lc(i)===lc(f.item))){c.afl=c.afl.filter(i=>lc(i)!==lc(f.item));S.notes.push({cls:'good',t:'Livrou-se de: '+f.item});}}
+    else if(f.type==='max'){if(c[f.stat+'Max']!=null)c[f.stat+'Max']+=f.n;c[f.stat]=(c[f.stat]||0)+f.n;S.notes.push({cls:f.n>=0?'good':'bad',t:`${NAME[f.stat]} inicial ${sign(f.n)}`});}
+    else {c[f.stat]=(c[f.stat]||0)+f.n;S.notes.push({cls:f.n>=0?'good':'bad',t:`${NAME[f.stat]} ${sign(f.n)}`});}
+  });
+  clamp(c);
+  if(s.groups.length) S.fight={g:0,hp:s.groups.map(g=>g.foes.map(f=>f.ene)),target:0,log:[],last:null,goto:null,done:false};
+  if(c.ene<=0) S.dead=true;
+  render(); window.scrollTo({top:0,behavior:'smooth'});
+}
+const dice=a=>a.map(n=>`<span class="die">${n}</span>`).join('');
+function testLuck(){
+  const r=[d6(),d6()],sum=r[0]+r[1],before=S.char.sor;
+  const ok=before>1&&sum<=before; S.char.sor=Math.max(0,before-1);
+  return {r,sum,target:before,ok,auto:before<=1};
+}
+
+function attack(){
+  const s=book.secs[S.sec],f=S.fight,G=s.groups[f.g],hp=f.hp[f.g];
+  const a=[d6(),d6()],B=bonus(),fa=a[0]+a[1]+S.char.hab+B;
+  let hit=false,hurt=false;
+  const lines=[];
+  G.foes.forEach((foe,i)=>{
+    if(hp[i]<=0) return;
+    const r=[d6(),d6()],fb=r[0]+r[1]+foe.hab; let res;
+    if(i===f.target){
+      if(fa>fb){hp[i]-=2;hit=true;res=`<span class="res-ok">você feriu (−2)</span>`;}
+      else if(fb>fa){S.char.ene-=2;hurt=true;res=`<span class="res-bad">feriu você (−2)</span>`;}
+      else res='golpes evitados';
+    } else {
+      if(fb>fa){S.char.ene-=2;hurt=true;res=`<span class="res-bad">feriu você (−2)</span>`;}
+      else res='você se defendeu';
+    }
+    lines.push(`${esc(foe.name)} ${dice(r)}+${foe.hab} = <b>${fb}</b> → ${res}`);
+  });
+  lines.push(`Você ${dice(a)}+${S.char.hab}${B?(B>0?'+':'−')+Math.abs(B):''} = <b>${fa}</b>`);
+  f.last=hit?'hit':(hurt?'hurt':null);
+  f.log.unshift(lines.join('<br>'));
+  settle();
+}
+function luckInFight(){
+  const s=book.secs[S.sec],f=S.fight,foe=s.groups[f.g].foes[f.target],L=testLuck();
+  let t;
+  if(f.last==='hit'){ if(L.ok){f.hp[f.g][f.target]-=2;t=`<span class="res-ok">Sorte! Ferimento sério em ${esc(foe.name)} (−2 extra).</span>`;} else {f.hp[f.g][f.target]+=1;t=`<span class="res-bad">Azar. Foi só um arranhão (${esc(foe.name)} recupera 1).</span>`;} }
+  else { if(L.ok){S.char.ene+=1;t='<span class="res-ok">Sorte! Você evitou parte do golpe (+1 Energia).</span>';} else {S.char.ene-=1;t='<span class="res-bad">Azar. O golpe foi mais sério (−1 Energia).</span>';} }
+  f.log.unshift(`Testar a Sorte ${dice(L.r)} = <b>${L.sum}</b> contra ${L.target}${L.auto?' (Sorte 1 ou menos: azar automático)':''}<br>${t}`);
+  f.last=null; settle();
+}
+function settle(){
+  const s=book.secs[S.sec],f=S.fight; clamp(S.char);
+  if(S.char.ene<=0){S.dead=true;render();return;}
+  const G=s.groups[f.g],hp=f.hp[f.g];
+  if(hp[f.target]<=0){
+    f.log.unshift(`<b>${esc(G.foes[f.target].name)} foi derrotado.</b>`); f.last=null;
+    const next=hp.findIndex(h=>h>0);
+    if(next>=0) f.target=next;
+    else if(G.to) f.goto=G.to;
+    else {f.g++;f.target=0;if(f.g>=s.groups.length)f.done=true;}
+  }
+  render();
+}
+function flee(){S.char.ene-=2;clamp(S.char);if(S.char.ene<=0){S.dead=true;render();return;}enter(book.secs[S.sec].flee);}
+function runTest(idx){
+  const t=book.secs[S.sec].tests[idx]; let res;
+  if(t.kind==='sor') res=testLuck();
+  else {const r=[d6(),d6()],sum=r[0]+r[1],target=S.char[t.kind]||0;res={r,sum,target,ok:sum<=target};}
+  res.to=res.ok?t.ok:t.fail; S.tests[idx]=res; render();
+}
+const POCOES_INFO={
+  'habilidade':{nome:'Poção da Habilidade',txt:'Devolve a Habilidade ao valor inicial.'},
+  'força':{nome:'Poção da Força',txt:'Devolve a Energia ao valor inicial.'},
+  'forca':{nome:'Poção da Força',txt:'Devolve a Energia ao valor inicial.'},
+  'fortuna':{nome:'Poção da Fortuna',txt:'Devolve a Sorte ao valor inicial e aumenta a Sorte inicial em 1.'}
+};
+const pocaoInfo=k=>POCOES_INFO[(k||'').toLowerCase()]||{nome:'Poção de '+k,txt:''};
+function drink(){
+  const c=S.char; if(!c||!c.pocao||c.pocao.doses<1) return;
+  const k=c.pocao.tipo.toLowerCase();
+  if(k==='habilidade') c.hab=c.habMax;
+  else if(k==='força'||k==='forca') c.ene=c.eneMax;
+  else if(k==='fortuna'){ c.sorMax+=1; c.sor=c.sorMax; }
+  c.pocao.doses--; S.notes=[...(S.notes||[]),{cls:'good',t:pocaoInfo(c.pocao.tipo).nome+' bebida'}]; render();
+}
+function eat(){if(S.char.prov>0&&S.char.ene<S.char.eneMax){S.char.prov--;S.char.ene+=4;clamp(S.char);render();}}
+
+/* ---------- Desenho ---------- */
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function prose(lines){
+  const t=lines.join('\n').trim(); if(!t) return '';
+  return t.split(/\n\s*\n/).map(p=>'<p>'+esc(p).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>')+'</p>').join('');
+}
+let lastEnd='';
+const SAVE='vargrav.progresso', AVENTURA='castelo-de-vargrav';
+const SUPABASE_URL="https://baoquuhwoqftboziight.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhb3F1dWh3b3FmdGJvemlpZ2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0NTE1MjcsImV4cCI6MjEwMzAyNzUyN30.5ut-Gd9OWdy99sX2YnUQPimssfYCbtn0cLjBRERXO-w";
+let sb=null, userId=null, nuvem='off', lastSnap='', pushTimer=0;
+try{ if(window.supabase) sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY); }catch(e){ sb=null; }
+function snapshot(){ return {S,notesText,salvo_em:new Date().toISOString(),fim:!!(S.dead||(book.secs[S.sec]&&book.secs[S.sec].end))}; }
+function save(){
+  if(S.phase!=='play') return;
+  const snap=snapshot(), key=JSON.stringify({S,notesText});
+  if(key===lastSnap) return; lastSnap=key;
+  store.set(SAVE,JSON.stringify(snap));
+  if(sb&&userId){ clearTimeout(pushTimer); pushTimer=setTimeout(()=>pushNuvem(snap),1200); }
+}
+async function pushNuvem(snap){
+  try{
+    const {error}=await sb.from('rpgsolo_saves').upsert({user_id:userId,aventura:AVENTURA,estado:snap,atualizado_em:snap.salvo_em});
+    nuvem=error?'erro':'ok';
+  }catch(e){ nuvem='erro'; }
+  paintSave();
+}
+async function apagarNuvem(){ if(sb&&userId){ try{ await sb.from('rpgsolo_saves').delete().eq('user_id',userId).eq('aventura',AVENTURA); }catch(e){} } }
+function paintSave(){
+  const el=document.getElementById('savestate'); if(!el) return;
+  if(userId&&nuvem==='ok'){el.textContent='Progresso salvo na sua conta';el.className='savestate ok';}
+  else if(userId&&nuvem==='erro'){el.textContent='Não consegui salvar na conta agora. O progresso ficou salvo neste navegador.';el.className='savestate';}
+  else if(userId){el.textContent='Seu progresso é salvo na sua conta';el.className='savestate';}
+  else {el.innerHTML='Progresso salvo só neste navegador. <a href="/">Entre no site</a> para salvar na sua conta e continuar em qualquer aparelho.';el.className='savestate';}
+}
+function validSave(j){ return j&&j.S&&j.S.phase==='play'&&j.S.char&&!j.S.dead&&!(book.secs[j.S.sec]&&book.secs[j.S.sec].end); }
+async function iniciarConta(){
+  const conta=document.getElementById('conta');
+  if(!sb){ conta.textContent='Jogando sem conta'; paintSave(); return; }
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(!session){ conta.innerHTML='Jogando sem conta · <a href="/">Entrar</a>'; paintSave(); return; }
+    userId=session.user.id;
+    let nome='';
+    try{ const {data}=await sb.from('profiles').select('name').eq('id',userId).maybeSingle(); nome=data&&data.name||''; }catch(e){}
+    conta.innerHTML='Jogando como <b></b>'; conta.querySelector('b').textContent=nome||session.user.email||'você';
+    const {data:row}=await sb.from('rpgsolo_saves').select('estado,atualizado_em').eq('user_id',userId).eq('aventura',AVENTURA).maybeSingle();
+    nuvem=row?'ok':'off';
+    const local=saved, remoto=row&&validSave(row.estado)?row.estado:null;
+    const tLocal=local&&local.salvo_em?Date.parse(local.salvo_em):0, tRemoto=remoto&&remoto.salvo_em?Date.parse(remoto.salvo_em):0;
+    if(remoto&&tRemoto>=tLocal) saved=remoto;
+    else if(local&&S.phase!=='play') pushNuvem(local);
+    if(S.phase==='play'&&lastSnap) pushNuvem(snapshot());
+  }catch(e){ nuvem='erro'; }
+  if(S.phase!=='play') render(); else paintSave();
+}
+function render(){
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.v===view)));
+  if(view==='edit') renderEditor(); else renderPlay();
+  const f=S&&S.fight, s=S&&S.sec&&book.secs[S.sec];
+  Music.setCombat(view==='play'&&!!f&&!f.done&&!f.goto&&!S.dead);
+  const endKey=S.dead?'morte:'+S.visited.length:(s&&s.end&&view==='play'?'fim:'+S.sec+':'+S.visited.length:'');
+  if(endKey&&endKey!==lastEnd){ if(S.dead) Music.sting(); else Music.fanfare(); }
+  lastEnd=endKey;
+  save();
+  paintSave();
+}
+function formulaText(k){const f=book.formula[k];return `${f[0]} ${f[0]===1?'dado':'dados'}${f[1]?' + '+f[1]:''}`;}
+
+function sheetHTML(){
+  const c=S.char;
+  if(!c) return `<aside class="sheet"><h2>Folha de Aventuras</h2><p class="empty">Role os atributos para preencher a ficha.</p></aside>`;
+  const pct=c.eneMax?Math.round(c.ene/c.eneMax*100):0;
+  const inFight=S.fight&&!S.fight.done&&!S.fight.goto;
+  const w=bestWeapon();
+  const statRow=k=>c[k]==null?'':`<div class="stat"><span class="k">${NAME[k]}</span><span class="val">${c[k]}<small>/${c[k+'Max']}</small></span>${k==='ene'?`<div class="bar"><i style="width:${pct}%"></i></div>`:''}</div>`;
+  return `<aside class="sheet"><h2>Folha de Aventuras</h2>
+    ${STATS.map(statRow).join('')}
+    <div class="stat"><span class="k">Ouro</span><span class="val">${c.ouro}</span></div>
+    <div class="stat"><span class="k">Provisões</span><span class="val">${c.prov}</span></div>
+    ${c.pocao?`<div class="stat"><span class="k">${esc(pocaoInfo(c.pocao.tipo).nome)}</span><span class="val">${c.pocao.doses}<small> dose</small></span></div>`:''}
+    <div class="row" style="margin-top:8px"><button class="btn small" data-act="eat" ${c.prov<1||c.ene>=c.eneMax||inFight||S.dead?'disabled':''}>Comer provisão (+4 Energia)</button>${c.pocao?`<button class="btn small" data-act="drink" ${c.pocao.doses<1||inFight||S.dead||S.phase!=='play'?'disabled':''}>Beber poção</button>`:''}</div>
+    ${w?`<h4>Arma em uso</h4><div>${esc(w)} <span class="items b">(${c.weapons[w]>=0?'+':'−'}${Math.abs(c.weapons[w])} no ataque)</span></div>`:''}
+    <h4>Equipamento e tesouros</h4>
+    ${c.items.length?`<ul class="items">${c.items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`:'<p class="empty">Nada na mochila.</p>'}
+    <h4>Pistas e acontecimentos</h4>
+    ${c.flags.length?`<ul class="items">${c.flags.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`:'<p class="empty">Nenhuma ainda.</p>'}
+    <h4>Aflições</h4>
+    ${c.afl.length?`<ul class="items afl">${c.afl.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`:'<p class="empty">Nenhuma.</p>'}
+    <h4>Caminho</h4>
+    <div class="trail">${S.visited.length?S.visited.join(' → '):'—'}</div>
+    <h4><label for="anotacoes">Anotações</label></h4>
+    <textarea id="anotacoes" placeholder="Senhas, pistas, números que valem a pena lembrar…">${esc(notesText)}</textarea>
+  </aside>`;
+}
+
+function fightHTML(s){
+  const f=S.fight, fighting=!f.done&&!f.goto;
+  let rows='';
+  s.groups.forEach((G,g)=>{
+    if(s.groups.length>1||G.foes.length>1) rows+=`<tr class="grp"><td colspan="3">${s.groups.length>1?'Luta '+(g+1):'Luta'}${G.foes.length>1?' · todos juntos':''}</td></tr>`;
+    G.foes.forEach((foe,i)=>{
+      const hp=f.hp[g][i], down=hp<=0, isNow=fighting&&g===f.g, tgt=isNow&&i===f.target&&G.foes.length>1;
+      rows+=`<tr class="${down?'down':(isNow?'now':(g>f.g?'later':''))}"><td>${esc(foe.name)}${tgt?'<span class="tag">alvo</span>':''}</td><td class="num">${foe.hab}</td><td class="num">${Math.max(0,hp)}</td></tr>`;
+    });
+  });
+  const G=s.groups[Math.min(f.g,s.groups.length-1)], alive=f.hp[Math.min(f.g,s.groups.length-1)].map((h,i)=>h>0?i:-1).filter(i=>i>=0);
+  const sel=fighting&&alive.length>1?`<div class="target"><label for="alvo">Atacar:</label><select id="alvo">${alive.map(i=>`<option value="${i}" ${i===f.target?'selected':''}>${esc(G.foes[i].name)}</option>`).join('')}</select><span class="eyebrow">os outros também atacam você</span></div>`:'';
+  return `<section class="panel"><h3>Combate</h3>
+    <div class="tablewrap"><table class="foes"><thead><tr><th>Criatura</th><th class="num">Habilidade</th><th class="num">Energia</th></tr></thead><tbody>${rows}</tbody></table></div>
+    ${sel}
+    ${f.log.length?`<div class="log">${f.log.slice(0,4).map(l=>`<div>${l}</div>`).join('')}</div>`:''}
+    ${S.dead?'':fighting?`<div class="row">
+      <button class="btn primary" data-act="attack">Atacar (rolar dados)</button>
+      <button class="btn" data-act="fluck" ${f.last&&S.char.sor>0?'':'disabled'}>Testar a Sorte ${f.last==='hit'?'(ferir mais)':f.last==='hurt'?'(reduzir ferimento)':''}</button>
+      ${s.flee?`<button class="btn" data-act="flee">Fugir para ${esc(s.flee)} (−2 Energia)</button>`:''}
+    </div>`:f.goto?`<div class="row"><button class="btn primary" data-act="go" data-to="${esc(f.goto)}">Vá para ${esc(f.goto)}</button></div>`:'<p class="res-ok" style="margin:0">Vitória. Siga adiante.</p>'}
+  </section>`;
+}
+
+function renderPlay(){
+  let page='';
+  if(!book.order.length){
+    page=`<p class="eyebrow">Nada para jogar</p><p>A história ainda não tem seções. Volte para <b>Escrever</b> e crie a primeira com <code>## 1</code>.</p>`;
+  } else if(S.phase==='start'){
+    const r=S.roll, ks=STATS.filter(k=>book.formula[k]);
+    page=`<p class="eyebrow">Novo jogo</p><h2 class="book-title">${esc(book.title)}</h2>${book.autor?`<p class="byline">Escrito por <b>${esc(book.autor)}</b></p>`:''}
+      <div class="text">${prose(book.intro)}</div>
+      <div class="rules"><p>${ks.map(k=>`<b>${NAME[k]}</b> = ${formulaText(k)}`).join(' · ')}</p>
+      <p>Você começa com ${book.prov} provisões${book.ouro?` e ${book.ouro} de ouro`:''}${book.equip.length?`, levando ${book.equip.map(esc).join(', ')}`:''}.</p></div>
+      ${r?`<div class="rollgrid">${ks.map(k=>`<div class="rollcell"><div class="eyebrow">${NAME[k]}</div><div class="v">${S.char[k]}</div><div class="how">${dice(r[k])}${book.formula[k][1]?' + '+book.formula[k][1]:''}</div></div>`).join('')}</div>`:''}
+      ${saved?`<div class="panel"><h3>Aventura em andamento</h3><p style="margin:0 0 12px">Você parou na seção ${esc(saved.S.sec)}, com Energia ${saved.S.char.ene}.</p><button class="btn primary" data-act="continue">Continuar de onde parei</button></div>`:''}
+      <p id="savestate" class="savestate"></p>
+      ${r&&book.pocoes.length?`<div class="panel"><h3>Escolha uma poção</h3><p style="margin:0 0 12px">Você pode levar uma garrafa, com uma dose. Ela pode ser bebida a qualquer momento, menos durante um combate.</p><div class="choices" style="margin:0">${book.pocoes.map(pp=>`<button class="choice" data-act="pocao" data-p="${esc(pp)}" aria-pressed="${S.char.pocao&&S.char.pocao.tipo===pp}" style="${S.char.pocao&&S.char.pocao.tipo===pp?'border-color:var(--accent);background:var(--accent-soft)':''}"><span class="n">${S.char.pocao&&S.char.pocao.tipo===pp?'✓':'·'}</span><span>${esc(pocaoInfo(pp).nome)}<span class="req">${esc(pocaoInfo(pp).txt)}</span></span></button>`).join('')}</div></div>`:''}
+      <div class="row">${r?`<button class="btn primary" data-act="begin" ${book.pocoes.length&&!S.char.pocao?'disabled':''}>Começar na seção ${esc(book.order[0])}</button><button class="btn" data-act="roll">Rolar de novo</button>`:`<button class="btn primary" data-act="roll">Rolar os atributos</button>`}</div>`;
+  } else {
+    const s=book.secs[S.sec];
+    page=`<div class="secnum">${esc(S.sec)}</div>`;
+    if(!s){page+=`<p>A seção ${esc(S.sec)} não existe no texto. Confira os números em <b>Escrever</b>.</p>`;}
+    else{
+      page+=`<div class="text">${prose(s.lines)}</div>`;
+      if(S.notes.length) page+=`<div class="notes">${S.notes.map(n=>`<span class="chip ${n.cls}">${esc(n.t)}</span>`).join('')}</div>`;
+      const f=S.fight, blocking=f&&(!f.done);
+      if(f) page+=fightHTML(s);
+      if(!S.dead && !blocking){
+        s.tests.forEach((t,i)=>{
+          const res=S.tests[i], nm=NAME[t.kind];
+          page+=`<section class="panel"><h3>Teste sua ${nm}</h3>`;
+          if(!res) page+=`<p style="margin:0 0 12px">Role dois dados. Se o total for igual ou menor que sua ${nm} (${S.char[t.kind]??0}), você passa.${t.kind==='sor'?' Cada teste custa 1 ponto de Sorte, e com Sorte 1 ou menos o resultado é sempre azar.':''}</p><button class="btn primary" data-act="test" data-i="${i}">Rolar 2 dados</button>`;
+          else page+=`<div class="log"><div>${dice(res.r)} = <b>${res.sum}</b> contra ${res.target}${res.auto?' (azar automático)':''}<br>${res.ok?'<span class="res-ok">'+(t.kind==='sor'?'Você teve sorte.':'Você conseguiu.')+'</span>':'<span class="res-bad">'+(t.kind==='sor'?'Você foi azarado.':'Você falhou.')+'</span>'}</div></div><button class="btn primary" data-act="go" data-to="${esc(res.to)}">Vá para ${esc(res.to)}</button>`;
+          page+=`</section>`;
+        });
+        if(s.choices.length) page+=`<ul class="choices">${s.choices.map(c=>{
+          const ok=c.reqs.every(reqOk);
+          return `<li><button class="choice" data-act="go" data-to="${esc(c.to)}" ${ok?'':'disabled'}><span class="n">${esc(c.to)}</span><span>${esc(c.label)}${(t=>t?`<span class="req">${esc(t)}</span>`:'')(c.reqs.filter(r=>!(r.startsWith('!')&&reqOk(r))).map(r=>reqText(r,reqOk(r))).join(' · '))}</span></button></li>`;}).join('')}</ul>`;
+        if(s.end) page+=`<div class="endcard"><p class="big">Fim</p><p>${esc(s.end)}</p><button class="btn primary" data-act="restart">Jogar de novo</button></div>`;
+      }
+      if(S.dead) page+=`<div class="endcard"><p class="big">Sua Energia chegou a zero</p><p>A aventura termina aqui. Role novos atributos e tente outro caminho.</p><button class="btn primary" data-act="restart">Jogar de novo</button></div>`;
+    }
+    page+=`<div class="authorbar row"><button class="btn small" data-act="restart" id="btn-restart">Recomeçar do zero</button><span id="savestate" class="savestate"></span></div>`;
+  }
+  app.innerHTML=`<div class="play"><div class="page">${page}</div>${sheetHTML()}</div>`;
+}
+
+function renderEditor(){
+  app.innerHTML=`<div class="editor">
+    <div class="ed-main">
+      <div class="row">
+        <button class="btn primary" data-act="playnow">Jogar esta história</button>
+        <button class="btn" data-act="copy">Copiar texto</button>
+        <button class="btn" data-act="open">Abrir arquivo .txt</button>
+        <button class="btn" data-act="load" data-which="aventura">Carregar O Castelo de Vargrav</button>
+        <button class="btn" data-act="load" data-which="exemplo">Carregar exemplo curto</button>
+      </div>
+      <label for="src" class="eyebrow">Texto da história</label>
+      <textarea id="src" spellcheck="false"></textarea>
+      <div class="status" id="status">O texto fica salvo neste navegador. Para guardar uma cópia, use Copiar texto e cole num arquivo.</div>
+    </div>
+    <div class="ed-side">
+      <section class="box"><h3>Verificação</h3><div id="check"></div></section>
+      <section class="box ref"><h3>Como escrever</h3>
+        <h4>Cabeçalho (antes da seção 1)</h4>
+        <dl>
+          <dt>Título: Nome do livro</dt><dd>O texto solto antes da primeira seção vira a introdução.</dd>
+          <dt>Habilidade: 1d6+6
+Energia: 2d6+12
+Sorte: 1d6+6
+Fé: 1d6+3</dt><dd>Como rolar cada atributo. A linha de Fé é opcional e ativa esse atributo. Habilidade, Energia e Sorte não passam do valor inicial; a Fé pode passar.</dd>
+          <dt>Equipamento: Espada, Escudo, Lanterna
+Provisões: 10
+Ouro: 0</dt><dd>O que o herói leva ao começar.</dd>
+        </dl>
+        <h4>Nas seções</h4>
+        <dl>
+          <dt>## 12</dt><dd>Começa a seção 12. Tudo abaixo é o texto dela, até a próxima.</dd>
+          <dt>-> 30 Abrir a porta</dt><dd>Escolha que leva à seção 30.</dd>
+          <dt>-> 45 [Chave de Prata] Usar a chave
+-> 46 [!Tocha] Seguir no escuro
+-> 47 [fé 7+] Erguer o crucifixo
+-> 48 [Estaca] [Crucifixo] Destruir o vampiro</dt><dd>Escolha condicionada: ter um item, pista ou aflição; não ter; ou ter um atributo no mínimo naquele valor. Vários colchetes exigem todos ao mesmo tempo.</dd>
+          <dt>ganha: Corda
+perde: Tocha</dt><dd>Adiciona ou tira um item.</dd>
+          <dt>arma: Espada Mágica | +2</dt><dd>Arma com bônus no ataque. Só conta a melhor arma que você carrega.</dd>
+          <dt>anota: Segredo da porta</dt><dd>Registra uma pista ou acontecimento. Não ocupa a mochila, mas pode ser exigido nas escolhas.</dd>
+          <dt>aflição: Maldição da lua
+cura: Maldição da lua</dt><dd>Anota ou remove uma aflição da ficha.</dd>
+          <dt>energia: -2
+sorte: +1
+fé: +1
+ouro: +10
+provisões: -1</dt><dd>Muda o atributo ao entrar na seção (respeitando o valor inicial).</dd>
+          <dt>habilidade inicial: +1</dt><dd>Aumenta o valor inicial e o atual, para quando a história permitir passar do limite.</dd>
+          <dt>combate: Lobo | 7 | 6
+combate: Ogro | 9 | 10 -> 80</dt><dd>Nome | Habilidade | Energia. Linhas separadas são lutas uma depois da outra. Com <code>-> 80</code>, vencer leva à seção 80; sem isso, as escolhas aparecem depois da vitória.</dd>
+          <dt>combate: Bandido | 7 | 6
+combate junto: Bandido | 6 | 5</dt><dd>Criaturas que atacam ao mesmo tempo. Você escolhe o alvo; as outras também rolam contra você, e você só se defende delas.</dd>
+          <dt>fuga -> 15</dt><dd>Permite fugir do combate (custa 2 de Energia).</dd>
+          <dt>teste de sorte: 40 | 50
+teste de habilidade: 40 | 50
+teste de fé: 40 | 50</dt><dd>Rola 2 dados contra o atributo. Passou vai para 40, falhou vai para 50.</dd>
+          <dt>fim: Você venceu!</dt><dd>Final da história, com mensagem.</dd>
+          <dt>*itálico*  **negrito**</dt><dd>Linha em branco separa parágrafos.</dd>
+        </dl>
+      </section>
+    </div>
+  </div>`;
+  $('#src').value=src;
+  renderCheck();
+}
+function renderCheck(){
+  const el=$('#check'); if(!el) return;
+  const probs=check(book), n=book.order.length;
+  const ends=book.order.filter(id=>book.secs[id].end).length;
+  const fights=book.order.reduce((a,id)=>a+book.secs[id].groups.reduce((x,g)=>x+g.foes.length,0),0);
+  el.innerHTML=`<div class="counts">${n} ${n===1?'seção':'seções'} · ${ends} ${ends===1?'final':'finais'} · ${fights} ${fights===1?'criatura':'criaturas'}</div>`+
+    (probs.length?`<ul class="problems">${probs.map(p=>`<li class="${p.err?'err':''}">${esc(p.msg)}</li>`).join('')}</ul>`:`<p class="check-ok" style="margin:0">Todos os números levam a seções que existem.</p>`);
+}
+function status(t){const el=$('#status');if(el)el.textContent=t;}
+
+/* ---------- Eventos ---------- */
+let resetArmed=0, timer=0;
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b||b.disabled) return;
+  const a=b.dataset.act;
+  if(a==='music'){const st=Music.toggle();b.setAttribute('aria-pressed',String(st));b.querySelector('span').textContent=st?'Desligar música':'Ligar música';if(!st&&!Music.on&&!(window.AudioContext||window.webkitAudioContext))b.querySelector('span').textContent='Sem áudio neste navegador';return;}
+  if(a==='view'){view=b.dataset.v;if(view==='play')book=parse(src);render();}
+  else if(a==='continue'){if(saved){S=saved.S;notesText=saved.notesText||'';saved=null;render();window.scrollTo({top:0});}}
+  else if(a==='roll'){rollChar();render();}
+  else if(a==='begin'){S.visited=[];enter(book.order[0]);}
+  else if(a==='go'){enter(b.dataset.to);}
+  else if(a==='attack'){attack();}
+  else if(a==='fluck'){luckInFight();}
+  else if(a==='flee'){flee();}
+  else if(a==='test'){runTest(+b.dataset.i);}
+  else if(a==='eat'){eat();}
+  else if(a==='drink'){drink();}
+  else if(a==='pocao'){if(S.char){S.char.pocao={tipo:b.dataset.p,doses:1};render();}}
+  else if(a==='restart'){
+    const inGame=S.phase==='play'&&!S.dead&&!(book.secs[S.sec]&&book.secs[S.sec].end);
+    if(inGame&&b.id==='btn-restart'&&resetArmed!=='restart'){resetArmed='restart';b.textContent='Clique de novo para apagar o progresso';setTimeout(()=>{if(resetArmed==='restart')resetArmed=0;const x=$('#btn-restart');if(x)x.textContent='Recomeçar do zero';},5000);return;}
+    resetArmed=0;S=freshState();lastSnap='';saved=null;try{localStorage.removeItem(SAVE)}catch(e){}apagarNuvem();render();window.scrollTo({top:0});
+  }
+  else if(a==='jump'){const v=($('#pular').value||'').trim();if(!v)return;if(!S.char)rollChar();S.dead=false;enter(v);}
+  else if(a==='playnow'){book=parse(src);S=freshState();view='play';render();window.scrollTo({top:0});}
+  else if(a==='open'){$('#arquivo').click();}
+  else if(a==='copy'){
+    const ta=$('#src');
+    const fallback=()=>{ta.focus();ta.select();status('Texto selecionado. Use Ctrl+C (ou Copiar no celular).');};
+    try{navigator.clipboard.writeText(src).then(()=>status('Texto copiado. Cole num arquivo .txt para guardar.'),fallback);}catch(err){fallback();}
+  }
+  else if(a==='load'){
+    const w=b.dataset.which, txt=w==='aventura'?aventura:exemplo, label=w==='aventura'?'Carregar O Castelo de Vargrav':'Carregar exemplo curto';
+    if(src===txt){status('Esse texto já está no editor.');return;}
+    if(resetArmed===w){src=txt;store.set(KEY,src);book=parse(src);S=freshState();renderEditor();status(w==='aventura'?'O Castelo de Vargrav carregado.':'Exemplo curto carregado.');resetArmed=0;}
+    else{resetArmed=w;b.textContent='Clique de novo: isso substitui o texto atual';setTimeout(()=>{if(resetArmed===w)resetArmed=0;const x=document.querySelector(`[data-which="${w}"]`);if(x)x.textContent=label;},5000);}
+  }
+});
+document.addEventListener('change',e=>{if(e.target.id==='alvo'&&S.fight){S.fight.target=+e.target.value;S.fight.last=null;render();}});
+document.addEventListener('input',e=>{
+  if(e.target.id==='src'){src=e.target.value;clearTimeout(timer);timer=setTimeout(()=>{store.set(KEY,src);book=parse(src);renderCheck();status('Salvo neste navegador.');},350);}
+  if(e.target.id==='volume'){Music.volume(+e.target.value/100);store.set('livrojogo.volume',e.target.value);}
+  if(e.target.id==='anotacoes'){notesText=e.target.value;store.set(NKEY,notesText);}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='pular'){e.preventDefault();document.querySelector('[data-act="jump"]').click();}});
+$('#arquivo').addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{src=String(r.result);store.set(KEY,src);book=parse(src);S=freshState();view='edit';render();status(`Arquivo "${f.name}" aberto.`);};
+  r.readAsText(f,'utf-8'); e.target.value='';
+});
+
+book=parse(src);
+S=freshState();
+let saved=null;
+try{const j=JSON.parse(store.get(SAVE)||'null');if(validSave(j))saved=j;}catch(e){}
+{const v=store.get('livrojogo.volume');if(v!=null){$('#volume').value=v;Music.volume(+v/100);}}
+render();
+iniciarConta();
+})();
+</script>
+
+</body>
+</html>

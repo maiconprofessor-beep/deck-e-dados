@@ -1,0 +1,3089 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="RPG Solo no Deck e Dados: jogue O Farol da Maré Negra, um livro-jogo de aventura no mar com dados, combates e Folha de Aventuras. Grátis, direto no navegador.">
+<meta property="og:title" content="RPG Solo — O Farol da Maré Negra">
+<meta property="og:description" content="Um livro-jogo de aventura no mar com 400 seções. Jogue grátis no Deck e Dados.">
+<meta property="og:image" content="https://deckedados.com.br/og-image.jpg">
+<meta property="og:url" content="https://deckedados.com.br/rpgsolo/farol-da-mare-negra.html">
+<link rel="icon" href="/logo-icon.png">
+<meta name="author" content="Maicon Kuzer">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Game","name":"O Farol da Maré Negra","genre":"Livro-jogo de aventura no mar","author":{"@type":"Person","name":"Maicon Kuzer"},"publisher":{"@type":"Organization","name":"Deck e Dados","url":"https://deckedados.com.br/"},"url":"https://deckedados.com.br/rpgsolo/farol-da-mare-negra.html","inLanguage":"pt-BR","isAccessibleForFree":true}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<title>RPG Solo — O Farol da Maré Negra | Deck e Dados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700;800&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: livro aberto sobre a mesa de feltro do Deck e Dados — leitura à esquerda, Folha de Aventuras à direita; empilha no celular. Tema escuro único, como o site. */
+:root{
+  --paper:#132c2a; --paper-2:#1b3a37; --sheet:#173230; --ink:#f1ede2; --ink-2:#a9bab5; --rule:rgba(241,237,226,0.14);
+  --accent:#c9a24b; --accent-soft:rgba(201,162,75,0.14); --on-accent:#132c2a; --ok:#7cc59e; --bad:#e58a7e; --edge:#8a7134;
+  --display:"Alegreya SC", Georgia, "Times New Roman", serif;
+  --body:"Alegreya", Georgia, "Times New Roman", serif;
+  --mono:"IBM Plex Mono", "Courier New", monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.wrap{max-width:1120px;margin:0 auto}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:22px 18px;border-bottom:1px solid var(--rule);margin-bottom:28px}
+.brand{font-family:var(--display);font-weight:800;font-size:1.45rem;letter-spacing:.02em;margin:0;line-height:1}
+.brand small{display:block;font-family:var(--body);font-weight:400;font-size:.85rem;color:var(--ink-2);letter-spacing:0;margin-top:6px}
+.tabs{display:flex;border:1px solid var(--rule);border-radius:999px;padding:3px;gap:2px;background:var(--paper-2)}
+.controls{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.audio{display:flex;gap:8px;align-items:center}
+.audio input{width:90px;accent-color:var(--accent)}
+#musica[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.tab{border:0;background:transparent;padding:7px 18px;border-radius:999px;cursor:pointer;font-family:var(--display);font-weight:700;font-size:1rem;color:var(--ink-2)}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--ink);background:transparent;color:var(--ink);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:1rem;line-height:1.2;text-align:left}
+.btn:hover:not(:disabled){background:var(--accent-soft)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:500}
+.btn.primary:hover:not(:disabled){filter:brightness(1.08);background:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.small{padding:5px 11px;font-size:.88rem}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+.play{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:40px;align-items:start}
+.page{min-width:0;max-width:68ch}
+.secnum{font-family:var(--display);font-weight:800;font-size:4.2rem;line-height:1;text-align:center;color:var(--accent);margin:4px 0 22px;font-variant-numeric:lining-nums}
+.secnum::after{content:"";display:block;width:56px;height:1px;background:var(--rule);margin:18px auto 0}
+.text p{margin:0 0 1em}
+.byline{margin:-10px 0 18px;font-family:var(--mono);font-size:.8rem;letter-spacing:.06em;color:var(--ink-2)}
+.byline b{color:var(--accent);font-weight:500}
+.book-title{font-family:var(--display);font-weight:800;font-size:clamp(2rem,5vw,2.9rem);line-height:1.05;margin:0 0 18px;text-wrap:balance}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+.notes{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 18px}
+.chip{font-family:var(--mono);font-size:.78rem;padding:3px 9px;border-radius:4px;border:1px solid var(--rule);background:var(--paper-2)}
+.chip.good{color:var(--ok);border-color:currentColor}
+.chip.bad{color:var(--bad);border-color:currentColor}
+
+.choices{list-style:none;padding:0;margin:26px 0 0;display:grid;gap:10px}
+.choice{width:100%;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:baseline;padding:12px 16px;border:1px solid var(--rule);background:var(--sheet);border-radius:6px;cursor:pointer;text-align:left}
+.choice:hover:not(:disabled){border-color:var(--accent)}
+.choice .n{font-family:var(--display);font-weight:800;font-size:1.25rem;color:var(--accent);min-width:2ch;text-align:right;font-variant-numeric:tabular-nums}
+.choice .req{display:block;font-family:var(--mono);font-size:.75rem;color:var(--ink-2);margin-top:2px}
+.choice:disabled{cursor:not-allowed;opacity:.55}
+
+.panel{border:1px solid var(--ink);border-radius:8px;padding:18px;margin:24px 0 0;background:var(--sheet)}
+.panel h3{font-family:var(--display);font-weight:700;font-size:1.2rem;margin:0 0 12px}
+.tablewrap{overflow-x:auto;margin-bottom:14px}
+.foes{width:100%;border-collapse:collapse;font-size:.95rem}
+.foes th{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);font-weight:500;text-align:left;padding:4px 6px;border-bottom:1px solid var(--rule)}
+.foes td{padding:7px 6px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+.foes td.num,.foes th.num{text-align:right;font-family:var(--mono)}
+.foes tr.grp td{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);padding-top:12px}
+.foes tr.down td{color:var(--ink-2);text-decoration:line-through}
+.foes tr.later td{color:var(--ink-2)}
+.foes tr.now td:first-child{font-weight:700}
+.foes .tag{font-family:var(--mono);font-size:.7rem;color:var(--accent);margin-left:6px;text-decoration:none}
+.log{font-family:var(--mono);font-size:.82rem;line-height:1.55;background:var(--paper-2);border-radius:6px;padding:10px 12px;margin-bottom:14px;overflow-x:auto}
+.log>div+div{margin-top:6px;padding-top:6px;border-top:1px dashed var(--rule)}
+.die{display:inline-grid;place-items:center;width:1.6em;height:1.6em;border:1.5px solid var(--ink);border-radius:5px;font-family:var(--mono);font-weight:600;font-size:.85rem;margin-right:3px;background:var(--sheet);vertical-align:middle}
+.res-ok{color:var(--ok);font-weight:600}.res-bad{color:var(--bad);font-weight:600}
+.target{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;font-size:.95rem}
+.target select{padding:6px 10px;border:1px solid var(--ink);border-radius:6px;background:var(--sheet)}
+
+.endcard{text-align:center;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:28px 8px;margin-top:28px}
+.endcard .big{font-family:var(--display);font-weight:800;font-size:1.8rem;margin:0 0 8px}
+.endcard p{margin:0 auto 18px;max-width:46ch;color:var(--ink-2)}
+
+.rollgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin:22px 0}
+.rollcell{border:1px solid var(--rule);border-radius:8px;padding:12px;background:var(--sheet);min-width:0}
+.rollcell .v{font-family:var(--display);font-weight:800;font-size:2rem;line-height:1.1}
+.rollcell .how{font-family:var(--mono);font-size:.72rem;color:var(--ink-2)}
+.rules{font-size:.92rem;color:var(--ink-2);border-left:2px solid var(--rule);padding-left:14px;margin:18px 0}
+.rules p{margin:0 0 6px}
+
+.authorbar{margin-top:36px;padding-top:14px;border-top:1px dashed var(--rule);font-size:.88rem;color:var(--ink-2)}
+.authorbar input{width:5.5em;padding:5px 8px;border:1px solid var(--rule);border-radius:5px;background:var(--sheet);font-family:var(--mono);font-size:.88rem}
+
+.sheet{position:sticky;top:max(16px,env(safe-area-inset-top,0px));background:var(--sheet);border:1px solid var(--ink);border-radius:8px;padding:16px 18px;font-size:.95rem;min-width:0}
+.sheet h2{font-family:var(--display);font-weight:800;font-size:1.15rem;margin:0 0 12px;border-bottom:2px solid var(--ink);padding-bottom:8px}
+.stat{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:8px;padding:6px 0;border-bottom:1px solid var(--rule)}
+.stat .k{font-family:var(--display);font-weight:700}
+.stat .val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
+.stat .val small{color:var(--ink-2);font-weight:400}
+.bar{grid-column:1/-1;height:5px;border-radius:3px;background:var(--paper-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.sheet h4{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);font-weight:500;margin:14px 0 6px}
+.items{margin:0;padding-left:1.1em}
+.items li{margin:2px 0}
+.items .b{font-family:var(--mono);font-size:.78rem;color:var(--ink-2)}
+.afl li{color:var(--bad)}
+.empty{color:var(--ink-2);font-style:italic;margin:0}
+.trail{font-family:var(--mono);font-size:.8rem;color:var(--ink-2);line-height:1.6;word-break:break-word}
+.sheet textarea{width:100%;min-height:80px;border:1px solid var(--rule);border-radius:5px;background:var(--paper);padding:8px;font-size:.9rem;resize:vertical}
+
+.editor{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:28px;align-items:start}
+.ed-main{min-width:0;display:grid;gap:12px}
+#src{width:100%;min-height:62vh;border:1px solid var(--ink);border-radius:8px;background:var(--sheet);padding:16px;font-family:var(--mono);font-size:.88rem;line-height:1.6;resize:vertical;tab-size:2}
+.status{font-family:var(--mono);font-size:.78rem;color:var(--ink-2);min-height:1.2em}
+.ed-side{display:grid;gap:18px;min-width:0}
+.box{border:1px solid var(--rule);border-radius:8px;padding:14px 16px;background:var(--sheet);min-width:0}
+.box h3{font-family:var(--display);font-weight:700;font-size:1.1rem;margin:0 0 10px}
+.check-ok{color:var(--ok)}
+.problems{margin:0;padding-left:1.1em;font-size:.9rem}
+.problems li{margin:4px 0}
+.problems li.err{color:var(--bad)}
+.counts{font-family:var(--mono);font-size:.8rem;color:var(--ink-2);margin-bottom:8px}
+.ref{font-size:.88rem}
+.ref h4{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);font-weight:500;margin:16px 0 0}
+.ref h4:first-of-type{margin-top:0}
+.ref dl{margin:0}
+.ref dt{font-family:var(--mono);font-size:.8rem;background:var(--paper-2);padding:3px 7px;border-radius:4px;margin-top:10px;overflow-x:auto;white-space:pre}
+.ref dd{margin:4px 0 0;color:var(--ink-2)}
+code{font-family:var(--mono);font-size:.85em}
+
+@media (max-width:860px){
+  .play,.editor{grid-template-columns:minmax(0,1fr)}
+  .sheet{position:static;order:-1}
+  .secnum{font-size:3.4rem}
+}
+@media (max-width:440px){ body{font-size:17px} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.panel,.sheet,.choice{border-color:var(--edge)}
+.btn{border-color:var(--edge)}
+.die{border-color:var(--ink-2);background:var(--paper)}
+.site-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:14px;border-bottom:1px solid var(--rule)}
+.site-brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:1.05rem}
+.site-brand img{width:32px;height:32px;border-radius:50%;object-fit:cover}
+.site-links{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:.85rem}
+.site-links a{color:var(--ink-2)}
+.conta{color:var(--ink-2)}
+.conta b{color:var(--ink);font-weight:600}
+.brand .kicker{display:block;text-decoration:none;font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.savestate{font-family:var(--mono);font-size:.75rem;color:var(--ink-2)}
+.savestate.ok{color:var(--ok)}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <nav class="site-nav">
+    <a class="site-brand" href="/"><img src="/logo-icon.png" alt="">Deck e Dados</a>
+    <div class="site-links"><span class="conta" id="conta">Verificando login…</span><a href="/rpgsolo.html">Todas as aventuras</a><a href="/">Voltar ao site</a></div>
+  </nav>
+  <header class="top">
+    <h1 class="brand"><a class="kicker" href="/rpgsolo.html">RPG Solo</a>O Farol da Maré Negra<small>Um livro-jogo de aventura no mar · 400 seções · escrito por Maicon Kuzer</small></h1>
+    <div class="controls">
+      <div class="audio">
+        <button class="btn small" id="musica" data-act="music" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 3v11.1A3.5 3.5 0 1 0 11 17V8h8v6.1A3.5 3.5 0 1 0 21 17V3z"/></svg><span>Ligar música</span></button>
+        <input type="range" id="volume" min="0" max="100" value="55" aria-label="Volume da música">
+      </div>
+    </div>
+  </header>
+  <main id="app"></main>
+</div>
+
+<input type="file" id="arquivo" accept=".txt,.md,text/plain" hidden>
+
+<script type="text/plain" id="aventura">
+Título: O Farol da Maré Negra
+Autor: Maicon Kuzer
+Habilidade: 1d6+6
+Energia: 2d6+12
+Sorte: 1d6+6
+Poções: Habilidade, Força, Fortuna
+Equipamento: Espada, Armadura de couro, Mochila
+Provisões: 10
+Ouro: 8
+
+Porto Salgado é um punhado de casas caiadas agarradas a uma baía de pedra escura, onde o vento cheira a sal e a peixe seco. Você chegou ao entardecer, procurando trabalho para sua espada, e encontrou o vilarejo inteiro reunido no cais, olhando para o mar.
+
+A três milhas da costa, sobre o Rochedo do Corvo, ergue-se o velho farol. Por cem anos a luz dele foi amarela e quente, e guiou os barcos para longe dos recifes que os pescadores chamam de Dentes do Corvo. Há nove noites, a luz ficou verde. Desde então, três navios se despedaçaram nos recifes, e os poucos corpos que o mar devolveu chegaram à praia com os olhos abertos e sem uma gota de água nos pulmões.
+
+A prefeita, Dona Celeste Amaral, é uma mulher pequena e firme, de mãos marcadas por anos de remendar redes. "A frota de pesca saiu há doze dias. Trinta barcos, metade dos homens e mulheres desta vila. Eles voltam esta madrugada, antes do sol nascer. Se aquela luz ainda estiver verde, vão todos para os Dentes do Corvo."
+
+Ela coloca uma bolsa de couro na sua mão. "Cinquenta peças de ouro quando a luz voltar a ser amarela. É tudo o que a vila tem. Ninguém que foi ao Rochedo voltou, nem o velho faroleiro Oleandro respondeu aos nossos sinais."
+
+Você olha para a luz verde pulsando no horizonte, lenta como um coração. Depois aceita a bolsa.
+
+## 1
+O sol desce atrás do mar e a luz verde do farol fica mais forte. Você tem até a madrugada. Antes de partir, pode se preparar em Porto Salgado, mas cada hora conta.
+-> 123 Ir até o cais e ver como chegar ao Rochedo
+-> 29 Andar pelo vilarejo e se preparar primeiro
+
+## 2
+Você se encosta na rocha e espera a rajada passar. Depois continua, passo a passo, até a trilha alargar perto de um ninho enorme feito de ossos e redes velhas.
+-> 319 Examinar o ninho
+
+## 3
+No ninho há uma pulseira de prata e um frasco de rum fechado. Você guarda a pulseira e bebe um gole do rum para aquecer.
+ouro: +4
+energia: +1
+anota: Varanda Limpa
+-> 174 Voltar para dentro
+
+## 4
+"É o Corredor de Prata", diz Joana, franzindo a testa. "Afundou na primeira noite da luz verde. Dez minutos, nem um a mais." Ela encosta o barco no casco tombado. A água está calma, calma demais.
+-> 283 Subir no convés inclinado
+-> 272 Mudar de ideia e seguir viagem
+
+## 5
+Antes de abrir o alçapão da galeria, você para. Lá em cima, a voz canta. Lá embaixo, o mar espera. Você pensa no que trouxe até aqui e no que ainda falta.
+-> 108 [provisões 1+] Comer uma última refeição
+-> 182 Subir para a galeria
+
+## 6
+Atrás do altar do templo submerso, como dizia o avô de Gaspar, há uma escada estreita de pedra que sobe para dentro da rocha. A água vai ficando para trás e a escada continua subindo, até terminar numa parede de tijolos com uma pedra solta.
+-> 276 Empurrar a pedra solta
+
+## 7
+"Não se olha nos olhos dela", diz Quincas, de repente sóbrio. "Não se ouve o canto dela. Não se toca no coração dela com a mão. E não se aceita presente dela. Quatro regras. Quem quebrou uma só já foi para o fundo."
+anota: Quatro Regras
+-> 123 Agradecer
+
+## 8
+Entre as casas vazias aparece um cachorro magro, de pelo cinzento e uma orelha rasgada. Ele rosna para o farol e depois olha para você, abanando o rabo devagar.
+-> 113 [provisões 1+] Dar comida ao cachorro
+-> 320 Seguir em frente
+
+## 9
+A sua espada se parte ao meio como vidro. A pérola nem sente. A luz verde pulsa mais forte e, lá longe, você vê a primeira lanterna da frota balançar perto dos recifes.
+perde: Espada
+energia: -2
+-> 310 [Oleandro Desperto] Gritar por Oleandro
+-> 331 Não ter mais nada para tentar
+
+## 10
+Entre as ferramentas há uma chave inglesa enorme, pesada como um martelo, e um caderno de manutenção. Na última página, a letra firme de um técnico: "Mecanismo de rotação: se a lente principal for trocada, girar a manivela três voltas para a esquerda antes de acender."
+ganha: Chave Inglesa
+anota: Manual do Mecanismo
+-> 56 Continuar
+
+## 11
+Você guarda o peixe seco e os biscoitos na mochila. Duros como pedra, mas sustentam.
+ouro: -2
+provisões: +3
+-> 33 Continuar
+
+## 12
+A chama acende. É fraca, mas é amarela.
+-> 268 Olhar o mar
+
+## 13
+A lâmina verde-azulada do templo brilha na mão. A Viúva reconhece a arma e recua um passo, mas ataca mesmo assim.
+combate: Morgessa, a Viúva | 9 | 9
+-> 157 Ela se transforma
+
+## 14
+Pela luneta você vê as lanternas da frota ao longe. Se o farol tiver qualquer luz amarela, ela vai iluminar as bandeiras.
+-> 320 Descer
+
+## 15
+Uma coroa de coral aparece flutuando à sua frente, linda e vermelha. Você a pega. No mesmo instante, sente o peito apertar: o Fôlego de Sereia acabou. A água entra no seu nariz e na sua boca, e você sobe desesperado.
+ganha: Coroa de Coral
+aflição: Marca da Viúva
+energia: -4
+anota: Altar Visitado
+-> 264 Chegar à tona, sem fôlego
+
+## 16
+O tubarão bate no casco, e o barco quase vira. Quando ele vem de novo, com a boca aberta, você golpeia.
+combate: Tubarão-Cinzento | 7 | 9
+-> 211 Continuar remando
+
+## 17
+A voz chama o seu nome. Você não lembra de ter dito seu nome a ninguém em Porto Salgado. Joana larga o leme, com os olhos vidrados, e caminha para a borda do barco.
+teste de sorte: 60 | 54
+
+## 18
+Os devotos caem e, ao morrer, os olhos deles voltam a ser castanhos e assustados. Um deles, antes de fechar os olhos, sussurra: "Desculpa... ela prometeu trazer meu filho de volta do mar." Sobre o altar, entre as velas negras, há uma chave de ferro em forma de âncora.
+ganha: Chave-Âncora
+-> 399 Levantar a imagem da Senhora das Ondas
+-> 320 Sair da capela
+
+## 19
+A figura de proa se desfaz em lascas. No lugar do coração, encaixada na madeira, havia uma pedra verde, que se apaga e vira poeira na sua mão. Algo, ou alguém, estava usando aquela coisa como olhos.
+anota: Olhos da Viúva Cegos
+sorte: +1
+-> 395 Continuar procurando
+
+## 20
+Ubaldo aperta sua mão com força demais. "Promessa é promessa. O mar ouve."
+ouro: -8
+arma: Arpão de Ferro Frio | +1
+anota: Promessa ao Armeiro
+-> 275 Continuar na loja
+
+## 21
+Na mesinha de cabeceira há um pequeno frasco de vidro azul e uma bolsa de moedas. O frasco tem o rótulo "Tônico" e cheira a hortelã.
+ouro: +4
+energia: +2
+anota: Hóspede Derrotada
+-> 57 Sair
+
+## 22
+Você coloca a pérola branca no buraco do peito da estátua. Ela encaixa perfeitamente. Uma luz branca se espalha pelo templo, e a voz de mulher na sua cabeça grita e se cala. Os peixes pálidos ganham cor. No altar, uma pequena gaveta de pedra se abre: dentro dela há uma lente de âmbar, redonda e quente como o sol.
+perde: Pérola Branca
+ganha: Lente de Âmbar
+sorte: +2
+anota: Altar Visitado
+-> 92 Voltar à tona
+
+## 23
+O sino solta uma badalada grave que faz a torre inteira vibrar. Lá de cima, a voz que canta para de repente. Você toca de novo, e de novo. Lá no mar, algumas lanternas da frota hesitam.
+anota: Sino de Nevoeiro Tocado
+-> 174 Voltar à escada
+
+## 24
+Aos poucos o barco sai do giro. O redemoinho se fecha atrás de vocês com um som de boca engolindo.
+energia: -1
+-> 373 Seguir até a praia
+
+## 25
+"Ingrato", diz a voz, já sem doçura. Você pega a concha de nácar e nada para cima com força. A água em volta esfria de repente, como se o mar estivesse com raiva.
+ganha: Concha de Nácar
+energia: -1
+anota: Altar Visitado
+-> 264 Subir à tona
+
+## 26
+Você morde a língua até sangrar e agarra a grade da galeria.
+teste de sorte: 122 | 165
+
+## 27
+As gaivotas que sobram fogem para o farol. Você está cheio de arranhões, mas agora a aldeia está em silêncio.
+anota: Gaivotas Espantadas
+-> 320 Voltar à rua
+
+## 28
+A corda prende numa ponta de pedra. Você puxa com todo o peso, e o barco escapa do redemoinho devagar, como um peixe que se solta do anzol.
+-> 373 Seguir até a praia
+
+## 29
+A praça de Porto Salgado é um largo de pedras redondas em volta de uma âncora enferrujada fincada no chão. Daqui você vê a taverna Âncora Partida, a capela da Senhora das Ondas, a loja do armeiro, o mercado de peixe fechando as barracas, a casinha azul da velha dos búzios e, descendo a ladeira, o cais.
+-> 348 Entrar na taverna
+-> 125 Ir à capela
+-> 275 Ir à loja do armeiro
+-> 33 Ir ao mercado de peixe
+-> 87 [!Profecia dos Búzios] Bater na casinha azul
+-> 188 Ir à capitania do porto
+-> 325 Subir ao cemitério dos marinheiros
+-> 101 Visitar a casa da prefeita
+-> 333 Entrar na botica do doutor Anselmo
+-> 303 Descer até o estaleiro
+-> 144 Subir à velha torre de vigia do cabo
+-> 123 Descer até o cais
+
+## 30
+A figura de proa é uma mulher de madeira de cabelos longos, com os braços cruzados sobre o peito. Os olhos foram pintados de verde. Quando você chega perto, ouve um estalo: a cabeça de madeira se vira na sua direção, e os braços se abrem com dedos que são lascas afiadas.
+combate: Figura de Proa | 7 | 9
+-> 19 Examinar o que restou
+
+## 31
+O coral é quente na mão, como se tivesse um coração.
+ouro: -2
+ganha: Amuleto de Coral
+-> 364 Continuar olhando
+
+## 32
+A base do farol é um salão redondo de pedra, frio e úmido. Barris, cordas e caixas se amontoam pelas paredes. Uma escada de ferro em espiral sobe pelo centro da torre. Há uma porta para o depósito de óleo, e um alçapão no chão que dá para a cisterna. Água salgada escorre pela escada, de cima para baixo, como se alguém tivesse descido molhado.
+-> 381 Abrir a porta do depósito
+-> 57 Subir a escada em espiral
+-> 247 Examinar uma mesa com um livro aberto
+
+## 33
+Só duas barracas continuam abertas. Uma vende peixe seco e biscoito de marinheiro; a outra é de um velho que vende quinquilharias do mar: conchas, garrafas com barquinhos dentro, dentes de tubarão.
+-> 11 [ouro 2+] Comprar provisões (2 peças, 3 refeições)
+-> 364 Olhar as quinquilharias
+-> 29 Voltar à praça
+
+## 34
+"Corda de cânhamo alcatroada, vinte braças", diz Ubaldo. "Duas peças."
+-> 337 [ouro 2+] Pagar 2 peças de ouro
+-> 275 Desistir
+
+## 35
+A sereia para de cantar, surpresa. "Ninguém pergunta nada, todos só querem me beijar." Ela olha para o farol e faz uma careta. "Aquela lá não é das nossas. É uma afogada que se casou com o fundo do mar. Ela odeia a luz do sol e o ferro da terra. E come sereias também, se puder." Ela mergulha e desaparece.
+anota: Conselho da Sereia
+-> 211 Seguir remando
+
+## 36
+A tabela mostra que hoje a maré baixa é às dez da noite. Por quase uma hora, o banco de areia entre a Ponta da Gaivota e o Rochedo fica descoberto, e dá para atravessar a pé, se você não se demorar.
+anota: Tabela das Marés
+-> 188 Continuar
+
+## 37
+Na cabine do capitão, um esqueleto de chapéu de três bicos está sentado na cadeira, com um sabre no colo. Quando você entra, a cabeça dele se levanta. "Ninguém toca no tesouro do capitão Bartolo!"
+combate: Capitão Bartolo | 8 | 8
+-> 199 Abrir o baú da cabine
+
+## 38
+Você sopra o búzio com toda a força. O som grave rola sobre a água e engole o canto. Pouco depois, três golfinhos saltam ao lado do barco e passam a nadar à frente, mostrando o caminho entre as pedras escondidas na névoa.
+sorte: +1
+-> 373 Seguir os golfinhos
+
+## 39
+A valsa de vilarejo se espalha pela lanterna, pequena e desafinada no meio do vento. Oleandro fica imóvel. "Nossa valsa", ele diz. "Dançamos isso no dia do casamento. Amélia pisou no meu pé três vezes." Ele olha para a mulher ao lado. "Você nunca pisou no meu pé." E solta a mão dela.
+-> 138 Ver o que acontece
+
+## 40
+O antídoto tem gosto de ferrugem. Em poucos minutos o inchaço baixa.
+perde: Antídoto
+energia: +2
+-> 280 Seguir em frente
+
+## 41
+Você acende o alecrim com a pederneira, ou com a chama da lanterna, e a fumaça cheirosa sobe. As gaivotas gritam, dão voltas no alto e fogem em direção ao mar. Os olhos delas, por um instante, voltam a ser pretos e comuns.
+perde: Ramo de Alecrim
+anota: Gaivotas Espantadas
+-> 320 Voltar à rua
+
+## 42
+Nas prateleiras há mechas novas de algodão, uma pederneira e uma lata de pólvora de sinalização, bem fechada, com o rótulo "Foguete de socorro".
+-> 179 [!Pederneira] Pegar a pederneira
+-> 95 [!Foguete de Socorro] Pegar o foguete de socorro
+-> 381 Voltar
+
+## 43
+O peixe seco cai na água a alguns metros. O tubarão desvia, e você rema para o outro lado sem olhar para trás.
+provisões: -1
+-> 211 Continuar remando
+
+## 44
+Você chuta a fechadura até ela ceder.
+energia: -1
+-> 32 Entrar
+
+## 45
+O cais está em festa. Gente que você nunca viu aperta sua mão e enfia peixe seco e pão doce nos seus bolsos.
+-> 302 [Oleandro Desperto] [!Tito Avisado] Procurar Tito
+-> 267 [Ramo de Alecrim] [!Menina Reencontrada] Procurar a menina do cemitério
+-> 267 [Gaivotas Espantadas] [!Menina Reencontrada] Procurar a menina do cemitério
+-> 309 [Promessa ao Armeiro] [!Armeiro Visitado] Ir até a loja do armeiro
+-> 400 Aceitar o abraço da vila
+
+## 46
+Dentro da sacola há um caderno de notas encharcado e duas ampolas de vidro com um líquido prateado e um rótulo à mão: "Fôlego de Sereia. Uma gota, uma hora debaixo d'água." As notas falam de um templo submerso embaixo do Rochedo.
+ganha: Fôlego de Sereia
+anota: Templo Submerso
+-> 245 Voltar à saliência
+
+## 47
+Irene come devagar. Depois tira do bolso do casaco um apito de prata. "Sinal da guarda costeira. Os pescadores daqui conhecem. Três apitos longos querem dizer: recife, volte." Ela fecha a sua mão em volta do apito.
+provisões: -1
+ganha: Apito de Prata
+anota: Irene Ajudada
+-> 195 Continuar
+
+## 48
+O chefe, um homem de cicatriz no queixo, ri. "O Rochedo? A gente leva aguardente para o velho faroleiro há anos, por um túnel que só a gente conhece. Mas há duas semanas ele não paga, e quem foi lá cobrar não voltou." Ele cospe na água. "Por quinze peças de ouro, te mostro a entrada do túnel. É na Ponta da Gaivota, atrás da pedra que parece um sapo."
+-> 166 [ouro 15+] Pagar 15 peças
+-> 289 Ameaçá-los para que contem de graça
+-> 50 Perguntar se eles mesmos podem levá-lo
+-> 123 Recusar
+
+## 49
+Você desenha de novo a passagem do meio, entre a segunda e a terceira fileira de pedras. Não vai ajudar a frota agora, mas um dia alguém vai precisar disso. Você se sente mais firme.
+sorte: +1
+anota: Rota Corrigida
+-> 158 Continuar
+
+## 50
+O chefe dos contrabandistas mede você de alto a baixo. "Tenho uma proposta melhor. Vinte peças e a gente leva você no bote preto direto para o túnel dos fundos do Rochedo. Ninguém vê, ninguém ouve." Ele sorri. "E você não pergunta o que tem nas caixas."
+-> 86 [ouro 20+] Pagar 20 peças e embarcar
+-> 123 Recusar
+
+## 51
+Você corre para a escada, mas os tentáculos são mais rápidos. Um deles bate nas suas costas e o derruba dos degraus.
+energia: -3
+-> 359 Lutar
+
+## 52
+Você rema até seus ombros queimarem.
+teste de habilidade: 211 | 221
+
+## 53
+A roupa seca é um alívio enorme, e as bolachas de mel devolvem um pouco das suas forças.
+energia: +3
+anota: Roupa Trocada
+-> 57 Sair
+
+## 54
+Joana pula na água sem um grito. Você se joga atrás dela, agarra os cabelos dela e a puxa de volta para o barco, os dois encharcados e tremendo de frio. O canto para, como se alguém tivesse ficado zangado.
+energia: -3
+-> 373 Seguir até a praia
+
+## 55
+A moeda cai na água e afunda brilhando. O redemoinho para na mesma hora, como se alguém tivesse ficado satisfeito. Mas você sente um frio no peito que não passa. Ela sabe quem você é.
+perde: Moeda da Viúva
+aflição: Marca da Viúva
+-> 373 Seguir até a praia
+
+## 56
+A oficina era onde os faroleiros consertavam as peças do farol. Há uma bancada com ferramentas, engrenagens, vidros quebrados e um torno. Pendurada na parede, uma armadura de mergulho de lona e cobre. Do fundo da oficina vem um tique-taque.
+-> 10 [!Chave Inglesa] Revirar a bancada
+-> 326 [!Relógio Parado] Procurar o tique-taque
+-> 240 Examinar a armadura de mergulho
+-> 320 Sair
+
+## 57
+A escada de ferro range a cada passo. Ela sobe em espiral pela torre, passando por andares de madeira. O primeiro andar é um patamar com duas portas: uma de madeira, com o nome "Tito" escrito a giz, e uma de ferro, com um cadeado aberto.
+-> 65 Abrir a porta com o nome de Tito
+-> 156 Abrir a porta de ferro
+-> 387 [!Hóspede Derrotada] Abrir a porta escancarada do quarto de hóspedes
+-> 174 Continuar subindo
+
+## 58
+Você abre a garrafinha de rum que Joana lhe deu e toma um gole longo. O calor desce até o estômago e a coragem volta para os braços.
+perde: Rum de Joana
+energia: +2
+sorte: +1
+-> 174 Continuar subindo
+
+## 59
+O galpão guarda barris de óleo de baleia, a maioria vazios, e um carrinho de mão. Num canto há uma rede de pesca de malha grossa. Algo se mexe atrás dos barris: um caranguejo-ermitão enorme, usando um elmo de mergulhador como concha.
+combate: Caranguejo-Ermitão | 7 | 8
+fuga -> 160
+-> 252 Revistar o galpão
+
+## 60
+Você agarra Joana pelo casaco no último instante e a sacode até ela piscar. Ela xinga, pega o leme de volta e vira o barco com força. A névoa se abre em farrapos e o canto some.
+-> 373 Seguir até a praia
+
+## 61
+De perto, as gaivotas têm olhos verdes, iguais à luz do farol. Uma delas abre o bico e, em vez de grasnar, fala com voz de mulher: "Ele veio." E todas levantam voo ao mesmo tempo, mergulhando sobre você.
+-> 232 Defender-se com a espada
+-> 237 Correr para dentro de uma casa
+-> 41 [Ramo de Alecrim] Queimar o ramo de alecrim
+
+## 62
+Três voltas para a esquerda. As engrenagens rangem, a lente se ajeita no lugar com um clique, e o facho dourado desce até o mar e começa a girar, largo e firme, varrendo as ondas como fazia havia cem anos.
+-> 118 Olhar o mar
+
+## 63
+Você avança com a espada. Oleandro se joga na sua frente, os braços abertos, protegendo a mulher. "Não! Não toque nela!"
+-> 222 Afastá-lo à força
+-> 285 Parar e falar com ele
+
+## 64
+O taverneiro se chama Bento. "Oleandro foi faroleiro por quarenta anos. Homem bom, mas esquisito. Depois que a mulher dele se afogou, começou a falar sozinho, a conversar com o mar. Há um mês, parou de vir buscar mantimentos." Ele baixa a voz. "E tem mais uma coisa. Os afogados que o mar devolveu... alguns sumiram da capela antes do enterro."
+anota: Os Afogados Sumidos
+-> 348 Continuar na taverna
+
+## 65
+É o quartinho do ajudante: uma cama estreita, um baú e desenhos de barcos pregados na parede. No baú há uma muda de roupa seca e um pacote de bolachas de mel.
+-> 53 [!Roupa Trocada] Trocar a roupa molhada e comer
+-> 57 Sair
+
+## 66
+"Os Dentes do Corvo são três fileiras de pedra", diz Gaspar. "Quem conhece passa pelo meio, entre a segunda e a terceira. Quem não conhece morre. E o farol, rapaz, o farol foi construído em cima de uma coisa mais velha. Meu avô ajudou a cavar os alicerces e encontrou escadas que desciam para o mar."
+anota: Escadas Antigas
+-> 303 Agradecer
+
+## 67
+A galeria lateral é coberta de cristais brancos de sal, que crescem do chão e do teto como dentes. A luz da sua lanterna, ou da sua espada, se multiplica em mil reflexos. No fundo, um cristal enorme, do tamanho de um homem, tem alguma coisa presa dentro.
+-> 143 Aproximar-se do cristal enorme
+-> 264 Voltar
+
+## 68
+Sentado num rolo de corda, um velho bêbado cantarola uma canção de marinheiro. Ele se chama Quincas e tem um olho de vidro azul. "A Viúva, a Viúva", ele canta, "não se olha, não se ouve, não se toca e não se aceita nada dela."
+-> 207 [Aguardente] Oferecer a aguardente a ele
+-> 7 Pedir que explique a canção
+-> 123 Deixá-lo cantar
+
+## 69
+Oleandro está sentado na galeria, olhando o mar, com o retrato de Amélia na mão. Ele parece cem anos mais velho e, ao mesmo tempo, mais leve. "Ela disse não", repete ele. "A minha Amélia disse não. Ela era mais forte do que eu." Ele enxuga os olhos. "Eu vou ficar. Alguém tem que cuidar da luz. E vou pedir a Tito que volte."
+sorte: +1
+-> 338 [Pedido da Prefeita] Esperar Dona Celeste, que vem num barco
+-> 148 Descer do farol com ele
+
+## 70
+"Este é especial", diz Ubaldo, girando o arpão. "Ferro da mina, forjado a frio e nunca levado ao mar. Meu avô fez para matar uma coisa que subia pelo cais nas noites de lua nova. Doze peças." Ele vê sua cara. "Ou oito, se me trouxer de volta a lanterna grande do farol. Ela era do meu pai."
+-> 356 [ouro 12+] Pagar 12 peças de ouro
+-> 20 [ouro 8+] Pagar 8 peças e prometer trazer a lanterna
+-> 275 Dizer que não pode pagar
+
+## 71
+A raiz aguenta. Você se puxa para cima e fica deitado na trilha por um minuto inteiro, respirando.
+energia: -1
+-> 319 Seguir em frente
+
+## 72
+A caixa tem o selo de Porto Salgado: é o cofre da guarda costeira. Dentro há moedas, um frasco de Fôlego de Sereia e um foguete de socorro bem embrulhado em oleado.
+ouro: +5
+ganha: Fôlego de Sereia
+ganha: Foguete de Socorro
+anota: Cofre Aberto
+-> 32 Subir pelo alçapão
+
+## 73
+A forja da aldeia é um galpão de pedra com uma bigorna, um fole e um forno apagado. Ferramentas enferrujadas pendem das paredes. Mas sobre a bigorna, coberto de pano encerado, há alguma coisa que não enferrujou.
+-> 181 Tirar o pano
+-> 320 Sair
+
+## 74
+A chave-âncora encaixa perfeitamente no cadeado. A grade se abre, e você entra pelo cano, com água pela cintura, até sair dentro de um salão redondo de pedra.
+-> 363 Seguir em frente
+
+## 75
+"A mulher lá em cima tem medo de duas coisas", diz Irene. "Do ferro da terra, que nunca tocou o mar. E da luz do sol. Meu parceiro tentou com a espada de serviço e ela riu dele." Ela aponta o farol pela janela. "E o velho faroleiro ainda está lá dentro, em algum lugar. Vi ele chorando na galeria."
+anota: Conselho de Irene
+-> 195 Continuar
+
+## 76
+Você pendura a lanterna de navio no suporte da lâmpada. A luz dela é pequena, mas é amarela, e a lente velha do farol, mesmo rachada, a aumenta um pouco.
+-> 268 Olhar o mar
+
+## 77
+A lanterna mostra que o musgo azul está em toda parte, e que pequenas coisas transparentes se movem dentro dele, como lesmas de vidro. Você anda pelo meio do túnel, longe das paredes.
+-> 280 Seguir em frente
+
+## 78
+Os afogados se deitam de novo. Você chega do outro lado da piscina, onde uma escada de corda velha sobe para uma fenda no teto, e sai na encosta da ilha, perto da aldeia.
+-> 320 Seguir até a aldeia
+
+## 79
+O unguento arde como fogo e depois esfria. Os cortes fecham diante dos seus olhos.
+perde: Unguento de Algas
+energia: +6
+-> 320 Levantar-se
+
+## 80
+Você corre para a galeria e dispara o foguete para o céu. Uma estrela vermelha sobe e explode sobre o Rochedo, iluminando os recifes como se fosse dia. No mar, as lanternas da frota param, depois viram, devagar, para longe dos Dentes do Corvo.
+perde: Foguete de Socorro
+-> 268 Ver o que acontece
+
+## 81
+Joana guarda o ouro e aperta sua mão com força. "O barco se chama Gaivota Teimosa. Fica no fim do cais. Quando estiver pronto, me encontre lá."
+ouro: -6
+anota: Barqueira Contratada
+-> 348 Continuar na taverna
+
+## 82
+A corda engancha numa ponta de pedra. Você sobe de volta para a trilha com os braços tremendo.
+-> 319 Seguir em frente
+
+## 83
+Você caminha até a borda da galeria, feliz, como quem vai para uma festa. Lá embaixo, o mar se abre num salão de corais iluminado por luz verde, e uma mulher de vestido branco estende a mão. Você salta. Dizem que em Porto Salgado, nas noites de lua nova, os pescadores veem um vulto de espada na mão de pé ao lado da Viúva, na galeria do farol.
+fim: Você se tornou o noivo da Viúva. A aventura termina aqui.
+
+## 84
+Saturnino coça a barba e pega na prateleira uma lanterna de navio amassada mas inteira, e um frasco de óleo. "Achei faz um mês. Lanterna de navio não apaga com o vento."
+-> 375 [!Lanterna de Navio] Aceitar a lanterna
+-> 230 Agradecer e recusar
+
+## 85
+Você enche a lâmpada de óleo e acende a mecha. A chama sobe, amarela, mas sem a lente ela é pequena, uma vela no alto de uma torre. Lá longe, as lanternas da frota hesitam.
+-> 12 [Pederneira] Acender com a pederneira
+-> 12 [Lanterna de Navio] Acender com a lanterna
+-> 296 Procurar fósforos pelo chão
+
+## 86
+O bote preto desliza sem luz pelo mar. Os contrabandistas remam em silêncio, com panos nos toletes para não fazer barulho. No meio da travessia, um deles aponta para a água: corpos boiando de rosto para cima, olhando o céu. Ninguém diz nada. Eles o deixam numa rocha perto da entrada de uma caverna e vão embora sem se despedir.
+ouro: -20
+-> 396 Entrar na caverna
+
+## 87
+A casinha azul é da velha Zefa, que lê o futuro em búzios jogados numa peneira. Ela já está com a peneira no colo quando você entra. "Senta. Eu estava esperando o forasteiro." Ela estende a mão. "Uma moeda para os búzios."
+-> 149 [ouro 1+] Pagar uma peça de ouro
+-> 29 Ir embora
+
+## 88
+A torre de sinais é uma estrutura de madeira com um mastro e braços móveis, usada antigamente para falar com os barcos por meio de bandeiras. Numa caixa ao pé do mastro há bandeiras coloridas, ainda inteiras.
+-> 347 Içar o sinal de perigo para a frota
+-> 320 Descer
+
+## 89
+A luz verde se apagou. Pela primeira vez em nove noites, o alto do farol está escuro. Mas escuro não basta: no mar, as lanternas da frota estão perdidas, sem saber para onde ir, e algumas continuam na direção dos recifes. A chama precisa voltar. Agora.
+-> 217 [Lente de Âmbar] [Óleo de Baleia] Encher a lâmpada de óleo e colocar a lente de âmbar
+-> 85 [Óleo de Baleia] Encher a lâmpada de óleo e acender sem lente
+-> 80 [Foguete de Socorro] Disparar o foguete de socorro para o céu
+-> 76 [Lanterna de Navio] Pendurar a sua lanterna de navio no lugar da chama
+-> 131 Procurar qualquer coisa para fazer fogo
+
+## 90
+Os pescadores que ouviram o sino de nevoeiro tocar mais cedo ainda estão atentos, e os dois barcos que seguiam para os recifes reduzem as velas a tempo. Raspam numa pedra, perdem um mastro, mas passam.
+-> 200 Esperar o dia nascer
+
+## 91
+A rede cai sobre o polvo e os tentáculos se enroscam nas malhas. Enquanto ele luta para se soltar, você ataca sem que ele possa se defender direito.
+combate: Polvo Enredado | 7 | 10
+-> 238 Subir a escada
+
+## 92
+Você nada para cima pelo poço e sai na gruta grande, encharcado mas inteiro.
+-> 264 Sair da água
+
+## 93
+No terceiro patamar, uma porta dá para uma varanda estreita que contorna a torre pelo lado de fora, a meia altura. O vento é forte. Na varanda há um ninho de gaivotas de olhos verdes, que se levantam ao vê-lo.
+-> 146 [Ramo de Alecrim] Queimar o alecrim
+-> 251 Enfrentá-las
+-> 174 Fechar a porta depressa
+
+## 94
+O sal cai na água e ela começa a ferver. Os corpos fecham os olhos, um por um, e afundam devagar. É como se tivessem esperado por isso. Você sente que libertou alguma coisa, e que a Viúva perdeu muitos noivos de uma vez.
+perde: Sal Bento
+anota: Noivos Libertados
+sorte: +2
+-> 264 Voltar
+
+## 95
+É um tubo de papelão encerado com um pavio. Lançado para o alto, solta uma luz vermelha que se vê a milhas.
+ganha: Foguete de Socorro
+-> 42 Continuar
+
+## 96
+Dentro de uma das armaduras, presa no punho de ferro, há uma espada curta de lâmina verde-azulada, feita de um metal que você não conhece. Ela não enferrujou em séculos.
+arma: Lâmina de Oricalco | +2
+-> 258 Voltar ao centro do templo
+
+## 97
+O sal faz a espuma ferver. A mulher se desfaz com um grito e escorre pelas frestas do chão. O baú agora está seco.
+-> 128 Examinar o baú
+
+## 98
+O terceiro homem fugiu correndo pelo cais. O chefe, caído, aperta o braço ferido. "Tá bom, tá bom! Tem um túnel na Ponta da Gaivota, atrás da pedra que parece um sapo. Vai até as cavernas do Rochedo." Nas caixas há garrafas de aguardente e um saquinho com moedas.
+ouro: +5
+ganha: Aguardente
+anota: Túnel dos Contrabandistas
+-> 123 Voltar ao cais
+
+## 99
+"Dez. E nem uma a menos." Ela volta às cartas.
+-> 277 [ouro 10+] Pagar 10 peças de ouro
+-> 348 Dizer que vai pensar
+
+## 100
+Você pisa na margem com cuidado. No meio do caminho, um dos corpos se senta na água. Depois outro.
+teste de sorte: 78 | 136
+
+## 101
+A casa de Dona Celeste fica ao lado da capitania, com redes secando na varanda. Ela está sentada à mesa da cozinha, escrevendo cartas para as famílias dos marinheiros dos navios afundados. Levanta os olhos quando você entra. "Precisa de alguma coisa antes de ir?"
+-> 171 [!Adiantamento da Prefeita] Pedir um adiantamento da recompensa
+-> 327 [!Pedido da Prefeita] Perguntar sobre Oleandro
+-> 29 Despedir-se
+
+## 102
+A marca no seu peito arde e puxa você para ela. A coroa de coral, ou a marca que ela deixou, faz o canto entrar mais fundo.
+teste de sorte: 122 | 165
+
+## 103
+Você ergue o martelo de ferro escuro, forjado na aldeia e nunca molhado no mar, e o desce com toda a força. A pérola negra estala como gelo de inverno e se despedaça em areia preta. O grito da Viúva sobe ao céu e se perde no vento.
+-> 89 Olhar em volta
+
+## 104
+A foca come o peixe e encosta o focinho na borda do barco. Depois mergulha e volta com um anel de prata preso no bigode, que deixa cair no seu colo. Joana assobia. "Presente de foca dá sorte."
+provisões: -1
+sorte: +2
+anota: Focas Visitadas
+-> 272 Seguir viagem
+
+## 105
+Três homens de capuz carregam caixas de um galpão para um bote preto, sem acender nenhuma luz. Quando veem você, um deles puxa uma faca. "O que é que você quer?"
+-> 48 Dizer que precisa chegar ao Rochedo
+-> 289 Sacar a espada
+-> 123 Ir embora
+
+## 106
+A Viúva luta com unhas como anzóis e com uma força de maré. A cada golpe que ela dá, você sente gosto de sal na boca.
+-> 366 [Arpão de Ferro Frio] Atacar com o arpão de ferro frio
+-> 13 [Lâmina de Oricalco] Atacar com a lâmina de oricalco
+-> 137 Atacar com a espada
+
+## 107
+Grampo a grampo, você sobe até uma janela estreita do segundo andar e se espreme para dentro.
+-> 174 Entrar no farol
+
+## 108
+Você come em silêncio, sentado no último degrau, ouvindo o vento bater nos vidros.
+provisões: -1
+energia: +4
+-> 182 Subir para a galeria
+
+## 109
+Um velho marinheiro de cachimbo apagado conta, para quem quiser ouvir, que há cem anos o farol também ficou verde. "Meu avô viu. Durou sete noites. Acabou quando um ferreiro da ilha subiu lá com um martelo." Ele dá uma batidinha no nariz. "Ferreiro. Não espadachim."
+anota: História do Ferreiro
+-> 348 Voltar ao balcão
+
+## 110
+A abertura sul dá numa piscina natural de água parada e escura, com uma margem de pedra. O cheiro é forte. Na água boiam dezenas de corpos de marinheiros, de rosto para cima, todos com os olhos abertos. Não estão mortos de verdade. Estão esperando.
+-> 94 [Sal Bento] Jogar todo o sal bento na água
+-> 100 Passar em silêncio pela margem
+-> 264 Voltar devagar
+
+## 111
+O gancho prende numa fenda da rocha. Você sobe de volta para a trilha, devagar, com o coração aos pulos.
+-> 319 Seguir em frente
+
+## 112
+Você observa por um bom tempo. Vê a luz verde girar. Vê figuras se moverem na praia dos destroços, devagar demais para serem pessoas vivas. E vê, por um instante, uma luz amarela fraca na aldeia abandonada, como uma vela atrás de uma janela.
+anota: Vela na Aldeia
+-> 29 Descer
+
+## 113
+O cachorro come e depois corre até um monte de redes num canto, cavando com as patas. Volta com uma coisa na boca e deixa cair aos seus pés: um saquinho de moedas que alguém enterrou ali. Depois some entre as casas, satisfeito.
+provisões: -1
+ouro: +6
+anota: Cachorro Alimentado
+-> 320 Seguir em frente
+
+## 114
+O barquinho é velho, mas tem remos. Você o desamarra e começa a remar em direção à luz verde. Seus braços vão sentir isso.
+energia: -1
+-> 176 Remar mar adentro
+
+## 115
+"Faca de escamar", diz Ubaldo. "Uma peça. Corta rede, corda e alga como se fosse manteiga."
+-> 119 [ouro 1+] Pagar 1 peça de ouro
+-> 275 Desistir
+
+## 116
+Entre os ossos do ninho você encontra moedas, um anel de ouro e uma luneta de latão ainda inteira.
+ouro: +8
+ganha: Luneta
+-> 282 [Luneta] Olhar o farol pela luneta
+-> 160 Seguir até o farol
+
+## 117
+O mapa mostra o Rochedo do Corvo em detalhe: a praia dos destroços ao sul, a aldeia abandonada no meio, o farol na ponta norte, e as cavernas marinhas, marcadas com uma caveira, embaixo do penhasco leste. Alguém escreveu a lápis, ao lado das cavernas: "Templo?"
+ganha: Mapa do Rochedo
+-> 188 Continuar
+
+## 118
+Lá longe, as trinta lanternas da frota param de avançar para os recifes. Uma por uma, elas viram para a luz dourada e contornam os Dentes do Corvo, em fila, como sempre fizeram. Você conta: vinte e oito, vinte e nove, trinta. Nenhuma se apaga.
+-> 200 Esperar o dia nascer
+
+## 119
+Uma faca curta e afiada como navalha. Não serve para lutar, mas corta qualquer coisa.
+ouro: -1
+ganha: Faca de Escamar
+-> 275 Continuar na loja
+
+## 120
+"Celeste mandou dizer", você fala. "O pai dela, que você tirou da tempestade quando ela tinha sete anos. Ela quer você vivo." Oleandro estremece. "Celeste... a menina do Tomás." A mão dele afrouxa na mão da mulher.
+teste de sorte: 138 | 349
+
+## 121
+Na bolsa há moedas e um frasco fechado com rótulo de botica: "Unguento de Algas". Quando você se levanta, a água já começou a voltar sobre a areia.
+ouro: +3
+ganha: Unguento de Algas
+-> 305 Correr antes que a maré suba
+
+## 122
+O gosto de sangue traz você de volta. Você está com uma perna por cima da grade. Puxa-a de volta e se vira para a mulher, com a espada na mão.
+-> 106 Enfrentá-la
+
+## 123
+O cais é longo e escorregadio de algas. Barcos de quem não saiu com a frota balançam amarrados. No fim do cais está um barco pintado de verde e branco, o Gaivota Teimosa. Ao lado dele, um barquinho a remo sem dono. Lá na frente, o Rochedo do Corvo é uma silhueta negra contra o céu, com a luz verde piscando no alto.
+-> 318 [Barqueira Contratada] Embarcar no Gaivota Teimosa com Joana
+-> 114 Pegar o barquinho a remo
+-> 292 [Tabela das Marés] Ir até a Ponta da Gaivota esperar a maré baixa
+-> 105 [!Túnel dos Contrabandistas] Investigar os homens que carregam caixas no fim do cais
+-> 68 Falar com o velho bêbado sentado num rolo de corda
+-> 176 [Bote de Gaspar] Partir no bote amarelo de Gaspar
+-> 29 Voltar ao vilarejo
+
+## 124
+Você agarra o remo de emergência e rema ao lado de Joana com toda a força.
+teste de habilidade: 24 | 175
+
+## 125
+A capela da Senhora das Ondas é pequena, com paredes cobertas de ex-votos: barquinhos de madeira, redes em miniatura, cabelos trançados. Ao lado do altar, sobre mesas de pedra, há dois caixões vazios com as tampas jogadas no chão. A irmã Luzia, uma freira velha de hábito azul, acende velas.
+-> 209 Falar com a irmã Luzia
+-> 132 [!Moeda da Viúva] Examinar os caixões vazios
+-> 29 Sair
+
+## 126
+Você sobe pelo alçapão e sai na lanterna do farol, uma sala de vidro no alto da torre, cercada por uma galeria estreita aberta ao vento. No centro, onde deveria arder a chama, uma pérola negra do tamanho de um punho gira sozinha no ar, soltando a luz verde. Na galeria, de costas para o mar, está uma mulher de vestido branco encharcado e cabelos negros que pingam. Ao lado dela, de mãos dadas, um velho de barba branca e casaco de faroleiro: Oleandro. A mulher se vira. Tem o rosto doce de Amélia, mas os olhos são verdes e não piscam.
+-> 285 Falar com Oleandro
+-> 63 Atacar a mulher imediatamente
+-> 330 Correr até a pérola negra
+
+## 127
+As cinzas estão frias. Ao lado delas, alguém deixou uma bolsa de lona com pão mofado, uma lanterna sem óleo e um bilhete: "Tito, se você achar isto, não suba. Fuja. Oleandro." O velho faroleiro esteve aqui, ainda em seu juízo, pensando no rapaz.
+anota: Bilhete de Oleandro
+-> 264 Voltar
+
+## 128
+No fundo do baú há roupas de mulher dobradas e um vidro de perfume vazio. E um livro de capa azul: o diário de Amélia. A última página diz: "Oleandro não sabe, mas a mulher do mar vem me visitar na praia. Diz que me dará juventude eterna se eu for com ela. Eu disse não. Ela disse que então levaria o meu rosto." Depois disso, as páginas estão em branco.
+ganha: Diário de Amélia
+-> 253 Voltar
+
+## 129
+"Meu irmão está na frota", ela diz, de repente séria. "Seis peças. E você me promete que apaga aquela luz."
+-> 81 [ouro 6+] Pagar 6 peças de ouro
+-> 348 Dizer que vai pensar
+
+## 130
+O apito de prata é pequeno e frio. Tem gravado o símbolo da guarda costeira.
+ganha: Apito de Prata
+-> 214 Continuar
+
+## 131
+Você revira a sala da lanterna desesperado, procurando qualquer coisa que queime.
+-> 255 [Apito de Prata] Soprar o apito de prata com toda a força
+-> 274 [Búzio de Chamar] Soprar o búzio de chamar
+-> 378 Gritar para o mar, sem esperança
+
+## 132
+No fundo de um dos caixões há uma poça de água salgada e algas, e no meio delas, uma moeda de prata antiga com a figura de uma mulher de cabelos longos. A moeda está fria como gelo.
+ganha: Moeda da Viúva
+sorte: -1
+-> 125 Afastar-se
+
+## 133
+Oleandro cai na galeria e não se levanta. A mulher olha o corpo dele sem nenhuma tristeza, e ri. "Obrigada. Ele já estava ficando cansativo."
+sorte: -2
+anota: Oleandro Morto
+-> 106 Enfrentá-la
+
+## 134
+A pederneira solta uma faísca. A mecha pega fogo.
+-> 193 Ver a luz se acender
+
+## 135
+A sala do mecanismo fica logo abaixo da lanterna. Engrenagens enormes, cobertas de graxa, giram devagar no centro, movidas por pesos que descem por um poço na parede. Elas fazem a luz lá em cima girar. Uma escada estreita de ferro sobe por um alçapão até a galeria. Do alçapão vem a luz verde e uma voz de mulher cantando.
+-> 367 Parar as engrenagens
+-> 383 [Manual do Mecanismo] Procurar a manivela de que fala o manual
+-> 5 Subir para a galeria
+
+## 136
+Três afogados saem da água e cambaleiam na sua direção.
+combate: Afogado da Piscina | 6 | 6
+combate junto: Afogado da Piscina | 6 | 5
+combate junto: Afogado da Piscina | 5 | 5
+-> 78 Chegar ao outro lado
+
+## 137
+Sua espada corta a carne dela, mas a ferida se fecha como água.
+combate: Morgessa, a Viúva | 10 | 11
+-> 157 Ela se transforma
+
+## 138
+"Você não é Amélia", diz Oleandro. A mulher para de sorrir. A pele dela fica cinzenta como espuma velha, os cabelos se agitam como algas numa corrente que não existe. Oleandro se joga sobre ela e a abraça por trás, prendendo os braços dela. "Agora!", grita o velho. "Faça agora!"
+anota: Oleandro Desperto
+-> 385 Atacar a Viúva enquanto ele a segura
+
+## 139
+Enquanto o barco sobe e desce nas ondas, Joana fala sem você perguntar. "Meu irmão Davi tem vinte anos. É o pior pescador da frota e o mais feliz. Se ele morrer naqueles recifes, eu não sei o que faço."
+-> 163 Prometer que ele vai voltar
+-> 272 Ficar em silêncio
+
+## 140
+A mulher ergue os olhos das cartas. É Joana, barqueira, a única que ainda atravessa a baía. "Você quer ir ao Rochedo. Todo mundo que pediu, eu levei, e ninguém voltou para pagar a volta." Ela embaralha as cartas. "Dez peças de ouro. Eu deixo você na praia dos destroços e espero até a meia-noite. Depois disso, vou embora."
+-> 277 [ouro 10+] Pagar 10 peças de ouro e contratá-la
+-> 216 Pechinchar
+-> 348 Recusar
+
+## 141
+As caixas têm aguardente, tabaco molhado e, numa delas, uma pistola de pederneira enferrujada, sem pólvora. Inútil. Mas no bolso do contrabandista morto há uma bolsa com moedas e um bilhete: "Velho Oleandro não paga. Diz que a mulher dele voltou e que agora ele não precisa mais de nada."
+ouro: +4
+anota: Amélia Voltou
+-> 280 Voltar à bifurcação
+
+## 142
+A baleia olha por um longo minuto. Depois afunda devagar, sem fazer onda. Joana solta o ar que estava prendendo. "Ela também tem medo da luz verde", diz. "Os bichos sabem."
+-> 272 Seguir viagem
+
+## 143
+Dentro do cristal de sal está uma mulher de cabelo preso, vestida para um passeio na praia. Ela está de olhos fechados e parece dormir. Você reconhece o rosto do retrato da casa da aldeia: é Amélia, a verdadeira, conservada pelo sal há dez anos.
+anota: Corpo de Amélia
+anota: Corpo de Amélia
+-> 369 Quebrar o cristal
+-> 264 Deixá-la em paz
+
+## 144
+No alto do cabo, ao lado da vila, há uma velha torre de vigia de pedra, sem teto. Lá de cima dá para ver toda a baía, o Rochedo do Corvo e os Dentes do Corvo, as três fileiras de pedras que a maré baixa vai mostrando.
+-> 112 Observar o Rochedo com atenção
+-> 29 Descer
+
+## 145
+A menina sorri e corre até um canto da sala. Volta com uma coisa nas mãos transparentes: uma chave de latão pequena. "É da caixa da escola. Lá tem uma coisa importante que o professor guardou." Ela coloca a chave no chão e some como neblina.
+ganha: Chave da Escola
+-> 320 Sair da casa
+
+## 146
+A fumaça do alecrim espanta as gaivotas, que voam para longe gritando. Entre os gravetos do ninho há uma pulseira de prata e um frasco de rum fechado.
+perde: Ramo de Alecrim
+ouro: +4
+anota: Varanda Limpa
+-> 174 Voltar para dentro
+
+## 147
+Os três homens se viram. Usam roupas de pescador e colares de conchas. Os olhos deles são verdes. "Mais um noivo para a Senhora do Mar", diz um deles, sorrindo com dentes demais. Eles pegam facas de escamar e se levantam.
+combate: Devoto da Viúva | 7 | 6
+combate junto: Devoto da Viúva | 6 | 6
+combate junto: Devoto da Viúva | 6 | 5
+-> 18 Examinar a capela
+
+## 148
+Você desce a escada em espiral, passa pela base e sai no ar limpo da manhã. A ilha parece outra: as gaivotas são só gaivotas, o mar é só mar.
+-> 321 [Joana Esperando] Ir até a praia, onde Joana prometeu esperar
+-> 391 Procurar um barco para voltar
+
+## 149
+Os búzios rolam na peneira. Zefa olha muito tempo. "Três coisas. A luz verde vem de uma pérola negra, o coração da Viúva. Quem quebrar a pérola com ferro frio tira a força dela. A chama amarela só volta a acender com a lente de âmbar, que o faroleiro escondeu quando começou a ouvir vozes." Ela pega um último búzio. "E não aceite nada que alguém lhe oferecer debaixo d'água."
+ouro: -1
+anota: Profecia dos Búzios
+sorte: +1
+-> 29 Agradecer e sair
+
+## 150
+Numa pedra do recife, meio fora da água, uma moça de cabelos ruivos penteia os cabelos e canta. Da cintura para baixo, ela é peixe. "Marinheiro solitário! Venha descansar!"
+-> 242 Remar para longe sem olhar
+-> 35 Remar até ela e perguntar sobre o farol
+-> 169 Atacá-la com o remo
+
+## 151
+O velho come como quem não come há dias. Depois, tira do pescoço um dente enorme, preso num cordão. "Dente de tubarão-branco. Meu pai dizia que dá sorte no mar. A mim não deu. Talvez dê a você."
+provisões: -1
+ganha: Dente de Tubarão
+sorte: +2
+-> 306 Continuar conversando
+
+## 152
+A escola da aldeia é uma sala com bancos compridos e uma lousa onde ainda se lê, em giz, a lição do último dia: "O farol salva quem está perdido." Sobre a mesa do professor há uma caixa de madeira trancada.
+-> 173 [!Lição da Lente] [Chave da Escola] Abrir a caixa com a chave de Marina
+-> 170 Forçar a caixa
+-> 320 Sair
+
+## 153
+A enseada é estreita, e o barquinho passa raspando nas pedras. A boca da caverna é alta e escura, e a água entra nela fazendo um som de respiração. Pedras escorregadias formam um caminho na lateral.
+-> 396 Amarrar o barco e entrar na caverna
+-> 265 Desistir e remar até a praia
+
+## 154
+Você se encosta na parede curva da torre e passa o unguento nas feridas. A dor some quase de imediato.
+perde: Unguento de Algas
+energia: +6
+-> 174 Continuar
+
+## 155
+No baú há cartas de amor antigas, amarradas com fita azul, e uma caixa de música. Quando você abre a caixa, ela toca uma valsa simples, de festa de vilarejo. Por baixo, há um retrato pequeno de Amélia e Oleandro jovens, dançando.
+ganha: Caixa de Música
+-> 394 Continuar
+
+## 156
+A sala de ferro é onde os faroleiros guardavam as coisas valiosas. Há um cofre aberto e vazio e um armário com prateleiras. Sentado no chão, encostado ao cofre, um homem de uniforme da guarda costeira está morto há dias. Na mão ele segura um papel.
+-> 273 Ler o papel
+-> 214 Abrir o armário
+-> 57 Sair
+
+## 157
+A Viúva cai de joelhos, mas não morre. O corpo dela se desfaz em água e espuma, que sobe num redemoinho e volta a se juntar, maior. Agora ela tem a parte de baixo de uma enorme serpente do mar, e os cabelos se tornaram tentáculos. A galeria inteira treme com o peso dela. "Você não vai tirar a minha luz!"
+-> 389 [Foguete de Socorro] Acender o foguete de socorro na cara dela
+-> 284 [Rede de Pesca] Jogar a rede sobre os tentáculos
+-> 386 [Faca de Osso] Cortar os tentáculos com a faca de osso das focas
+-> 288 Lutar
+
+## 158
+A sala de mapas tem cartas náuticas presas às paredes, um globo e uma mesa de desenho. Sobre a mesa, uma carta dos Dentes do Corvo foi riscada com tinta verde: todas as rotas seguras foram cobertas.
+-> 49 [!Rota Corrigida] [Mapa dos Recifes] Copiar a rota segura do mapa do capitão Bartolo
+-> 161 [!Gaveta Aberta] Abrir as gavetas da mesa
+-> 174 Sair
+
+## 159
+A foca cheira sua mão, bufa e mergulha. Volta pouco depois com alguma coisa na boca e a deixa cair no barco: uma pequena faca de osso com runas gravadas no cabo.
+ganha: Faca de Osso
+anota: Focas Visitadas
+-> 272 Seguir viagem
+
+## 160
+O farol do Rochedo do Corvo é uma torre branca e grossa, com faixas vermelhas descascadas, erguida sobre a ponta mais alta da ilha. A luz verde gira lá no alto, lenta. Na base há uma porta de ferro com uma fechadura de latão. Ao lado, um galpão de madeira guarda barris. Do lado do mar, uma escada de ferro desce pela rocha até uma grade na água.
+-> 382 Ir até a porta de ferro
+-> 59 [!Rede de Pesca] Entrar no galpão
+-> 314 Escalar a torre pelo lado de fora
+-> 243 Descer a escada de ferro até a grade na água
+
+## 161
+Na gaveta há um compasso, réguas e um saquinho com moedas antigas de prata. Há também um retrato de Amélia jovem com o mar ao fundo.
+ouro: +3
+anota: Gaveta Aberta
+-> 158 Continuar
+
+## 162
+"Peixe-pedra, água-viva, cobra-do-mar. Funciona para todos. Mais ou menos."
+ouro: -2
+ganha: Antídoto
+-> 333 Continuar
+
+## 163
+Joana olha para você por um longo tempo. "Não prometa o que não depende de você." Mas ela segura o leme com mais firmeza, e você vê que ela está menos sozinha.
+sorte: +1
+-> 272 Seguir viagem
+
+## 164
+Você sopra o búzio de leve. Sai um som grave e longo que faz as gaivotas levantarem voo.
+ouro: -3
+ganha: Búzio de Chamar
+-> 364 Continuar olhando
+
+## 165
+Você passa por cima da grade. O vento o empurra. No último instante, sua mão agarra a grade e você fica pendurado sobre o abismo, com o mar trinta metros abaixo. O canto para por um momento, e você se puxa de volta, com os braços tremendo e as costelas machucadas contra o ferro.
+energia: -4
+-> 106 Enfrentá-la
+
+## 166
+O homem conta as moedas duas vezes. "O túnel passa por baixo do banco de areia e sai nas cavernas do Rochedo. Leve luz. E não toque nas paredes brilhantes."
+ouro: -15
+anota: Túnel dos Contrabandistas
+-> 123 Voltar ao cais
+
+## 167
+Você ergue a aliança. "Estava no dedo de um morto, no poço da aldeia. Foi ela que a pôs lá." Oleandro olha para a própria mão, depois para a mão da mulher, onde não há aliança nenhuma. O rosto dele se desfaz em dor e entendimento.
+-> 138 Ver o que acontece
+
+## 168
+Você desce do farol devagar. Quando chega a Porto Salgado, a vila está dividida entre a alegria de quem voltou e o luto de quem não voltou. Dona Celeste lhe entrega a bolsa de ouro sem dizer nada, e você entende que ela não sabe se deve agradecer.
+fim: A luz voltou a ser amarela e a maior parte da frota se salvou, mas o mar cobrou o seu preço.
+
+## 169
+Você ergue o remo. A sereia grita, e o grito arranca a pele do seu rosto como areia. Ela some na água, e a onda que levanta quase vira o barco.
+energia: -3
+-> 211 Seguir remando, encharcado
+
+## 170
+Você força a tampa e ela se parte, mas o barulho espalha poeira e, de algum lugar, vem um choro de criança. Dentro da caixa só restam páginas rasgadas.
+sorte: -1
+-> 152 Sair
+
+## 171
+Dona Celeste conta dez moedas da bolsa da vila e as empurra para você. "Para o que precisar. Se não voltar, não vou cobrar de ninguém."
+ouro: +10
+anota: Adiantamento da Prefeita
+-> 101 Agradecer
+
+## 172
+A aguardente dos contrabandistas queima a garganta como fogo. Você se sente mais forte por um momento, mas o mundo gira um pouco.
+perde: Aguardente
+energia: +3
+habilidade: -1
+-> 174 Continuar subindo
+
+## 173
+Dentro da caixa há um livro de ciências com uma página marcada: "Como funciona a lente de um farol". Ao lado, embrulhado em papel, um apito de latão e um bilhete: "Para o melhor aluno, Oleandro, 1921." O velho faroleiro estudou aqui.
+anota: Lição da Lente
+sorte: +1
+-> 152 Continuar
+
+## 174
+Você está no meio da torre. A escada de ferro continua subindo em espiral. Aqui há um patamar largo com uma janela estreita, de onde se vê o mar negro e, muito longe, pequenas luzes amarelas no horizonte: as lanternas da frota de pesca, voltando para casa. O tempo está acabando.
+-> 357 [Luneta] Olhar a frota pela luneta
+-> 135 Entrar na sala do mecanismo, no andar de cima
+-> 394 Abrir a porta do quarto do faroleiro
+-> 158 Entrar na sala de mapas
+-> 261 [!Sino de Nevoeiro Tocado] Subir até o patamar do sino de nevoeiro
+-> 154 [Unguento de Algas] Parar e passar o unguento nas feridas
+-> 93 [!Varanda Limpa] Abrir a porta da varanda externa
+-> 58 [Rum de Joana] Beber um gole do rum de Joana
+-> 172 [Aguardente] Beber a aguardente dos contrabandistas
+-> 57 Descer
+
+## 175
+A corrente joga o barco contra uma pedra. A madeira racha e você bate a cabeça no mastro, mas Joana consegue tirar vocês do giro com o barco meio alagado.
+energia: -4
+-> 373 Seguir até a praia, tirando água do barco
+
+## 176
+O barquinho sobe e desce nas ondas. Seus braços doem. A luz verde parece não chegar nunca mais perto. Então a água em volta começa a borbulhar, e uma barbatana escura corta a superfície.
+-> 16 Erguer a espada e esperar
+-> 52 Remar com toda a força
+-> 43 [provisões 1+] Jogar peixe seco para o outro lado
+
+## 177
+O ensopado de peixe e batata é quente e forte. Você come devagar e sente o cansaço da viagem sair dos ombros.
+ouro: -2
+energia: +4
+-> 348 Continuar na taverna
+
+## 178
+Sua espada resvala na pérola e quase escapa da mão. A rachadura começa a se fechar.
+energia: -2
+-> 317 Tentar de novo com a espada
+
+## 179
+Você guarda a pederneira. Com ela, dá para acender fogo em qualquer lugar.
+ganha: Pederneira
+-> 42 Continuar
+
+## 180
+A figura é um homem velho e muito magro, de barba até o peito, que puxa uma rede vazia pela areia. Ele não olha para você. "Nada. Nada há nove dias. Até os peixes fugiram dela."
+-> 306 Perguntar quem ele é
+-> 233 Desconfiar e atacá-lo
+-> 265 Deixá-lo em paz
+
+## 181
+Debaixo do pano há um martelo de ferro escuro, de cabo curto e cabeça pesada. Gravada no cabo há uma inscrição: "Forjado aqui, nunca molhado. Para a noite em que for preciso." A forja nunca foi apagada com água do mar, só com areia. Este é ferro frio.
+arma: Martelo de Ferro Frio | +1
+-> 320 Sair da forja
+
+## 182
+Quando você põe o pé na escada para a galeria, a água que escorre pelos degraus se levanta. Ela toma a forma de um homem alto de uniforme de marinheiro, feito inteiro de água do mar, com algas no lugar dos olhos. O Guarda da Viúva.
+-> 270 [Sal Bento] Jogar sal bento nele
+-> 315 Lutar com ele
+
+## 183
+Do outro lado do lago, um túnel sobe até uma grade, e depois dela, a gruta grande embaixo do Rochedo.
+-> 264 Seguir em frente
+
+## 184
+O facho fica um pouco torto, mas mesmo assim varre o mar. Não é perfeito, mas é amarelo.
+-> 268 Olhar o mar
+
+## 185
+O sal cai na água e ela ferve, chiando. Os afogados gritam com bocas sem ar e afundam, desfazendo-se como areia molhada. No fundo do porão, preso entre dois barris, você vê um baú pequeno de ferro.
+-> 278 Abrir o baú
+
+## 186
+A água é gelada e mais funda do que parece. No meio do lago, algo roça nas suas pernas. Depois agarra.
+combate: Enguia-Lobo | 7 | 7
+-> 264 Sair do outro lado do lago
+
+## 187
+Dentro do barril, protegidos da água, há biscoitos de marinheiro e carne salgada em bom estado.
+provisões: +2
+anota: Barril Aberto
+-> 395 Continuar procurando
+
+## 188
+A capitania do porto é uma sala com mapas nas paredes e um relógio de marés de latão. O capitão do porto, um homem gordo de bigode branco, dorme na cadeira. Sobre a mesa, aberta, está a tabela das marés.
+-> 36 Ler a tabela das marés
+-> 117 Examinar o mapa do Rochedo
+-> 29 Sair sem acordá-lo
+
+## 189
+O rapaz se chama Tito e tem uns dezesseis anos. "Eu era ajudante do seu Oleandro. Levava óleo e pão para o farol." Ele torce o boné nas mãos. "Na última vez, ele me mandou embora gritando. Disse que a Viúva tinha voltado, e que ela queria a luz. Eu não sei quem é a Viúva." Ele tira do bolso uma chave de latão. "É a chave da porta de baixo do farol. Ele me deu para emergências."
+-> 291 Pedir a chave
+-> 225 Perguntar sobre a ilha
+-> 348 Agradecer
+
+## 190
+A baleia responde ao búzio com um canto grave que faz o barco tremer. Depois mergulha e, quando volta a subir, está do lado do recife, onde a água ferve em espuma. Ela fica ali, como uma muralha, e o barco passa ao lado dela em águas calmas. Joana não consegue parar de rir.
+sorte: +2
+-> 272 Seguir viagem
+
+## 191
+Você ergue a moeda de prata com o rosto da Viúva. A pérola pulsa, interessada. Uma voz sai dela: "Um presente? Para mim?" E então a luz verde se derrama sobre você, quente e doce, e você entende tarde demais que aceitou um convite.
+perde: Moeda da Viúva
+-> 83 Não conseguir resistir
+
+## 192
+Você joga o gancho até a janela do segundo andar. Ele prende no batente. Você sobe pela corda e entra pela janela, num corredor escuro.
+-> 174 Entrar no farol
+
+## 193
+A chama passa pela lente de âmbar e se transforma num facho de luz dourada, quente e forte. Mas a lente está torta, e o facho aponta para o céu.
+-> 62 [Manivela Encontrada] Girar a manivela três voltas para a esquerda
+-> 62 [Manual do Mecanismo] Lembrar do manual e procurar a manivela na sala de baixo
+-> 263 Ajustar a lente com as mãos
+
+## 194
+Quando você enfia a mão, o peixe-pedra crava os espinhos no seu pulso. A dor é como fogo. Você pega a pérola mesmo assim.
+ganha: Pérola Branca
+aflição: Veneno de Peixe-Pedra
+energia: -2
+anota: Poça Visitada
+-> 376 [Antídoto] Beber o antídoto
+-> 353 Aguentar a dor e seguir
+
+## 195
+A luz amarela que você viu da vila vem de uma casa no fim da aldeia. Lá dentro, encolhida atrás de uma barricada de móveis, está uma mulher de uniforme da guarda costeira, com a perna enfaixada e uma pistola descarregada no colo. "Sargento Irene", ela diz. "Meu parceiro subiu no farol e não voltou. Eu não consigo andar."
+-> 47 [provisões 1+] Dividir sua comida com ela
+-> 75 Perguntar o que ela viu
+-> 320 Prometer voltar e sair
+
+## 196
+"Eu sou Marina. Eu caí do penhasco quando era pequena, faz muito tempo. Eu fico aqui olhando a luz. A luz amarela era bonita. A verde dá medo." Ela empurra o barquinho. "O senhor Oleandro me contava histórias quando eu ainda estava viva."
+-> 145 Prometer acender a luz amarela
+
+## 197
+Gaspar suspira e aponta um bote pequeno, pintado de amarelo, virado na areia. "É do meu neto. Ele está na frota. Traga de volta." O bote é leve e firme, muito melhor que qualquer barquinho largado no cais.
+ouro: -5
+anota: Bote de Gaspar
+-> 340 Partir no bote amarelo agora
+-> 29 Voltar ao vilarejo antes
+
+## 198
+O túnel desce até um ponto onde a água chega à cintura. Algo se enrosca na sua perna, macio e forte. Um tentáculo.
+combate: Polvo do Túnel | 7 | 8
+-> 264 Seguir em frente pela água
+
+## 199
+O baú está cheio de moedas antigas, de ouro velho. Você enche os bolsos. Debaixo das moedas há um mapa dos Dentes do Corvo com a passagem do meio marcada a tinta vermelha.
+ouro: +12
+ganha: Mapa dos Recifes
+-> 374 Sair da cabine
+
+## 200
+O sol nasce sobre o mar, rosado e limpo. O farol continua girando seu facho dourado, agora quase invisível na luz do dia. Lá embaixo, no canal, os barcos da frota entram na baía de Porto Salgado com as velas cheias.
+-> 69 [Oleandro Desperto] Procurar Oleandro
+-> 250 [Oleandro Morto] Olhar o corpo do velho faroleiro
+-> 148 Descer do farol
+
+## 201
+Quando você chega perto, os guardas se mexem, soltando nuvens de areia. As armaduras estão vazias, cheias apenas de água escura.
+combate: Guardião Submerso | 8 | 8
+combate junto: Guardião Submerso | 7 | 8
+-> 96 Examinar as armaduras caídas
+
+## 202
+Com a luz amarela, mesmo fraca, as bandeiras vermelha e amarela da torre de sinais aparecem na escuridão da ilha. Os pescadores mais velhos as reconhecem: recife. Os dois barcos que seguiam para os Dentes do Corvo viram o leme no último instante e raspam nas pedras sem se partir.
+-> 200 Esperar o dia nascer
+
+## 203
+A serpente se desfaz em água salgada, que escorre pelos vidros quebrados e sobe, como chuva ao contrário, até a pérola negra. A pérola pulsa, inchada, e a luz verde fica mais forte do que nunca. Lá longe, no mar, as lanternas da frota já estão perto dos recifes. A Viúva está dentro da pérola. Você tem que destruí-la agora.
+-> 354 [Arpão de Ferro Frio] Golpear a pérola com o arpão de ferro frio
+-> 336 [Lâmina de Oricalco] Golpear a pérola com a lâmina de oricalco
+-> 352 [Concha de Nácar] Erguer a concha de nácar diante da pérola
+-> 332 [Sal Bento] Jogar o sal bento na pérola e golpeá-la
+-> 191 [Moeda da Viúva] Oferecer a moeda da Viúva à pérola
+-> 103 [Martelo de Ferro Frio] Golpear a pérola com o martelo da forja
+-> 317 Golpear a pérola com a espada
+
+## 204
+Quando você levanta a tampa, uma onda de água verde sai do baú, impossível, como se o mar inteiro estivesse lá dentro. A água toma forma: uma mulher feita de espuma, de olhos verdes, que se lança sobre você com as mãos na sua garganta.
+-> 97 [Sal Bento] Jogar sal bento nela
+combate: Espírito da Espuma | 8 | 6
+-> 128 Examinar o baú vazio
+
+## 205
+A água se abre. Um tentáculo grosso como uma perna sai dela, depois outro, e outro. Um polvo gigante, de pele cinza e olhos dourados do tamanho de pratos, sobe pela borda do poço. O Guardião da Cisterna.
+-> 359 Lutar
+-> 91 [Rede de Pesca] Jogar a rede sobre ele
+-> 51 Correr para a escada
+
+## 206
+O bote desliza sobre a água azul. No meio do lago, você vê lá embaixo, no fundo transparente, dezenas de corpos de pé, imóveis, com os rostos virados para cima, todos olhando para você. Nenhum se mexe. Você rema mais rápido.
+sorte: -1
+-> 183 Chegar ao outro lado
+
+## 207
+Quincas bebe metade da garrafa de uma vez e enxuga a boca. "Você é gente boa. Vou lhe dizer o resto da canção, que ninguém sabe: 'mas o ferro da forja que nunca viu o mar, esse sim, faz o coração dela quebrar'. A forja da aldeia velha, no Rochedo. Ela nunca foi apagada com água do mar."
+perde: Aguardente
+anota: Forja que Nunca Viu o Mar
+-> 123 Agradecer
+
+## 208
+A trilha do penhasco é estreita, com o mar batendo nas pedras trinta metros abaixo. É o caminho mais curto até o farol. O vento uiva e, de repente, uma rajada mais forte vem do mar.
+teste de habilidade: 2 | 313
+
+## 209
+"Eram dois marinheiros do Corredor de Prata, o primeiro navio que afundou", diz a irmã Luzia. "Na manhã do enterro, os caixões estavam abertos e havia água salgada no chão até a porta." Ela pega um saquinho de pano do altar. "Sal da salina, abençoado por mim. A gente antiga dizia que os afogados que andam não suportam o sal bento. Leve."
+ganha: Sal Bento
+-> 213 [Os Afogados Sumidos] Perguntar quem é a Viúva
+-> 125 Agradecer
+
+## 210
+"Minha mãe tá na frota", diz a menina, sem tirar os olhos do mar. "O farol tá chamando ela. Eu ouço, de noite. Uma mulher cantando." Ela coloca na sua mão uma florzinha seca. "É de alecrim. Minha avó diz que espanta coisa ruim. Toma. Traz minha mãe."
+ganha: Ramo de Alecrim
+sorte: +1
+-> 325 Ficar mais um pouco
+
+## 211
+Você chega perto do Rochedo pelo lado sul. Há duas opções: a praia dos destroços, larga e cheia de restos de navio, ou uma enseada estreita entre pedras, onde se vê a boca de uma caverna.
+-> 265 Desembarcar na praia dos destroços
+-> 150 Aproximar-se do recife onde alguém canta
+-> 153 Entrar na enseada da caverna
+
+## 212
+O gosto é horrível, mas funciona.
+energia: +4
+anota: Tônico Bebido
+-> 156 Continuar
+
+## 213
+A irmã Luzia fica pálida. "Morgessa. Uma história de avó. Uma mulher que se casou com o mar para não envelhecer e que, a cada cem anos, volta para buscar noivos." Ela faz o sinal da onda sobre o peito. "Dizem que ela só pode ser ferida por ferro que nunca tocou água salgada, e que a luz do sol verdadeiro a queima."
+anota: Lenda da Viúva
+-> 125 Agradecer
+
+## 214
+O armário tem uma pistola de sinalização sem munição, um apito de prata e uma garrafa de vidro escuro com rótulo: "Tônico de fígado de bacalhau. Uma colher restaura as forças."
+-> 212 [!Tônico Bebido] Beber o tônico
+-> 130 [!Apito de Prata] Pegar o apito de prata
+-> 156 Fechar o armário
+
+## 215
+Uma pedra da lareira está solta. Atrás dela há um buraco com uma caixinha de madeira. Dentro, enrolada em veludo, está uma lente redonda de âmbar, grossa e quente, que parece guardar o sol. Junto dela, um bilhete na letra de Oleandro: "A Viúva quer que eu a quebre. Ela tem o rosto da minha Amélia. Escondo aqui enquanto ainda sou eu."
+ganha: Lente de Âmbar
+sorte: +1
+anota: Esconderijo Aberto
+-> 253 Voltar
+
+## 216
+"Pechinchar a própria vida?", Joana ri pela primeira vez. Ela olha para a sua espada, depois para a luz verde pela janela.
+teste de sorte: 129 | 99
+
+## 217
+Você enche a lâmpada com o óleo de baleia, encaixa a lente de âmbar no suporte e acende a mecha.
+-> 134 [Pederneira] Acender com a pederneira
+-> 371 [Lanterna de Navio] Acender com a chama da lanterna
+-> 296 Procurar fósforos pelo chão
+
+## 218
+Perto do Rochedo, o mar se levanta à frente do barco como uma colina negra. Uma baleia, enorme, de pele marcada por cicatrizes, sobe à superfície e solta um jato de água que molha vocês dois. Ela não ataca. Fica ali, parada, olhando com um olho do tamanho de uma roda de carroça.
+-> 190 [Búzio de Chamar] Soprar o búzio para ela
+-> 142 Esperar em silêncio
+-> 345 [Arpão de Ferro Frio] Ameaçá-la com o arpão
+
+## 219
+Você arranca dois pedaços de pano da camisa e os enfia nos ouvidos de Joana e nos seus. Mesmo assim, ouve o canto por dentro da cabeça, como uma lembrança. Joana chora sem saber por quê, mas mantém o leme firme.
+-> 304 Seguir até a praia
+
+## 220
+Você raspa o fundo de um tonel e enche um frasco com óleo de baleia.
+ganha: Óleo de Baleia
+-> 381 Continuar
+
+## 221
+O tubarão arranca um pedaço do remo e do seu antebraço junto. Você o acerta na cabeça com o outro remo e ele mergulha, deixando um rastro de sangue, o seu.
+energia: -4
+-> 211 Remar com um remo só
+
+## 222
+O velho é fraco, mas está desesperado.
+combate: Oleandro Enfeitiçado | 5 | 6
+-> 133 Ver o velho caído
+
+## 223
+Sobre a lareira há um retrato a lápis de uma mulher sorridente, de cabelo preso, com a legenda "Amélia, primavera". Na cadeira de balanço há um xale de lã. O xale está molhado, e há pegadas de pés descalços, molhadas, indo da janela até a cadeira. Recentes.
+-> 215 [!Esconderijo Aberto] Examinar a lareira
+-> 253 Voltar
+
+## 224
+A lâmina se parte, mas a pérola também. Uma rachadura a atravessa de lado a lado e ela se desfaz em areia negra. Sorte pura, e você sabe disso.
+-> 89 Olhar em volta
+
+## 225
+"No Rochedo tem uma aldeia velha, de quando havia três faroleiros e suas famílias. Ninguém mora lá há trinta anos. A trilha sobe da praia dos destroços, passa pela aldeia e vai até o farol. Tem também as cavernas embaixo do rochedo, mas a maré enche elas de repente." Ele pensa. "Ah, e no porão do farol tem uma cisterna. O seu Oleandro não deixava ninguém chegar perto."
+anota: Cisterna do Farol
+-> 189 Continuar a conversa
+
+## 226
+Para ver o caminho, você precisa andar perto das paredes. O musgo encosta no seu braço e arde como urtiga. Logo seu braço começa a inchar.
+energia: -2
+-> 40 [Antídoto] Beber o antídoto
+-> 280 Ignorar a ardência e seguir
+
+## 227
+A porta não cede. Seu ombro dói. Lá no alto, a luz verde para de girar por um instante, como se alguém tivesse olhado para baixo.
+energia: -2
+sorte: -1
+-> 160 Procurar outro jeito
+
+## 228
+A água do poço é negra e parada, e não reflete nada, nem a sua lanterna. Bem lá embaixo, muito fundo, há uma luz verde fraca.
+-> 281 [Fôlego de Sereia] Beber uma gota do Fôlego de Sereia e mergulhar
+-> 311 Mergulhar prendendo a respiração
+-> 264 Afastar-se do poço
+
+## 229
+Ubaldo tira da parede uma lanterna de latão de navio. "Três peças. Não apaga nem em tempestade."
+-> 397 [ouro 3+] Pagar 3 peças de ouro
+-> 275 Desistir
+
+## 230
+A gruta de Saturnino fica numa pedra perto da praia, com a entrada fechada por uma vela velha. Lá dentro há uma cama de redes, uma fogueira e prateleiras com coisas que o mar trouxe: garrafas, conchas, sapatos, um sino de navio.
+-> 84 Perguntar se ele pode lhe dar alguma coisa
+-> 355 [!Descansou na Gruta] Descansar um pouco perto do fogo
+-> 265 Sair
+
+## 231
+Os desenhos contam uma história. Uma mulher se casa com o mar. O mar lhe dá uma pérola negra no lugar do coração. A cada cem anos ela sobe a uma torre de luz e chama os homens do mar para a sua festa. Na última cena, um homem com uma chama na mão quebra a pérola, e a mulher se desfaz em espuma.
+anota: Histórias de Concha
+-> 396 Voltar à entrada
+
+## 232
+As gaivotas bicam seu rosto, suas mãos e sua nuca, aos gritos.
+combate: Bando de Gaivotas | 7 | 9
+-> 27 Respirar
+
+## 233
+O velho ergue a rede como escudo, mas não é páreo para você. Ele cai na areia, sangrando, e chora. "Eu não fiz nada! Eu só queria peixe!" Você percebe que ele é só um homem velho e faminto.
+sorte: -2
+anota: Saturnino Encontrado
+anota: Saturnino Atacado
+-> 265 Afastar-se, envergonhado
+
+## 234
+Na base do poste alguém gravou setas: "ALDEIA" para a esquerda e "FAROL" para a direita, e embaixo, mais fundo e mais recente: "NÃO PELO PENHASCO".
+-> 372 Voltar à bifurcação
+
+## 235
+A casa pequena de janelas azuis era de outra família de faroleiros. Na sala há brinquedos de madeira, um cavalinho e um barquinho. Sentada no chão, uma menina de vestido antigo, transparente como vidro, empurra o barquinho de um lado para o outro. Ela olha para você. "Você vai acender a luz amarela de novo?"
+-> 145 Dizer que sim
+-> 196 Perguntar quem ela é
+
+## 236
+A chave inglesa trava as engrenagens com um rangido terrível. Lá em cima, a luz verde para de girar e fica fixa, apontando para o oeste, longe dos barcos. Uma voz de mulher grita de raiva. Agora ela sabe onde você está, mas você ganhou tempo.
+perde: Chave Inglesa
+anota: Mecanismo Travado
+sorte: +1
+-> 5 Subir para a galeria
+
+## 237
+Você corre para a casa mais próxima e bate a porta. As gaivotas se jogam contra a madeira por um longo tempo e depois param. Quando você sai, elas voltaram aos muros, olhando. Mas algumas bicadas você levou.
+energia: -2
+-> 320 Voltar à rua
+
+## 238
+O polvo afunda no poço e não volta. Ao lado da borda, entre os ossos, brilha uma pulseira de ouro de alguma vítima antiga.
+ouro: +6
+-> 384 [!Cofre Aberto] Examinar a borda da cisterna, agora sem o monstro
+-> 32 Subir pelo alçapão
+
+## 239
+No quarto há uma cama de casal arrumada e um baú de cedro. Sobre o travesseiro do lado de Amélia, alguém deixou uma concha. Do baú vem um cheiro de mar.
+-> 204 [!Diário de Amélia] Abrir o baú
+-> 253 Voltar
+
+## 240
+A armadura de mergulho é velha e pesada, mas o capacete de cobre está em bom estado. Ela não serve para você levar. Mas dentro do capacete alguém guardou um frasco de vidro com um líquido prateado: "Fôlego de Sereia".
+-> 307 [!Fôlego de Sereia] Pegar o frasco
+-> 56 Deixar
+
+## 241
+A última página do diário diz: "Luz verde no Rochedo. Vimos uma mulher de pé na galeria do farol, cabelos soltos ao vento. Os homens ficaram loucos e viraram o leme para ela. Que Deus..." Num cofre aberto embaixo da mesa há um saquinho de moedas e um sextante de latão.
+ouro: +6
+ganha: Diário do Capitão
+-> 283 Sair da cabine
+
+## 242
+Você rema olhando para o fundo do barco. O canto fica mais alto, depois mais triste, depois some.
+-> 211 Seguir remando
+
+## 243
+A escada de ferro desce pela rocha até o nível do mar. Lá embaixo, uma grade enferrujada fecha a entrada de um cano largo de pedra que entra por baixo do farol. A água bate na grade.
+-> 74 [Chave-Âncora] Usar a chave-âncora no cadeado da grade
+-> 377 Forçar a grade
+-> 160 Subir de volta
+
+## 244
+Joana desvia o barco para uma ilhota de pedra lisa onde dezenas de focas dormem. "Meu avô dizia que as focas sabem quando a Viúva está acordada." As focas estão todas de olhos abertos, olhando para o farol. Uma delas, enorme e cinzenta, desliza para a água e nada até o barco.
+-> 159 Estender a mão para a foca
+-> 104 [provisões 1+] Dar a ela um pedaço de peixe seco
+-> 272 Seguir viagem
+
+## 245
+A saliência é estreita e escorregadia, mas seca. No meio do caminho, a parede tem uma rachadura de onde sai um vento quente e um cheiro de incenso.
+-> 312 [!Templo Submerso] Espremer-se pela rachadura
+-> 264 Continuar pela saliência
+
+## 246
+O poço é fundo e cheira a mar, não a água doce. Um balde está pendurado na corda. Quando você o puxa, ele vem pesado, cheio de água salgada e com alguma coisa dentro.
+-> 344 Olhar dentro do balde
+-> 320 Deixar o balde
+
+## 247
+É o livro de registro do farol. Por quarenta anos, Oleandro anotou o tempo, a maré e os navios que passaram, com letra caprichada. Nas últimas semanas, a letra fica torta. As últimas linhas: "Ela voltou. Usa o rosto de Amélia. Diz que só quer a luz. Diz que posso ficar com ela para sempre se eu der a luz. Que mal pode fazer uma luz?" E depois, em letras enormes: "PERDOEM-ME".
+anota: Registro do Farol
+-> 32 Fechar o livro
+
+## 248
+Uma pinça agarra seu tornozelo e aperta até o osso estalar. Você se solta a golpes de espada e continua mancando.
+energia: -3
+-> 365 Correr
+
+## 249
+A passagem estreita dá numa gruta com um lago subterrâneo de água azul, iluminado por baixo por fungos. Na margem há um bote de contrabandista amarrado. Do outro lado do lago, a gruta continua.
+-> 206 Atravessar no bote
+-> 361 Atravessar nadando
+-> 280 Voltar à bifurcação
+
+## 250
+O velho faroleiro está caído onde você o deixou. Na luz do dia, o rosto dele parece em paz. Você cobre o corpo com o casaco dele e promete a si mesmo que a vila vai saber que, no fim, a culpa não era dele.
+-> 148 Descer do farol
+
+## 251
+As gaivotas atacam seus olhos com bicadas furiosas.
+combate: Gaivotas do Farol | 7 | 7
+-> 3 Examinar o ninho
+
+## 252
+Num barril ainda há óleo bom. Você enche um frasco. A rede também pode ser útil.
+ganha: Óleo de Baleia
+ganha: Rede de Pesca
+-> 160 Sair do galpão
+
+## 253
+A casa maior é a única com telhado inteiro. Era a casa do faroleiro chefe, a casa de Oleandro e Amélia, antes de ele se mudar de vez para o farol. Lá dentro há uma sala com lareira, um quarto e uma cozinha. Tudo está coberto de poeira, menos uma cadeira de balanço perto da janela.
+-> 223 Examinar a sala
+-> 239 Entrar no quarto
+-> 308 [!Cozinha Saqueada] Entrar na cozinha
+-> 320 Sair
+
+## 254
+O porão está meio cheio de água negra. Barris boiam. Entre eles, dois marinheiros de rosto inchado e olhos brancos se viram para você, devagar, e começam a andar dentro da água.
+-> 185 [Sal Bento] Jogar sal bento na água
+-> 379 Enfrentá-los
+
+## 255
+O apito da guarda costeira solta um som agudo e longo que atravessa o vento. Não é luz, mas os pescadores conhecem esse som: perigo, recife, volte. Algumas lanternas viram.
+-> 378 Ver quantas
+
+## 256
+Você está no terceiro degrau quando a água do poço se agita e um tentáculo se enrola no seu tornozelo, puxando.
+-> 370 [Faca de Escamar] Cortar o tentáculo com a faca
+-> 359 Virar-se e lutar
+
+## 257
+"Amélia, esposa de Oleandro, faroleiro. O mar a levou, o mar a devolverá." A data é de dez anos atrás. Alguém esculpiu, mais tarde, uma pequena onda embaixo do nome, com uma faca.
+anota: Amélia de Oleandro
+-> 325 Afastar-se
+
+## 258
+No centro do templo submerso há um altar de pedra com a estátua de uma mulher de cabelos longos e um buraco no peito, onde antes havia alguma coisa. Ao pé do altar, peixes pálidos e sem olhos rodeiam algo brilhante. Duas figuras de armadura antiga guardam a entrada, imóveis, cobertas de cracas.
+-> 358 [!Altar Visitado] Aproximar-se do altar
+-> 201 [!Lâmina de Oricalco] Examinar os guardas de armadura
+-> 6 [Escadas Antigas] Procurar a escada antiga atrás do altar
+-> 92 Voltar à tona
+
+## 259
+O casaco é pesado e cheira a fumaça, mas é quente e grosso. Por baixo da armadura de couro, ele vai proteger você do frio e de algumas garras.
+ganha: Casaco de Faroleiro
+energia inicial: +2
+-> 381 Continuar
+
+## 260
+A grade aguenta. Uma onda maior chega e o joga contra as pedras.
+energia: -2
+-> 160 Subir de volta
+
+## 261
+Num patamar estreito, um sino de nevoeiro de bronze está preso a um suporte de ferro, com uma corda grossa. Em noites de neblina, ele avisava os barcos que estavam perto demais das pedras.
+-> 23 Tocar o sino com força
+-> 174 Deixá-lo
+
+## 262
+Um grampo enferrujado se solta. Você despenca de seis metros nas pedras.
+energia: -5
+-> 160 Levantar-se
+
+## 263
+A lente está quente demais. Você a ajusta com as mãos enroladas na manga, queimando os dedos.
+energia: -2
+teste de habilidade: 118 | 184
+
+## 264
+Você chega a uma gruta enorme, de teto alto, onde o mar entra por três aberturas. No centro há uma ilha de pedra com restos de fogueira. Do lado norte, degraus antigos talhados na rocha sobem para o escuro. Do lado leste, a água forma um poço negro e redondo, perfeitamente parado.
+-> 127 Examinar a fogueira
+-> 271 Subir os degraus
+-> 67 [!Corpo de Amélia] Entrar numa galeria lateral que brilha como gelo
+-> 110 [!Noivos Libertados] Seguir pela abertura sul, de onde vem cheiro de podre
+-> 228 Examinar o poço negro
+
+## 265
+A praia dos destroços é um cemitério de navios. Cascos partidos, mastros, barris e cordame se espalham pela areia cinzenta até onde a vista alcança. O vento uiva. Uma trilha de pedras sobe da praia em direção ao interior da ilha. Do lado leste, a praia termina numas rochas negras onde o mar entra em cavernas.
+-> 395 Revirar os destroços
+-> 180 [!Saturnino Encontrado] Seguir uma figura que se move entre os cascos
+-> 372 Subir a trilha de pedras
+-> 342 Ir até o casco antigo e enorme no fim da praia
+-> 230 [Conselho de Saturnino] Ir à gruta de Saturnino
+-> 306 [Saturnino Encontrado] [!Saturnino Atacado] Procurar Saturnino de novo
+-> 353 Ir até as rochas do lado leste
+
+## 266
+Saturnino aponta para a ilha. "A trilha passa pela aldeia velha. Lá tem gaivotas que não são gaivotas, cuidado com elas. O farol tem duas entradas: a porta de baixo, de ferro, que só abre com chave, e a cisterna, que liga às cavernas pelo lado do mar." Ele baixa a voz. "Mas na cisterna mora uma coisa grande."
+anota: Conselho de Saturnino
+-> 306 Continuar conversando
+
+## 267
+A menina de tranças está no cais, agarrada à saia de uma mulher alta, ainda de botas de pescadora. A mãe dela. A menina não diz nada. Só acena para você, com a mão inteira, até a mãe levá-la para casa.
+anota: Menina Reencontrada
+-> 45 Voltar ao cais
+
+## 268
+A maioria das lanternas desvia dos recifes. Mas não todas. Você vê duas delas balançarem e se apagarem perto dos Dentes do Corvo, e ouve, muito longe, gritos que o vento leva. Depois, silêncio. Vinte e oito barcos passam. Dois não.
+-> 202 [Frota Avisada] Olhar a torre de sinais da aldeia
+-> 90 [Sino de Nevoeiro Tocado] Lembrar do sino de nevoeiro
+-> 343 Esperar o dia nascer
+
+## 269
+Atrás de um canhão há um barril de pólvora seco, intacto depois de cem anos. Mas é pesado demais para levar. Ao lado dele, um saquinho de couro com pólvora e mechas.
+-> 339 [!Foguete de Socorro] Fazer um foguete de sinal com pólvora e um tubo de bambu
+-> 374 Voltar
+
+## 270
+O sal bento faz o homem de água ferver e encolher. Ele ainda luta, mas cada golpe seu tira dele uma nuvem de vapor.
+combate: Guarda da Viúva | 7 | 6
+-> 126 Subir para a galeria
+
+## 271
+Os degraus antigos sobem por um túnel úmido. Lá em cima você ouve um ruído de água pingando em água, e sente cheiro de óleo queimado. No topo há uma grade enferrujada, e atrás dela, um salão redondo com um poço de pedra no meio.
+-> 363 Passar pela grade
+-> 264 Voltar à gruta
+
+## 272
+Joana segura o leme com as duas mãos. De repente, a névoa sobe do mar como fumaça, tão densa que você não vê a proa. E na névoa, alguém canta. Uma voz de mulher, doce e triste, chamando por nomes.
+-> 17 Ouvir o canto com atenção
+-> 219 Tapar os ouvidos e pedir a Joana que faça o mesmo
+-> 38 [Búzio de Chamar] Soprar o búzio para abafar o canto
+
+## 273
+"Relatório. Cheguei ao farol na quinta noite da luz verde. O faroleiro não está louco: está enfeitiçado. A mulher no alto não é humana. A luz vem de uma pérola negra. Tentei quebrá-la com a espada e a espada quebrou. Precisa ser outra coisa. Ferro frio? A prata da igreja? Estou ferido e não consigo descer. Que alguém leia isto."
+anota: Relatório do Guarda
+-> 156 Continuar
+
+## 274
+O som grave do búzio rola pelo mar. Lá embaixo, golfinhos saltam entre as ondas, nadando para os barcos, e os pescadores mais velhos sabem: onde os golfinhos vão, não há pedra. As lanternas os seguem.
+-> 268 Ver o que acontece
+
+## 275
+A loja do armeiro é escura e cheira a óleo de arma. Mestre Ubaldo, um homem baixo e largo, lustra um arpão de baleeiro. Nas paredes há facas, ganchos, redes e lanternas de navio.
+-> 70 [!Arpão de Ferro Frio] Perguntar pelo arpão
+-> 229 [!Lanterna de Navio] Comprar uma lanterna de navio (3 peças)
+-> 34 [!Corda] Comprar corda (2 peças)
+-> 115 [!Faca de Escamar] Comprar uma faca de escamar (1 peça)
+-> 29 Sair
+
+## 276
+A pedra cede e você sai, arranhado e pingando, atrás de um tonel vazio no depósito de óleo do farol.
+-> 381 Entrar no depósito
+
+## 277
+Joana guarda o ouro e se levanta. "O barco se chama Gaivota Teimosa. Fica no fim do cais. Quando estiver pronto, me encontre lá."
+ouro: -10
+anota: Barqueira Contratada
+-> 348 Continuar na taverna
+
+## 278
+O baú tem um frasco de óleo de baleia bem fechado, uma pederneira de marinheiro e uma garrafinha azul com um rótulo: "Antídoto contra veneno de peixe-pedra".
+ganha: Óleo de Baleia
+ganha: Pederneira
+ganha: Antídoto
+-> 283 Subir ao convés
+
+## 279
+Com a ponta da faca, você afasta o peixe-pedra e solta a pérola sem encostar a mão na água. Ela é branca, perfeita e quente como um ovo recém-posto.
+ganha: Pérola Branca
+anota: Poça Visitada
+-> 353 Seguir
+
+## 280
+O túnel passa sob o mar: você ouve as ondas lá em cima, abafadas. Num ponto mais largo, há caixas abandonadas de contrabando e um contrabandista morto, sentado, com a garganta marcada por algo que parecem ventosas. Depois, o túnel se divide.
+-> 141 [!Amélia Voltou] Revistar as caixas
+-> 290 Pegar o túnel da esquerda, que sobe
+-> 249 Seguir por uma passagem estreita de onde vem luz azul
+-> 198 Pegar o túnel da direita, de onde vem som de água
+
+## 281
+O Fôlego de Sereia tem gosto de lágrima. Seu peito se aquieta, e quando você mergulha a água entra nos seus pulmões sem doer. Você desce pelo poço até um salão submerso de colunas cobertas de corais. É um templo antigo, construído antes do farol, quando a ilha ainda não estava no mar.
+perde: Fôlego de Sereia
+-> 258 Explorar o templo
+
+## 282
+Pela luneta, o farol fica perto o bastante para você ver a galeria no alto. Uma mulher de vestido branco e cabelos negros e molhados anda de um lado para o outro, cantando para o mar. Ao lado dela, um velho de barba branca segura a mão dela. Na lanterna, no lugar da chama, gira uma pérola negra do tamanho de um punho, soltando luz verde.
+anota: A Pérola Negra
+-> 160 Seguir até o farol
+
+## 283
+O convés está tão inclinado que você precisa andar de lado, segurando nos cabos. A porta da cabine do capitão está entreaberta. A escotilha do porão está aberta, e de lá de baixo vem um som de água batendo e de alguém se arrastando.
+-> 301 [!Diário do Capitão] Entrar na cabine do capitão
+-> 254 [!Pederneira] Descer ao porão
+-> 272 Voltar ao barco de Joana
+
+## 284
+A rede prende metade dos tentáculos. A Viúva rasga as malhas com raiva, mas isso leva tempo, e cada segundo é um golpe a mais para você.
+perde: Rede de Pesca
+combate: Serpente da Maré | 9 | 10
+-> 203 Ver o que acontece
+
+## 285
+"Oleandro!", você chama. O velho olha para você como quem acorda de um sono. "Quem é você? Saia daqui. Amélia voltou. Ela voltou para mim." A mulher sorri e aperta a mão dele. "Ele é só mais um noivo, meu bem. O mar tem lugar para todos."
+-> 39 [Caixa de Música] Abrir a caixa de música
+-> 167 [Aliança de Amélia] Mostrar a aliança de Amélia
+-> 335 [Diário de Amélia] Ler em voz alta a última página do diário de Amélia
+-> 350 [Bilhete de Oleandro] Lembrar a ele do bilhete que deixou para Tito
+-> 120 [Pedido da Prefeita] Falar de Celeste, a prefeita
+-> 349 Tentar convencê-lo com palavras
+
+## 286
+O baú tem roupas de marinheiro encharcadas e, embrulhado num pano encerado, um gancho de abordagem com uma corda curta presa.
+ganha: Gancho de Abordagem
+-> 395 Continuar procurando
+
+## 287
+O óleo é de baleia, de boa qualidade. Serve para lanterna, ou para outras chamas maiores.
+ganha: Óleo de Baleia
+-> 308 Continuar
+
+## 288
+Os tentáculos chicoteiam de todos os lados e a cauda bate na galeria com força para partir pedra.
+combate: Serpente da Maré | 10 | 12
+-> 203 Ver o que acontece
+
+## 289
+Os três avançam ao mesmo tempo, com facas e um porrete.
+combate: Contrabandista de Cicatriz | 7 | 7
+combate junto: Contrabandista | 6 | 5
+fuga -> 123
+-> 98 Ver o que resta
+
+## 290
+O túnel sobe íngreme e termina numa escada de madeira que leva a um alçapão. Você o empurra e sai dentro de uma casa em ruínas, cheia de redes velhas. É a aldeia abandonada do Rochedo.
+-> 320 Sair da casa
+
+## 291
+Tito hesita, depois coloca a chave na sua mão. "Traga o seu Oleandro de volta, se puder. Ele era bom para mim."
+ganha: Chave do Farol
+-> 189 Continuar a conversa
+
+## 292
+A Ponta da Gaivota é uma língua de rochas que entra no mar. Daqui, o Rochedo parece perto. A água ainda cobre o banco de areia, mas está baixando.
+-> 293 [Tabela das Marés] Esperar a maré baixa e atravessar pelo banco de areia
+-> 298 [Túnel dos Contrabandistas] Procurar a pedra que parece um sapo
+-> 123 Voltar ao cais
+
+## 293
+Às dez em ponto, como dizia a tabela, o mar recua e deixa à mostra uma faixa de areia molhada até o Rochedo. É longa, e você precisa correr antes que a maré volte. No meio do caminho, caranguejos enormes saem da areia, do tamanho de cães, batendo as pinças.
+-> 393 Abrir caminho a espadadas
+-> 388 Examinar um vulto semienterrado na areia
+-> 305 Correr desviando deles
+
+## 294
+A bainha entra entre as engrenagens e é esmagada como palha. As engrenagens nem desaceleram. Uma lasca de ferro voa e corta seu rosto.
+energia: -2
+-> 135 Pensar em outra coisa
+
+## 295
+A pérola se parte ao meio. Uma fumaça verde sai dela, gritando, e o vento a leva para longe.
+-> 89 Olhar em volta
+
+## 296
+No chão, entre vidros quebrados, você acha uma caixinha de fósforos molhados. Risca um, outro, outro.
+teste de sorte: 193 | 341
+
+## 297
+A aliança tem uma inscrição por dentro: "Oleandro e Amélia, para sempre". O corpo do poço não era de Amélia: era de um homem jovem, talvez um dos contrabandistas. Alguém pôs a aliança nele.
+ganha: Aliança de Amélia
+-> 320 Voltar à rua
+
+## 298
+Atrás da pedra que parece um sapo há uma fresta onde passa um homem de lado. Ela se abre num túnel que desce em rampa, escorado com vigas de navio. O chão está molhado e as paredes brilham com um musgo azulado e fosforescente.
+-> 77 [Lanterna de Navio] Acender a lanterna
+-> 226 Seguir pela luz azul do musgo
+
+## 299
+No fundo da cova vazia há um vestido de noiva dobrado e encharcado de água do mar, e uma concha. Ninguém enterrou Amélia aqui. O mar nunca a devolveu.
+-> 320 Voltar
+
+## 300
+Você come nozes com mel e guarda o peixe defumado.
+energia: +3
+provisões: +2
+anota: Cozinha Saqueada
+-> 308 Continuar
+
+## 301
+A cabine está alagada até os joelhos. Mapas flutuam como folhas mortas. Sentado à mesa, com o chapéu na cabeça, está o capitão, morto há nove dias. Diante dele, o diário de bordo aberto. Quando você se aproxima, o capitão vira a cabeça.
+combate: Capitão Afogado | 7 | 8
+-> 241 Ler o diário de bordo
+
+## 302
+Tito chega correndo pela ladeira. Quando você conta que o velho Oleandro está vivo e o espera no farol, o rapaz grita de alegria, rouba um bote e rema para o Rochedo sem esperar ninguém.
+anota: Tito Avisado
+sorte: +1
+-> 45 Voltar ao cais
+
+## 303
+No estaleiro, à beira da praia, o carpinteiro naval Gaspar trabalha sozinho no casco de um barco novo. Ele não para de bater pregos. "Se quer um barco, não tenho. Se quer conselho, tenho de sobra."
+-> 66 Pedir conselho
+-> 197 [ouro 5+] [!Bote de Gaspar] Insistir em comprar qualquer coisa que flutue (5 peças)
+-> 29 Sair
+
+## 304
+De repente o mar começa a girar em volta do barco. Um redemoinho se abre na água negra, puxando o Gaivota Teimosa para o centro, onde uma luz verde brilha lá no fundo.
+-> 124 Remar com Joana contra a corrente
+-> 28 [Corda] Jogar a corda numa pedra e puxar o barco
+-> 55 [Moeda da Viúva] Jogar a moeda da Viúva no redemoinho
+
+## 305
+Você corre em zigue-zague pela areia molhada.
+teste de habilidade: 365 | 248
+
+## 306
+O velho se chama Saturnino. Viveu sozinho numa gruta do Rochedo por vinte anos, desde que perdeu o barco. "Eu vi a Viúva. De pé na galeria do farol, a cabeleira ao vento como alga. E vi o Oleandro ao lado dela, de mão dada, feliz como noivo." Ele cospe. "Ela tem a cara da Amélia, a mulher dele. Mas não é a Amélia."
+anota: Saturnino Encontrado
+-> 266 Pedir ajuda para chegar ao farol
+-> 151 [!Dente de Tubarão] [provisões 1+] Oferecer comida a ele
+-> 265 Agradecer e seguir
+
+## 307
+Você guarda o frasco com cuidado.
+ganha: Fôlego de Sereia
+-> 56 Continuar
+
+## 308
+A cozinha tem uma despensa com potes de mel, nozes e peixe defumado ainda bom, guardados por quem não volta há muito tempo. Na mesa, uma garrafa de óleo de lamparina.
+-> 300 [!Cozinha Saqueada] Comer e encher a mochila
+-> 287 [!Óleo de Baleia] Pegar o óleo de lamparina
+-> 253 Voltar
+
+## 309
+Mestre Ubaldo espera na porta da loja, de braços cruzados. Você não trouxe a lanterna do pai dele, e diz isso. O velho ri. "Você trouxe a luz inteira de volta. A lanterna fica lá em cima, que é o lugar dela." E devolve as oito peças que você pagou pelo arpão.
+anota: Armeiro Visitado
+ouro: +8
+-> 45 Voltar ao cais
+
+## 310
+Oleandro, que estava caído na galeria, se levanta com esforço. Ele tira do bolso do casaco um martelo de faroleiro, uma ferramenta comum, de ferro escuro. "Foi o meu avô que fez", ele diz. "Na forja da aldeia. Nunca molhou." E desce o martelo na pérola, que se parte como gelo.
+-> 89 Olhar em volta
+
+## 311
+Você enche os pulmões e mergulha. A água é tão fria que dói. Desce, desce, e a luz verde não chega mais perto.
+teste de habilidade: 360 | 380
+
+## 312
+A rachadura dá numa pequena câmara seca, iluminada por fungos amarelos. No chão há um esqueleto de mergulhador com capacete de cobre e, ao lado dele, uma sacola de couro bem fechada.
+-> 46 Abrir a sacola
+-> 245 Voltar
+
+## 313
+O vento arranca seu pé da trilha. Você escorrega pela beira e fica pendurado pelas mãos numa raiz.
+-> 111 [Gancho de Abordagem] Prender o gancho na rocha
+-> 82 [Corda] Jogar a corda numa pedra acima
+teste de sorte: 71 | 392
+
+## 314
+As pedras da torre são lisas e úmidas, mas há grampos de ferro antigos fincados na parede, de uma escada de manutenção que caiu. Subir assim é perigoso.
+-> 192 [Gancho de Abordagem] Usar o gancho de abordagem
+teste de habilidade: 107 | 262
+
+## 315
+O homem de água luta com punhos que batem como ondas.
+combate: Guarda da Viúva | 9 | 10
+-> 126 Subir para a galeria
+
+## 316
+Você ataca o primeiro pelas costas, e ele cai antes de ver quem o atingiu. Os outros dois se viram com facas na mão.
+combate: Devoto da Viúva | 7 | 6
+combate junto: Devoto da Viúva | 6 | 5
+-> 18 Examinar a capela
+
+## 317
+Você golpeia a pérola com a espada, com toda a força que lhe resta.
+teste de sorte: 224 | 9
+
+## 318
+Joana já está a bordo, com a vela pronta. Ela solta as amarras sem dizer nada e o Gaivota Teimosa desliza para fora da baía. A luz verde fica mais forte a cada onda. No meio da travessia, Joana aponta para estibordo: os mastros quebrados de um navio aparecem acima da água, presos num banco de pedra.
+-> 4 Pedir a Joana que se aproxime do naufrágio
+-> 244 [!Focas Visitadas] Pedir a Joana que passe pela ilhota das focas
+-> 218 Pedir a Joana o caminho por fora, mais longo e mais calmo
+-> 139 Puxar conversa com Joana
+-> 272 Seguir direto para o Rochedo
+
+## 319
+O ninho é do tamanho de um barco, construído com ossos, redes e restos de velas. Entre os ossos brilha alguma coisa. Antes que você chegue perto, uma sombra cobre a lua: uma ave enorme, de penas negras e bico de ferro, desce gritando.
+combate: Corvo-Marinho Gigante | 8 | 10
+fuga -> 320
+-> 116 Revirar o ninho
+
+## 320
+A aldeia dos faroleiros é um punhado de casas de pedra sem telhado em volta de um poço. As portas batem ao vento. Sobre os muros, dezenas de gaivotas olham para você em silêncio, sem se mexer. Uma rua sobe até uma capelinha e outra segue para o norte, na direção do farol, cuja luz verde varre a aldeia a cada poucos segundos.
+-> 253 Entrar na casa maior, com uma âncora pintada na porta
+-> 246 [!Aliança de Amélia] Examinar o poço
+-> 328 [!Senhora das Ondas Erguida] Subir até a capelinha
+-> 56 Entrar numa oficina com uma chaminé de ferro
+-> 61 [!Gaivotas Espantadas] Olhar as gaivotas mais de perto
+-> 235 [!Chave da Escola] Entrar na casa pequena de janelas azuis
+-> 152 Entrar na antiga escola
+-> 73 [!Martelo de Ferro Frio] Entrar na forja abandonada
+-> 88 [!Frota Avisada] Subir à torre de sinais
+-> 390 Ir ao cemitério da ilha
+-> 79 [Unguento de Algas] Sentar num muro e passar o unguento nas feridas
+-> 195 [Vela na Aldeia] Procurar a casa onde você viu uma luz amarela
+-> 195 [Irene Ajudada] Voltar à casa da sargento Irene
+-> 8 [!Cachorro Alimentado] Seguir um cachorro magro entre as casas
+-> 160 Seguir pela rua do norte até o farol
+
+## 321
+Joana não foi embora à meia-noite. O Gaivota Teimosa está na praia, e ela dorme encolhida no fundo do barco, com o casaco por cima. Quando acorda e vê você, ela só diz: "Eu vi a luz mudar de cor." E depois chora, com a cara escondida no casaco, porque o irmão dela está naquela frota.
+-> 351 Voltar a Porto Salgado com Joana
+
+## 322
+A chave de latão de Tito gira com um estalo. A porta se abre, e um ar úmido e salgado sai lá de dentro, cheirando a algas e a óleo velho.
+-> 32 Entrar
+
+## 323
+É um pote pequeno de pomada verde e fedorenta. "Passe na ferida mais funda e ela fecha numa hora. Só tem para uma vez."
+ouro: -4
+ganha: Unguento de Algas
+-> 333 Continuar
+
+## 324
+O último desenho não é de Amélia. É da Viúva, com a boca aberta mostrando dentes de peixe. No canto, Oleandro escreveu: "Não é ela. Eu sei que não é ela. Mas tem a voz dela."
+-> 394 Continuar
+
+## 325
+O cemitério fica no alto do morro, de frente para o mar. Muitas cruzes não têm corpo embaixo, só um nome, de quem o mar levou. Ao lado da cruz mais nova, uma menina de tranças joga flores no chão.
+-> 210 [!Ramo de Alecrim] Falar com a menina
+-> 257 Ler o nome na cruz mais nova
+-> 29 Voltar
+
+## 326
+O tique-taque vem de um relógio de parede parado nas onze e meia. Não, ele não está parado: o ponteiro se move. Mas para trás. Quando você toca nele, o relógio para, e um silêncio pesado cai sobre a oficina. Atrás do relógio, um buraco na parede guarda uma bolsinha de moedas.
+ouro: +5
+anota: Relógio Parado
+-> 56 Continuar
+
+## 327
+"Conheço Oleandro desde menina", diz Dona Celeste. "Ele salvou meu pai de um naufrágio, quando eu tinha sete anos. Mergulhou no meio da tempestade." Ela fecha os olhos. "Se ele está fazendo isso, não está em si. Traga-o vivo, se puder."
+anota: Pedido da Prefeita
+-> 101 Prometer tentar
+
+## 328
+A capelinha está meio desabada. A imagem da Senhora das Ondas está caída de bruços no chão, e alguém pintou de verde os olhos dos anjos nas paredes. No altar há sete velas negras acesas, e ajoelhados diante delas, de costas para você, três homens rezam numa língua que parece o barulho das ondas.
+-> 147 Pigarrear e chamar a atenção deles
+-> 316 Atacar antes que percebam você
+-> 399 Levantar a imagem da Senhora das Ondas
+-> 320 Recuar em silêncio
+
+## 329
+A chave inglesa entra entre a porta e o batente. Você força com todo o peso do corpo, e a fechadura salta com um estalo metálico.
+-> 32 Entrar
+
+## 330
+Você corre para a pérola negra. Quando estende a mão, uma força invisível o arremessa contra o vidro da lanterna, que racha. A mulher ri. "O coração do mar não se toca com as mãos, meu noivo."
+energia: -2
+-> 285 Recuperar-se e falar com Oleandro
+-> 106 Atacar a mulher
+
+## 331
+A luz verde pulsa mais forte do que nunca. Lá embaixo, os barcos da frota entram nos Dentes do Corvo um depois do outro. A Viúva ri dentro da pérola. "Obrigada pelos noivos." Uma onda enorme sobe pelo penhasco e lava a galeria, levando você junto.
+fim: O mar levou você e a frota de Porto Salgado. A aventura termina aqui.
+
+## 332
+O sal bento cai sobre a pérola e ela chia como ferro em brasa na água. Uma rachadura fina aparece na superfície negra. Você golpeia a rachadura com toda a força.
+perde: Sal Bento
+teste de habilidade: 295 | 178
+
+## 333
+A botica do doutor Anselmo é um corredor estreito de frascos coloridos, cheirando a cânfora. O doutor, um homem de óculos grossos e mãos manchadas de iodo, mistura alguma coisa num almofariz. "Ferido? Doente? Indo para o Rochedo? Então precisa das três coisas."
+-> 398 [ouro 3+] Pedir que trate seus ferimentos (3 peças)
+-> 162 [ouro 2+] [!Antídoto] Comprar um antídoto (2 peças)
+-> 323 [ouro 4+] [!Unguento de Algas] Comprar um unguento de cura (4 peças)
+-> 29 Sair
+
+## 334
+O coral esquenta na sua mão até queimar. A dor corta o canto como uma faca. Você para a um passo da borda, e a mulher solta um chiado de raiva.
+-> 106 Enfrentá-la
+
+## 335
+Você lê: "Ela disse que então levaria o meu rosto." Oleandro cambaleia como se tivesse levado um soco. "Amélia disse não", ele sussurra. "Ela disse não, e você a afogou. E roubou o rosto dela." Ele solta a mão da mulher.
+-> 138 Ver o que acontece
+
+## 336
+A lâmina do templo afunda na pérola com um som de sino. A pérola fica branca, depois cinzenta, e se desfaz em pó. O grito da Viúva some no vento como uma onda que se quebra.
+-> 89 Olhar em volta
+
+## 337
+Vinte braças de corda de cânhamo alcatroada, enroladas no ombro.
+ouro: -2
+ganha: Corda
+-> 275 Continuar na loja
+
+## 338
+Quando o barco de Dona Celeste chega ao Rochedo, de manhã, ela sobe a escada do farol sozinha, apesar da idade. Abraça Oleandro por muito tempo, sem dizer nada. Depois se vira para você. "Eu disse que traria ele vivo, e você trouxe." Ela tira do pescoço um medalhão de ouro e o coloca no seu. "Era do meu pai."
+ouro: +10
+-> 148 Descer do farol
+
+## 339
+Com um pedaço de bambu, pólvora e uma mecha, você monta um foguete de sinalização improvisado. Não é bonito, mas deve voar.
+ganha: Foguete de Socorro
+-> 374 Voltar
+
+## 340
+O bote amarelo corta as ondas com facilidade. Você rema com menos esforço do que esperava e logo a baía fica para trás.
+-> 176 Seguir para o Rochedo
+
+## 341
+Os fósforos estão encharcados. Nenhum acende. Você ouve, lá longe, o barulho de madeira se partindo nos recifes.
+-> 378 Fazer o que for possível
+
+## 342
+No fim da praia há um casco enorme e muito antigo, com o nome quase apagado na popa: Rainha do Sal. É um galeão de cem anos atrás, meio enterrado na areia. Um buraco no casco deixa entrar.
+-> 374 Entrar pelo buraco
+-> 265 Voltar
+
+## 343
+O sol nasce sobre um mar cinzento. Barcos de Porto Salgado procuram, entre os recifes, os dois que não passaram. Encontram tábuas, redes e um chapéu. Depois, encontram três pescadores agarrados a uma pedra, vivos. Os outros, não.
+-> 168 Descer do farol
+
+## 344
+Dentro do balde há uma mão humana, inchada e branca, com uma aliança no dedo. A mão se mexe. Os dedos agarram a borda do balde e puxam o resto do corpo, que estava pendurado na corda o tempo todo, lá embaixo.
+combate: Afogado do Poço | 7 | 7
+-> 297 Pegar a aliança
+
+## 345
+A baleia vê o arpão e afunda de repente, num redemoinho que quase vira o barco. Joana segura o leme com as duas mãos e grita com você pelo resto da travessia.
+energia: -2
+-> 272 Seguir viagem
+
+## 346
+Nas poças há estrelas-do-mar, ouriços e conchas. Numa poça maior, uma ostra enorme está entreaberta, e lá dentro brilha uma pérola branca. Ao lado dela, meio enterrado na areia, um peixe-pedra espera imóvel.
+-> 194 Enfiar a mão e pegar a pérola
+-> 279 [Faca de Escamar] Usar a faca para tirar a pérola com cuidado
+-> 353 Deixar a poça
+
+## 347
+Você não conhece o código, mas há uma tabela pregada na caixa. Bandeira vermelha sobre amarela: "Recife. Não se aproxime." Você iça as bandeiras e prende a corda. Lá no mar, à noite, ninguém deve ver. Mas quando a luz do farol mudar, elas vão aparecer.
+-> 14 [Luneta] Conferir pela luneta se dá para ver as bandeiras do mar
+anota: Frota Avisada
+-> 320 Descer
+
+## 348
+A Âncora Partida está cheia de velhos e crianças, os que não foram com a frota. Ninguém bebe muito. Atrás do balcão, um homem de braço tatuado com uma sereia enxuga canecas. Num canto, uma mulher de casaco de oleado joga cartas sozinha. Perto da lareira, um rapaz magro olha para você como quem quer dizer alguma coisa.
+-> 64 [!Os Afogados Sumidos] Falar com o taverneiro
+-> 140 Sentar-se com a mulher de oleado
+-> 189 Falar com o rapaz
+-> 177 [ouro 2+] Pedir um prato de ensopado (2 peças de ouro)
+-> 109 [!História do Ferreiro] Ouvir o velho marinheiro de cachimbo
+-> 29 Sair
+
+## 349
+A mulher começa a cantar. A voz é a coisa mais bonita que você já ouviu, e ela diz seu nome. Suas pernas andam sozinhas na direção da borda da galeria, onde o mar espera lá embaixo, negro e calmo.
+-> 334 [Amuleto de Coral] Apertar o amuleto de coral
+-> 102 [Marca da Viúva] Tentar resistir
+-> 26 [!Marca da Viúva] Tentar resistir
+
+## 350
+"Você escreveu para Tito fugir", você diz. "Ainda era você. Tito está em Porto Salgado esperando você voltar." O velho fecha os olhos com força. "Tito", repete. Por um instante, a mão dele afrouxa na mão da mulher.
+teste de sorte: 138 | 349
+
+## 351
+O cais de Porto Salgado está cheio. A frota voltou inteira, e as famílias se abraçam na beira da água. Quando você desce do barco, alguém aponta para você, e depois outro, e de repente a vila inteira está em volta. Dona Celeste abre caminho e põe a bolsa de ouro na sua mão.
+ouro: +50
+-> 45 Olhar em volta
+
+## 352
+"Ao que trouxer de volta o coração, o mar dará passagem." Você ergue a concha. A pérola treme, resiste, e então desce, devagar, até repousar no nácar. A luz verde se apaga. Você vai até a beira da galeria e joga a concha, com a pérola, de volta ao mar. O mar a engole sem um som. Lá embaixo, por um instante, você vê a figura de uma mulher afundando, de olhos fechados, e o mar se fecha sobre ela para sempre.
+perde: Concha de Nácar
+sorte: +1
+-> 89 Olhar em volta
+
+## 353
+As rochas negras do lado leste da praia estão cobertas de cracas e algas. O mar entra e sai de uma grande abertura no penhasco. Nas poças de maré entre as pedras há coisas que brilham.
+-> 346 [!Poça Visitada] Examinar as poças de maré
+-> 396 Entrar na caverna
+-> 265 Voltar à praia
+
+## 354
+Você ergue o arpão com as duas mãos e o crava na pérola. O ferro frio, que nunca tocou o mar, entra na pérola como numa fruta madura. Ela racha, depois estilhaça em mil pedaços negros que viram areia antes de tocar o chão. Um grito de mulher atravessa o céu, e some.
+-> 89 Olhar em volta
+
+## 355
+Você se senta perto do fogo, tira as botas molhadas e come alguma coisa. Saturnino conta histórias de naufrágios até você quase cochilar.
+energia: +3
+anota: Descansou na Gruta
+-> 230 Levantar-se
+
+## 356
+Ubaldo embrulha o arpão num pano engraxado. "Contra gente comum é só um arpão. Contra o que vem do mar, é outra coisa."
+ouro: -12
+arma: Arpão de Ferro Frio | +1
+-> 275 Continuar na loja
+
+## 357
+Pela luneta você conta os barcos: vinte e nove, trinta. Todos estão virando, devagar, na direção da luz verde. Na direção dos Dentes do Corvo. Eles devem chegar aos recifes em menos de uma hora.
+anota: A Frota se Aproxima
+-> 174 Voltar à escada
+
+## 358
+O brilho ao pé do altar é uma concha de nácar do tamanho de um prato, com uma inscrição: "Ao que trouxer de volta o coração, o mar dará passagem." Os peixes pálidos se afastam. Uma voz de mulher fala dentro da sua cabeça, suave: "Fique. Aqui não há frio, nem fome, nem pressa. Aceite um presente meu."
+-> 15 Aceitar o presente
+-> 25 Recusar e pegar a concha
+-> 22 [Pérola Branca] Colocar a pérola branca no buraco do peito da estátua
+
+## 359
+O polvo ataca com vários tentáculos ao mesmo tempo, tentando arrastá-lo para a água.
+combate: Guardião da Cisterna | 9 | 12
+-> 238 Subir a escada
+
+## 360
+Seus pulmões gritam. Você volta à tona a tempo, tossindo e tremendo. É fundo demais para descer sem ajuda.
+energia: -2
+-> 264 Sair do poço
+
+## 361
+Você entra na água azul. Ela é morna, estranhamente morna. Algo segura seu tornozelo, e outro algo, e outro. Mãos.
+combate: Afogados do Lago | 7 | 9
+-> 183 Chegar ao outro lado
+
+## 362
+Com um rangido, uma barra se solta. Você passa espremido pelo buraco e entra no cano.
+energia: -1
+-> 363 Seguir em frente
+
+## 363
+Você está num salão redondo embaixo do farol. No centro, um poço largo de pedra guarda a água da chuva para os faroleiros, mas a água dele é salgada e negra, e sobe e desce como se respirasse. Uma escada de pedra sobe pela parede até um alçapão. No chão há ossos de peixe, de pássaro e de outras coisas.
+-> 256 Subir a escada sem fazer barulho
+-> 205 Olhar dentro do poço
+
+## 364
+O velho, sem dentes, mostra uma concha enorme e espiralada, rosada por dentro. "Búzio de chamar. Sopra e os golfinhos vêm. Ou não vêm, depende do humor deles." Ele também tem um amuleto de coral vermelho preso num cordão. "Contra mau-olhado do mar."
+-> 164 [ouro 3+] [!Búzio de Chamar] Comprar o búzio (3 peças)
+-> 31 [ouro 2+] [!Amuleto de Coral] Comprar o amuleto de coral (2 peças)
+-> 33 Voltar às barracas
+
+## 365
+Quando você pisa nas pedras do Rochedo, a primeira onda da maré cheia já lambe seus calcanhares. Atrás de você, o banco de areia some sob a água. Agora não há volta a pé. Você está na ponta sul da ilha, perto da praia dos destroços.
+-> 265 Seguir até a praia
+
+## 366
+Quando o ferro frio toca a pele dela, sai fumaça, e ela grita como uma gaivota ferida. Ela tem medo dessa arma.
+combate: Morgessa, a Viúva | 9 | 8
+-> 157 Ela se transforma
+
+## 367
+Parar engrenagens desse tamanho exige algo forte e comprido para enfiar entre os dentes.
+-> 236 [Chave Inglesa] Enfiar a chave inglesa entre as engrenagens
+-> 294 Enfiar a bainha da espada entre as engrenagens
+
+## 368
+A porta é grossa e a fechadura é boa, mas a umidade comeu parte do batente.
+-> 329 [Chave Inglesa] Usar a chave inglesa como alavanca
+teste de habilidade: 44 | 227
+
+## 369
+Você bate no cristal com o punho da espada. Ele se parte, e o corpo de Amélia desliza para os seus braços, leve como uma folha seca. Na mão dela há uma pederneira de prata, que ela segurava quando morreu. Você a deita no chão de pedra e a cobre com o seu manto. Antes de sair, juraria ter visto ela sorrir.
+ganha: Pederneira
+sorte: +2
+-> 264 Voltar
+
+## 370
+A faca de escamar corta o tentáculo como manteiga. O polvo recua para a água com um jato de tinta negra, e você sobe a escada correndo.
+-> 32 Abrir o alçapão
+
+## 371
+Você abre a lanterna de navio e encosta a chama na mecha. Ela pega fogo.
+-> 193 Ver a luz se acender
+
+## 372
+A trilha de pedras sobe serpenteando por um campo de capim duro e rochas. O vento é forte o bastante para empurrar você. No meio da subida há uma bifurcação marcada por um poste com uma lanterna quebrada.
+-> 234 Examinar o poste
+-> 320 Seguir pela esquerda, para a aldeia
+-> 208 Seguir pela direita, pela beira do penhasco
+
+## 373
+O barco raspa na areia da praia dos destroços. Joana segura seu braço antes que você desça. "Espero até a meia-noite. Se ouvir o sino do barco, corra." Ela lhe entrega uma garrafinha de rum. "Para o frio. Ou para a coragem."
+ganha: Rum de Joana
+anota: Joana Esperando
+-> 265 Pisar na praia
+
+## 374
+O porão do galeão está seco e cheio de areia. Há canhões tombados, correntes e, no fundo, uma porta de cabine com um crânio pintado.
+-> 37 [!Mapa dos Recifes] Abrir a porta do crânio
+-> 269 Examinar os canhões
+-> 342 Sair
+
+## 375
+Você guarda a lanterna e o óleo.
+ganha: Lanterna de Navio
+ganha: Óleo de Baleia
+-> 230 Continuar
+
+## 376
+O antídoto faz efeito em poucos minutos, e o fogo no pulso apaga.
+perde: Antídoto
+cura: Veneno de Peixe-Pedra
+-> 353 Seguir
+
+## 377
+A grade está enferrujada, mas é grossa.
+teste de habilidade: 362 | 260
+
+## 378
+No fim, só uma parte da frota percebe o perigo a tempo. Ao amanhecer, sete barcos estão despedaçados nos Dentes do Corvo. A luz verde não volta, mas o farol fica escuro, e a vila de Porto Salgado vai precisar de anos para se recuperar.
+fim: Você destruiu a Viúva, mas não conseguiu devolver a luz a tempo.
+
+## 379
+Os afogados são lentos, mas não sentem dor.
+combate: Marinheiro Afogado | 6 | 6
+combate junto: Marinheiro Afogado | 6 | 5
+-> 278 Procurar no porão
+
+## 380
+Você desce longe demais. Quando tenta subir, o peito explode e a água entra. Você só se salva porque uma corrente o empurra para cima. Volta à tona meio afogado, cuspindo água por um longo tempo.
+energia: -5
+-> 264 Arrastar-se para fora do poço
+
+## 381
+O depósito de óleo cheira forte. Há tonéis enormes, a maioria vazios, e prateleiras com mechas, vidros de lanterna e ferramentas. Num gancho, um casaco de faroleiro de oleado pesado.
+-> 220 [!Óleo de Baleia] Encher um frasco com o óleo que sobrou
+-> 259 [!Casaco de Faroleiro] Vestir o casaco de faroleiro
+-> 42 Procurar nas prateleiras
+-> 32 Sair
+
+## 382
+A porta de ferro está trancada. Na madeira do batente, alguém pregou um papel molhado: "VOLTEM. A LUZ NÃO É MAIS DE VOCÊS. O."
+-> 322 [Chave do Farol] Usar a chave de latão
+-> 368 Arrombar a porta
+-> 160 Procurar outro jeito de entrar
+
+## 383
+Numa parede há uma manivela de ferro com uma placa: "Rotação da lente". Você lembra das instruções do caderno: três voltas para a esquerda antes de acender, se a lente for trocada. Por enquanto, não há nada para trocar.
+anota: Manivela Encontrada
+-> 135 Voltar
+
+## 384
+Agora que o polvo se foi, você vê que no fundo raso da borda da cisterna há uma caixa de ferro presa por uma corrente. Alguém a escondeu ali, debaixo da água, onde o monstro a guardaria.
+-> 72 Puxar a caixa e abri-la
+
+## 385
+Com Oleandro prendendo os braços dela, a Viúva só pode se debater e morder o ar. Você ataca.
+combate: Morgessa, a Viúva | 8 | 8
+-> 157 Ela se transforma
+
+## 386
+A faca de osso das focas corta os tentáculos como se fossem fios de alga. A Viúva grita de dor e de surpresa: aquela faca vem do povo do mar, e o mar está do seu lado agora.
+perde: Faca de Osso
+combate: Serpente da Maré | 8 | 8
+-> 203 Ver o que acontece
+
+## 387
+No primeiro andar há também um quarto de hóspedes, com a porta escancarada. A cama está molhada. Sentada nela, de costas, uma mulher de vestido de marinheira penteia os cabelos com os dedos. Quando você entra, ela vira a cabeça, mais do que uma cabeça humana deveria virar.
+combate: Afogada do Quarto | 7 | 7
+-> 21 Revistar o quarto
+
+## 388
+Um vulto semienterrado na areia molhada é um homem de casaco de couro, de bruços. Está morto há dias. Os bolsos estão cheios de areia, mas o cinto ainda tem uma bolsa.
+-> 121 Abrir a bolsa
+-> 293 Deixar o morto em paz e seguir
+
+## 389
+O foguete explode numa bola de fogo vermelho bem diante do rosto dela. A Viúva grita, cega, e se debate, quebrando vidros da lanterna. Você aproveita para golpear várias vezes antes que ela consiga ver de novo.
+perde: Foguete de Socorro
+combate: Serpente da Maré | 8 | 9
+-> 203 Ver o que acontece
+
+## 390
+O cemitério da ilha é um quadrado de terra cercado por pedras, com cruzes de madeira. A cova mais nova tem uma lápide de mármore: "Amélia". Mas a terra está remexida e a cova, aberta. Está vazia.
+-> 299 Olhar dentro da cova
+-> 320 Voltar
+
+## 391
+Na praia dos destroços você encontra um bote ainda inteiro e rema de volta, devagar, com o sol nas costas. No meio do caminho, um barco de pesca da frota o vê e o recolhe a bordo. Os pescadores olham para o farol, depois para você, e entendem.
+-> 351 Chegar a Porto Salgado
+
+## 392
+A raiz se parte. Você cai, bate nas pedras, cai de novo e mergulha no mar gelado. Quando volta à tona, está ferido e longe da trilha. As ondas o arrastam até a boca de uma caverna embaixo do penhasco.
+energia: -6
+-> 396 Nadar para dentro da caverna
+
+## 393
+Os caranguejos cercam você, com as carapaças duras como armadura.
+combate: Caranguejo-Gigante | 6 | 7
+combate junto: Caranguejo-Gigante | 5 | 6
+-> 365 Continuar correndo
+
+## 394
+O quarto do faroleiro é simples: uma cama de ferro, uma mesa, uma estante de livros sobre o mar. Na parede, dezenas de desenhos do rosto de Amélia, feitos a carvão, cada vez mais tortos e estranhos, até os últimos, que mostram uma mulher de olhos verdes e cabelos de alga. Debaixo da cama há um baú pequeno.
+-> 155 Abrir o baú
+-> 324 Examinar os desenhos
+-> 174 Sair
+
+## 395
+Você revira cascos e barris. A maior parte é madeira podre e corda apodrecida. Mas há algumas coisas que valem a busca.
+-> 187 [!Barril Aberto] Abrir um barril que ainda está fechado
+-> 286 [!Gancho de Abordagem] Arrombar um baú de marinheiro meio enterrado
+-> 30 [!Olhos da Viúva Cegos] Examinar a figura de proa de um navio, uma mulher de madeira
+-> 265 Parar de procurar
+
+## 396
+A caverna é alta como uma igreja. O mar entra por baixo e enche um lago interno que sobe e desce com a respiração das ondas. Uma saliência de pedra contorna o lago. Nas paredes, conchas foram coladas formando desenhos de ondas e de uma mulher de cabelos longos.
+-> 245 Seguir pela saliência
+-> 186 Nadar pelo lago
+-> 231 Examinar os desenhos de conchas
+
+## 397
+É uma lanterna de latão com vidro grosso, que não apaga com vento nem com chuva.
+ouro: -3
+ganha: Lanterna de Navio
+-> 275 Continuar na loja
+
+## 398
+O doutor limpa, costura e enfaixa tudo o que precisa, resmungando o tempo inteiro.
+ouro: -3
+energia: +5
+-> 333 Continuar
+
+## 399
+Você levanta a imagem de madeira e a coloca de pé no nicho. O rosto dela é sereno, de olhos fechados. Nas mãos ela segura um pequeno farol. Por um instante, a luz verde que entra pela janela fica amarela, e você sente uma força quente nos braços.
+habilidade: +1
+sorte: +1
+anota: Senhora das Ondas Erguida
+-> 320 Sair da capela
+
+## 400
+Naquela noite, Porto Salgado faz uma festa como não fazia havia anos. Na taverna Âncora Partida, Bento serve ensopado de graça, alguém traz uma rabeca, e até a irmã Luzia dança. Lá no Rochedo do Corvo, a luz do farol gira amarela e quente sobre o mar, varrendo as ondas de cem em cem batidas do coração.
+
+Quando você finalmente segue viagem, dias depois, a vila inteira vai até o cais. Joana leva você até o porto seguinte sem cobrar nada. E por muitos anos, nas noites de tempestade, os pescadores de Porto Salgado dizem uns aos outros: olhe a luz amarela. Alguém lutou por ela.
+fim: Você destruiu a Viúva, devolveu a luz ao farol e salvou a frota de Porto Salgado. Vitória!
+</script>
+
+<script type="text/plain" id="exemplo">Título: A Torre do Relojoeiro
+Habilidade: 1d6+6
+Energia: 2d6+12
+Sorte: 1d6+6
+Fé: 1d6+3
+Equipamento: Espada, Armadura de couro, Lanterna
+Provisões: 10
+
+O relojoeiro Anselmo desapareceu há três noites, e com ele parou o grande relógio da vila de Vau Cinzento. Os moradores dizem que algo se mudou para a torre.
+
+Você aceitou subir até lá e descobrir o que aconteceu.
+
+## 1
+A porta da torre está entreaberta. Lá dentro, o ar cheira a óleo velho e ferrugem. Uma escada em espiral sobe para a escuridão. À esquerda, há uma pequena oficina com uma vela ainda acesa.
+-> 2 Entrar na oficina
+-> 3 Subir a escada imediatamente
+
+## 2
+A bancada está coberta de engrenagens. Sob um pano você encontra uma chave de latão com dentes em forma de roda dentada. Pendurado na parede há um martelo de relojoeiro, pesado e bem equilibrado.
+ganha: Chave de Engrenagem
+arma: Martelo do Relojoeiro | +1
+-> 3 Voltar e subir a escada
+
+## 3
+No meio da escada, um degrau range e cede sob o seu pé.
+teste de sorte: 4 | 5
+
+## 4
+Você se agarra ao corrimão bem a tempo. O degrau despenca no escuro e leva vários segundos até bater no chão.
+-> 6 Seguir até o topo
+
+## 5
+Você escorrega e torce o tornozelo na pedra antes de conseguir se segurar.
+energia: -2
+aflição: Tornozelo torcido
+-> 6 Mancar até o topo
+
+## 6
+A sala do mecanismo é enorme. Sobre o eixo principal está empoleirado um corvo feito de latão, do tamanho de um cão. Ao mesmo tempo, um rato de corda sai de trás de um pêndulo. Os dois atacam juntos.
+combate: Corvo de Latão | 7 | 8
+combate junto: Rato de Corda | 5 | 4
+fuga -> 9
+-> 7 Examinar o mecanismo
+
+## 7
+Com os autômatos desmontados no chão, você enxerga o problema: uma portinhola trancada no coração do mecanismo, de onde vêm batidas abafadas.
+-> 8 [Chave de Engrenagem] Usar a chave de latão
+-> 14 [fé 7+] Pôr a mão sobre a portinhola e rezar
+-> 10 Forçar a portinhola com as mãos
+
+## 8
+A chave gira com um estalo. Encolhido entre as engrenagens está o próprio Anselmo, faminto mas vivo. Ele construiu os autômatos para guardar a torre e acabou trancado pela própria criação.
+
+Juntos, vocês dão corda no grande relógio. Lá embaixo, a vila inteira ouve o primeiro badalo em três dias.
+ouro: +20
+fé: +1
+cura: Tornozelo torcido
+fim: Você salvou o relojoeiro e devolveu as horas a Vau Cinzento.
+
+## 9
+Você desce correndo e só para do lado de fora. A torre continua em silêncio.
+fim: Você sobreviveu, mas o relógio continua parado.
+
+## 10
+Você puxa a portinhola com toda a força. Uma engrenagem solta prende sua manga e arrasta seu braço para dentro do mecanismo.
+energia: -3
+teste de habilidade: 11 | 12
+
+## 11
+Com um puxão firme você se solta. Do outro lado da portinhola, uma voz rouca grita: *"A chave! Ficou na oficina!"*
+-> 13 Descer até a oficina
+
+## 12
+A engrenagem não solta. Quando finalmente se livra, você está ferido demais para continuar, e os moradores precisam carregá-lo de volta para a vila.
+fim: Sua aventura termina aqui.
+
+## 13
+Você desce pulando o degrau quebrado e encontra a chave de latão na bancada.
+ganha: Chave de Engrenagem
+-> 8 Voltar e abrir a portinhola
+
+## 14
+Por um instante as engrenagens param de girar. A portinhola se abre sozinha, como se o próprio mecanismo reconhecesse suas boas intenções.
+habilidade inicial: +1
+-> 8 Entrar
+</script>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const app=$('#app');
+const d6=()=>1+Math.floor(Math.random()*6);
+const KEY='livrojogo.texto.v2', NKEY='livrojogo.anotacoes';
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const exemplo=$('#exemplo').textContent.replace(/^\n/,'');
+const aventura=$('#aventura').textContent.replace(/^\n/,'');
+
+let src=aventura;
+let book, view='play', S, notesText=store.get(NKEY)||'';
+
+/* ---------- Trilha de suspense (sintetizada no navegador) ---------- */
+const Music=(()=>{
+  let ctx=null,master,bus,lp,on=false,combat=false,vol=0.55,timer=0,nextNote=0,nextBeat=0;
+  const AC=window.AudioContext||window.webkitAudioContext;
+  const SCALE=[62,63,65,67,69,70,72,74,75,77]; // ré frígio
+  const mtof=m=>440*Math.pow(2,(m-69)/12);
+  function impulse(sec){const n=ctx.sampleRate*sec,b=ctx.createBuffer(2,n,ctx.sampleRate);for(let c=0;c<2;c++){const d=b.getChannelData(c);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3);}return b;}
+  function osc(type,f,det,g,dest){const o=ctx.createOscillator();o.type=type;o.frequency.value=f;o.detune.value=det;const gn=ctx.createGain();gn.gain.value=g;o.connect(gn);gn.connect(dest);o.start();return gn;}
+  function build(){
+    ctx=new AC();
+    master=ctx.createGain();master.gain.value=0;master.connect(ctx.destination);
+    const verb=ctx.createConvolver();verb.buffer=impulse(5);const wet=ctx.createGain();wet.gain.value=0.7;verb.connect(wet);wet.connect(master);
+    const dry=ctx.createGain();dry.gain.value=0.55;dry.connect(master);
+    bus={verb,dry};
+    lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=200;lp.Q.value=5;lp.connect(dry);lp.connect(verb);
+    const lfo=ctx.createOscillator();lfo.frequency.value=0.045;const lg=ctx.createGain();lg.gain.value=110;lfo.connect(lg);lg.connect(lp.frequency);lfo.start();
+    osc('sawtooth',36.71,-8,0.16,lp);osc('sawtooth',36.71,8,0.16,lp);osc('sawtooth',55,-5,0.08,lp);osc('triangle',73.42,4,0.10,lp);
+    const dis=osc('sine',77.78,0,0,lp); // mi bemol: a dissonância que vai e volta
+    bus.dis=dis;
+    const nb=ctx.createBuffer(1,ctx.sampleRate*3,ctx.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
+    const ns=ctx.createBufferSource();ns.buffer=nb;ns.loop=true;
+    const bp=ctx.createBiquadFilter();bp.type='bandpass';bp.frequency.value=450;bp.Q.value=0.9;
+    const wg=ctx.createGain();wg.gain.value=0.035;ns.connect(bp);bp.connect(wg);wg.connect(verb);ns.start();
+    const wl=ctx.createOscillator();wl.frequency.value=0.07;const wlg=ctx.createGain();wlg.gain.value=280;wl.connect(wlg);wlg.connect(bp.frequency);wl.start();
+    nextNote=ctx.currentTime+2;nextBeat=ctx.currentTime;
+  }
+  function bell(f,t,amp,len){
+    [1,2.01,2.76,5.4].forEach((r,i)=>{const o=ctx.createOscillator();o.type='sine';o.frequency.value=f*r;const g=ctx.createGain();
+      g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(amp/(i+1.5),t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+len/(1+i*0.7));
+      o.connect(g);g.connect(bus.verb);if(i===0)g.connect(bus.dry);o.start(t);o.stop(t+len+0.1);});
+  }
+  function thump(t,amp){const o=ctx.createOscillator();o.frequency.setValueAtTime(95,t);o.frequency.exponentialRampToValueAtTime(38,t+0.16);
+    const g=ctx.createGain();g.gain.setValueAtTime(amp,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.28);o.connect(g);g.connect(bus.dry);o.start(t);o.stop(t+0.32);}
+  function tick(){
+    if(!on||!ctx) return;
+    const now=ctx.currentTime;
+    while(nextNote<now+0.5){
+      const n=1+Math.floor(Math.random()*(combat?3:2));
+      for(let i=0;i<n;i++){const m=SCALE[Math.floor(Math.random()*SCALE.length)]-(Math.random()<0.35?12:0);bell(mtof(m),nextNote+i*(combat?0.35:0.9),combat?0.09:0.06,combat?2.5:5);}
+      if(Math.random()<0.4){bus.dis.gain.cancelScheduledValues(nextNote);bus.dis.gain.setTargetAtTime(combat?0.12:0.07,nextNote,2);bus.dis.gain.setTargetAtTime(0,nextNote+5,3);}
+      nextNote+=combat?1.6+Math.random()*1.4:4+Math.random()*5;
+    }
+    if(combat){while(nextBeat<now+0.5){thump(nextBeat,0.55);thump(nextBeat+0.24,0.38);nextBeat+=0.82;}}
+    else nextBeat=now;
+  }
+  function level(){if(master&&ctx)master.gain.setTargetAtTime(on?vol*0.7:0,ctx.currentTime,0.6);}
+  return {
+    get on(){return on;},
+    toggle(){
+      if(!AC) return false;
+      try{ if(!ctx) build(); on=!on;
+        if(on){ctx.resume();nextNote=Math.max(nextNote,ctx.currentTime+0.5);clearInterval(timer);timer=setInterval(tick,200);}
+        else{clearInterval(timer);setTimeout(()=>{if(!on&&ctx)ctx.suspend();},2500);}
+        level(); return on;
+      }catch(e){on=false;return false;}
+    },
+    volume(v){vol=v;level();},
+    setCombat(c){
+      if(c===combat) return; combat=c;
+      if(ctx&&on){lp.frequency.cancelScheduledValues(ctx.currentTime);lp.frequency.setTargetAtTime(c?520:200,ctx.currentTime,1.2);nextNote=ctx.currentTime+0.3;}
+    },
+    sting(){ if(!ctx||!on) return; const t=ctx.currentTime+0.05; [50,51,57].forEach(m=>bell(mtof(m),t,0.16,7)); thump(t,0.9); },
+    fanfare(){ if(!ctx||!on) return; const t=ctx.currentTime+0.05; [62,66,69,74].forEach((m,i)=>bell(mtof(m),t+i*0.35,0.11,6)); }
+  };
+})();
+
+/* ---------- Leitor do formato ---------- */
+const STATKEY={habilidade:'hab',energia:'ene',sorte:'sor','fé':'fe',fe:'fe',ouro:'ouro','provisões':'prov',provisoes:'prov'};
+const NAME={hab:'Habilidade',ene:'Energia',sor:'Sorte',fe:'Fé',ouro:'Ouro',prov:'Provisões'};
+const sk=w=>STATKEY[w.toLowerCase()];
+const W='(habilidade|energia|sorte|f[éÉeE]|ouro|provis[õÕoO]es)';
+const RX={
+  formula:new RegExp('^'+W+'\\s*:\\s*(\\d+)\\s*d6\\s*(?:\\+\\s*(\\d+))?\\s*$','i'),
+  max:new RegExp('^'+W+'\\s+inicial\\s*:\\s*([+-]?\\d+)\\s*$','i'),
+  stat:new RegExp('^'+W+'\\s*:\\s*([+-]?\\d+)\\s*$','i'),
+  test:new RegExp('^teste\\s+de\\s+(sorte|habilidade|f[éÉeE])\\s*:\\s*(\\d+)\\s*\\|\\s*(\\d+)\\s*$','i'),
+  req:new RegExp('^'+W+'\\s+(\\d+)\\s*\\+$','i')
+};
+function parse(text){
+  const b={title:'Sem título',autor:'',intro:[],secs:{},order:[],errors:[],formula:{hab:[1,6],ene:[2,12],sor:[1,6]},equip:[],prov:10,ouro:0,pocoes:[]};
+  let cur=null;
+  text.split(/\r?\n/).forEach((raw,i)=>{
+    const t=raw.trim(), ln=i+1; let m;
+    if(!cur){
+      if(m=t.match(/^t[íÍiI]tulo\s*:\s*(.+)$/i)){b.title=m[1];return;}
+      if(m=t.match(/^autor\s*:\s*(.+)$/i)){b.autor=m[1].trim();return;}
+      if(m=t.match(RX.formula)){b.formula[sk(m[1])]=[+m[2],+(m[3]||0)];return;}
+      if(m=t.match(/^po[çÇcC][õÕoO]es\s*:\s*(.+)$/i)){b.pocoes=m[1].split(/[,;]/).map(s=>s.trim()).filter(Boolean);return;}
+      if(m=t.match(/^equipamento\s*:\s*(.+)$/i)){b.equip=m[1].split(/[,;]/).map(s=>s.trim()).filter(Boolean);return;}
+      if(m=t.match(/^provis[õÕoO]es\s*:\s*(\d+)\s*$/i)){b.prov=+m[1];return;}
+      if(m=t.match(/^ouro\s*:\s*(\d+)\s*$/i)){b.ouro=+m[1];return;}
+    }
+    if(m=t.match(/^#+\s*(\d+)\s*$/)){
+      if(b.secs[m[1]]) b.errors.push(`Seção ${m[1]} aparece duas vezes (linha ${ln}).`);
+      cur={id:m[1],lines:[],choices:[],effects:[],groups:[],tests:[],flee:null,end:null};
+      b.secs[m[1]]=cur;b.order.push(m[1]);return;
+    }
+    if(!cur){b.intro.push(raw);return;}
+    if(m=t.match(/^->\s*(\d+)\s*((?:\[[^\]]+\]\s*)*)(.*)$/)){const reqs=[...m[2].matchAll(/\[([^\]]+)\]/g)].map(x=>x[1].trim());cur.choices.push({to:m[1],reqs,label:m[3].trim()||('Vá para '+m[1])});return;}
+    if(/^->/.test(t)){b.errors.push(`Linha ${ln}: escolha sem número de destino.`);return;}
+    if(m=t.match(/^combate(\s+junto|\s*\+)?\s*:\s*(.+?)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*(?:->\s*(\d+))?\s*$/i)){
+      const foe={name:m[2],hab:+m[3],ene:+m[4]};
+      let g; if(m[1]&&cur.groups.length){g=cur.groups[cur.groups.length-1];g.foes.push(foe);} else {g={foes:[foe],to:null};cur.groups.push(g);}
+      if(m[5]) g.to=m[5]; return;
+    }
+    if(/^combate/i.test(t)&&/:/.test(t)){b.errors.push(`Linha ${ln}: combate fora do formato "Nome | HAB | ENE".`);return;}
+    if(m=t.match(/^fuga\s*->\s*(\d+)\s*$/i)){cur.flee=m[1];return;}
+    if(m=t.match(RX.test)){cur.tests.push({kind:sk(m[1]),ok:m[2],fail:m[3]});return;}
+    if(m=t.match(/^(ganha|perde)\s*:\s*(.+)$/i)){cur.effects.push({type:m[1].toLowerCase(),item:m[2].trim()});return;}
+    if(m=t.match(/^arma\s*:\s*(.+?)\s*(?:\|\s*([+-]?\d+))?\s*$/i)){cur.effects.push({type:'arma',item:m[1],n:+(m[2]||0)});return;}
+    if(m=t.match(/^afli[çÇcC][ãÃaA]o\s*:\s*(.+)$/i)){cur.effects.push({type:'afl',item:m[1].trim()});return;}
+    if(m=t.match(/^cura\s*:\s*(.+)$/i)){cur.effects.push({type:'cura',item:m[1].trim()});return;}
+    if(m=t.match(/^anota\s*:\s*(.+)$/i)){cur.effects.push({type:'anota',item:m[1].trim()});return;}
+    if(m=t.match(RX.max)){cur.effects.push({type:'max',stat:sk(m[1]),n:+m[2]});return;}
+    if(m=t.match(RX.stat)){cur.effects.push({type:'stat',stat:sk(m[1]),n:+m[2]});return;}
+    if(m=t.match(/^fim\s*(?::\s*(.*))?$/i)){cur.end=(m[1]||'').trim()||'Fim da aventura.';return;}
+    cur.lines.push(raw);
+  });
+  return b;
+}
+function targets(s){return [...s.choices.map(c=>c.to),...s.groups.map(g=>g.to).filter(Boolean),...(s.flee?[s.flee]:[]),...s.tests.flatMap(t=>[t.ok,t.fail])];}
+function check(b){
+  const probs=b.errors.map(e=>({err:true,msg:e}));
+  if(!b.order.length){probs.push({err:true,msg:'Nenhuma seção encontrada. Comece uma com "## 1".'});return probs;}
+  b.order.forEach(id=>{const s=b.secs[id];
+    targets(s).forEach(t=>{if(!b.secs[t])probs.push({err:true,msg:`Seção ${id} manda para ${t}, que não existe.`});});
+    s.tests.forEach(t=>{if(t.kind==='fe'&&!b.formula.fe)probs.push({err:true,msg:`Seção ${id} testa a Fé, mas o cabeçalho não tem "Fé: 1d6+3".`});});
+    if(!s.end && !s.choices.length && !s.tests.length && !s.groups.some(g=>g.to)) probs.push({err:false,msg:`Seção ${id} não tem saída nem "fim".`});
+  });
+  const seen=new Set([b.order[0]]),q=[b.order[0]];
+  while(q.length){const s=b.secs[q.shift()];targets(s).forEach(t=>{if(b.secs[t]&&!seen.has(t)){seen.add(t);q.push(t);}});}
+  const orphan=b.order.filter(id=>!seen.has(id));
+  if(orphan.length) probs.push({err:false,msg:`Ninguém chega a: ${orphan.join(', ')}.`});
+  return probs;
+}
+
+/* ---------- Estado de jogo ---------- */
+function freshState(){return {phase:'start',char:null,roll:null,sec:null,visited:[],fight:null,tests:{},notes:[],dead:false};}
+const STATS=['hab','ene','sor','fe'];
+function rollChar(){
+  const c={items:[...book.equip],weapons:{},afl:[],flags:[],ouro:book.ouro,prov:book.prov}; S.roll={};
+  STATS.forEach(k=>{const f=book.formula[k];if(!f)return;const r=Array.from({length:f[0]},d6);const v=r.reduce((a,x)=>a+x,0)+f[1];S.roll[k]=r;c[k]=v;c[k+'Max']=v;});
+  S.char=c;
+}
+const lc=s=>s.toLowerCase();
+const has=n=>[S.char.items,S.char.afl,S.char.flags].some(L=>L.some(i=>lc(i)===lc(n)));
+function reqOk(req){
+  if(!req) return true; let m;
+  if(m=req.match(RX.req)) return (S.char[sk(m[1])]||0)>=+m[2];
+  if(req.startsWith('!')) return !has(req.slice(1).trim());
+  return has(req);
+}
+function reqText(req,ok){
+  let m;
+  if(m=req.match(RX.req)) return `Requer ${NAME[sk(m[1])]} ${m[2]} ou mais`;
+  if(req.startsWith('!')) return ok?`Você não tem: ${req.slice(1).trim()}`:`Só sem: ${req.slice(1).trim()}`;
+  return ok?`Você tem: ${req}`:`Requer: ${req}`;
+}
+const bonus=()=>{const v=Object.values(S.char.weapons);return v.length?Math.max(...v):0;};
+const bestWeapon=()=>{let n=null,b=-99;for(const [k,v] of Object.entries(S.char.weapons)){if(v>b){b=v;n=k;}}return n;};
+function clamp(c){
+  ['hab','ene','sor'].forEach(k=>{c[k]=Math.max(0,Math.min(c[k],c[k+'Max']));});
+  if(c.fe!=null) c.fe=Math.max(0,c.fe);
+  c.ouro=Math.max(0,c.ouro);c.prov=Math.max(0,c.prov);
+}
+function enter(id){
+  const s=book.secs[id], c=S.char;
+  S.phase='play';S.sec=id;S.visited.push(id);S.tests={};S.notes=[];S.fight=null;
+  if(!s){render();return;}
+  const sign=n=>(n>=0?'+':'−')+Math.abs(n);
+  s.effects.forEach(f=>{
+    if(f.type==='ganha'){if(!has(f.item))c.items.push(f.item);S.notes.push({cls:'good',t:'Ganhou: '+f.item});}
+    else if(f.type==='anota'){if(!c.flags.some(i=>lc(i)===lc(f.item))){c.flags.push(f.item);S.notes.push({cls:'',t:'Anotado: '+f.item});}}
+    else if(f.type==='perde'){c.items=c.items.filter(i=>lc(i)!==lc(f.item));c.flags=c.flags.filter(i=>lc(i)!==lc(f.item));for(const k in c.weapons)if(lc(k)===lc(f.item))delete c.weapons[k];S.notes.push({cls:'bad',t:'Perdeu: '+f.item});}
+    else if(f.type==='arma'){if(!c.items.some(i=>lc(i)===lc(f.item)))c.items.push(f.item);c.weapons[f.item]=f.n;S.notes.push({cls:'good',t:`Arma: ${f.item}${f.n?' ('+sign(f.n)+' Habilidade)':''}`});}
+    else if(f.type==='afl'){if(!c.afl.some(i=>lc(i)===lc(f.item)))c.afl.push(f.item);S.notes.push({cls:'bad',t:'Aflição: '+f.item});}
+    else if(f.type==='cura'){if(c.afl.some(i=>lc(i)===lc(f.item))){c.afl=c.afl.filter(i=>lc(i)!==lc(f.item));S.notes.push({cls:'good',t:'Livrou-se de: '+f.item});}}
+    else if(f.type==='max'){if(c[f.stat+'Max']!=null)c[f.stat+'Max']+=f.n;c[f.stat]=(c[f.stat]||0)+f.n;S.notes.push({cls:f.n>=0?'good':'bad',t:`${NAME[f.stat]} inicial ${sign(f.n)}`});}
+    else {c[f.stat]=(c[f.stat]||0)+f.n;S.notes.push({cls:f.n>=0?'good':'bad',t:`${NAME[f.stat]} ${sign(f.n)}`});}
+  });
+  clamp(c);
+  if(s.groups.length) S.fight={g:0,hp:s.groups.map(g=>g.foes.map(f=>f.ene)),target:0,log:[],last:null,goto:null,done:false};
+  if(c.ene<=0) S.dead=true;
+  render(); window.scrollTo({top:0,behavior:'smooth'});
+}
+const dice=a=>a.map(n=>`<span class="die">${n}</span>`).join('');
+function testLuck(){
+  const r=[d6(),d6()],sum=r[0]+r[1],before=S.char.sor;
+  const ok=before>1&&sum<=before; S.char.sor=Math.max(0,before-1);
+  return {r,sum,target:before,ok,auto:before<=1};
+}
+
+function attack(){
+  const s=book.secs[S.sec],f=S.fight,G=s.groups[f.g],hp=f.hp[f.g];
+  const a=[d6(),d6()],B=bonus(),fa=a[0]+a[1]+S.char.hab+B;
+  let hit=false,hurt=false;
+  const lines=[];
+  G.foes.forEach((foe,i)=>{
+    if(hp[i]<=0) return;
+    const r=[d6(),d6()],fb=r[0]+r[1]+foe.hab; let res;
+    if(i===f.target){
+      if(fa>fb){hp[i]-=2;hit=true;res=`<span class="res-ok">você feriu (−2)</span>`;}
+      else if(fb>fa){S.char.ene-=2;hurt=true;res=`<span class="res-bad">feriu você (−2)</span>`;}
+      else res='golpes evitados';
+    } else {
+      if(fb>fa){S.char.ene-=2;hurt=true;res=`<span class="res-bad">feriu você (−2)</span>`;}
+      else res='você se defendeu';
+    }
+    lines.push(`${esc(foe.name)} ${dice(r)}+${foe.hab} = <b>${fb}</b> → ${res}`);
+  });
+  lines.push(`Você ${dice(a)}+${S.char.hab}${B?(B>0?'+':'−')+Math.abs(B):''} = <b>${fa}</b>`);
+  f.last=hit?'hit':(hurt?'hurt':null);
+  f.log.unshift(lines.join('<br>'));
+  settle();
+}
+function luckInFight(){
+  const s=book.secs[S.sec],f=S.fight,foe=s.groups[f.g].foes[f.target],L=testLuck();
+  let t;
+  if(f.last==='hit'){ if(L.ok){f.hp[f.g][f.target]-=2;t=`<span class="res-ok">Sorte! Ferimento sério em ${esc(foe.name)} (−2 extra).</span>`;} else {f.hp[f.g][f.target]+=1;t=`<span class="res-bad">Azar. Foi só um arranhão (${esc(foe.name)} recupera 1).</span>`;} }
+  else { if(L.ok){S.char.ene+=1;t='<span class="res-ok">Sorte! Você evitou parte do golpe (+1 Energia).</span>';} else {S.char.ene-=1;t='<span class="res-bad">Azar. O golpe foi mais sério (−1 Energia).</span>';} }
+  f.log.unshift(`Testar a Sorte ${dice(L.r)} = <b>${L.sum}</b> contra ${L.target}${L.auto?' (Sorte 1 ou menos: azar automático)':''}<br>${t}`);
+  f.last=null; settle();
+}
+function settle(){
+  const s=book.secs[S.sec],f=S.fight; clamp(S.char);
+  if(S.char.ene<=0){S.dead=true;render();return;}
+  const G=s.groups[f.g],hp=f.hp[f.g];
+  if(hp[f.target]<=0){
+    f.log.unshift(`<b>${esc(G.foes[f.target].name)} foi derrotado.</b>`); f.last=null;
+    const next=hp.findIndex(h=>h>0);
+    if(next>=0) f.target=next;
+    else if(G.to) f.goto=G.to;
+    else {f.g++;f.target=0;if(f.g>=s.groups.length)f.done=true;}
+  }
+  render();
+}
+function flee(){S.char.ene-=2;clamp(S.char);if(S.char.ene<=0){S.dead=true;render();return;}enter(book.secs[S.sec].flee);}
+function runTest(idx){
+  const t=book.secs[S.sec].tests[idx]; let res;
+  if(t.kind==='sor') res=testLuck();
+  else {const r=[d6(),d6()],sum=r[0]+r[1],target=S.char[t.kind]||0;res={r,sum,target,ok:sum<=target};}
+  res.to=res.ok?t.ok:t.fail; S.tests[idx]=res; render();
+}
+const POCOES_INFO={
+  'habilidade':{nome:'Poção da Habilidade',txt:'Devolve a Habilidade ao valor inicial.'},
+  'força':{nome:'Poção da Força',txt:'Devolve a Energia ao valor inicial.'},
+  'forca':{nome:'Poção da Força',txt:'Devolve a Energia ao valor inicial.'},
+  'fortuna':{nome:'Poção da Fortuna',txt:'Devolve a Sorte ao valor inicial e aumenta a Sorte inicial em 1.'}
+};
+const pocaoInfo=k=>POCOES_INFO[(k||'').toLowerCase()]||{nome:'Poção de '+k,txt:''};
+function drink(){
+  const c=S.char; if(!c||!c.pocao||c.pocao.doses<1) return;
+  const k=c.pocao.tipo.toLowerCase();
+  if(k==='habilidade') c.hab=c.habMax;
+  else if(k==='força'||k==='forca') c.ene=c.eneMax;
+  else if(k==='fortuna'){ c.sorMax+=1; c.sor=c.sorMax; }
+  c.pocao.doses--; S.notes=[...(S.notes||[]),{cls:'good',t:pocaoInfo(c.pocao.tipo).nome+' bebida'}]; render();
+}
+function eat(){if(S.char.prov>0&&S.char.ene<S.char.eneMax){S.char.prov--;S.char.ene+=4;clamp(S.char);render();}}
+
+/* ---------- Desenho ---------- */
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function prose(lines){
+  const t=lines.join('\n').trim(); if(!t) return '';
+  return t.split(/\n\s*\n/).map(p=>'<p>'+esc(p).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>')+'</p>').join('');
+}
+let lastEnd='';
+const SAVE='farol.progresso', AVENTURA='farol-da-mare-negra';
+const SUPABASE_URL="https://baoquuhwoqftboziight.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhb3F1dWh3b3FmdGJvemlpZ2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0NTE1MjcsImV4cCI6MjEwMzAyNzUyN30.5ut-Gd9OWdy99sX2YnUQPimssfYCbtn0cLjBRERXO-w";
+let sb=null, userId=null, nuvem='off', lastSnap='', pushTimer=0;
+try{ if(window.supabase) sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY); }catch(e){ sb=null; }
+function snapshot(){ return {S,notesText,salvo_em:new Date().toISOString(),fim:!!(S.dead||(book.secs[S.sec]&&book.secs[S.sec].end))}; }
+function save(){
+  if(S.phase!=='play') return;
+  const snap=snapshot(), key=JSON.stringify({S,notesText});
+  if(key===lastSnap) return; lastSnap=key;
+  store.set(SAVE,JSON.stringify(snap));
+  if(sb&&userId){ clearTimeout(pushTimer); pushTimer=setTimeout(()=>pushNuvem(snap),1200); }
+}
+async function pushNuvem(snap){
+  try{
+    const {error}=await sb.from('rpgsolo_saves').upsert({user_id:userId,aventura:AVENTURA,estado:snap,atualizado_em:snap.salvo_em});
+    nuvem=error?'erro':'ok';
+  }catch(e){ nuvem='erro'; }
+  paintSave();
+}
+async function apagarNuvem(){ if(sb&&userId){ try{ await sb.from('rpgsolo_saves').delete().eq('user_id',userId).eq('aventura',AVENTURA); }catch(e){} } }
+function paintSave(){
+  const el=document.getElementById('savestate'); if(!el) return;
+  if(userId&&nuvem==='ok'){el.textContent='Progresso salvo na sua conta';el.className='savestate ok';}
+  else if(userId&&nuvem==='erro'){el.textContent='Não consegui salvar na conta agora. O progresso ficou salvo neste navegador.';el.className='savestate';}
+  else if(userId){el.textContent='Seu progresso é salvo na sua conta';el.className='savestate';}
+  else {el.innerHTML='Progresso salvo só neste navegador. <a href="/">Entre no site</a> para salvar na sua conta e continuar em qualquer aparelho.';el.className='savestate';}
+}
+function validSave(j){ return j&&j.S&&j.S.phase==='play'&&j.S.char&&!j.S.dead&&!(book.secs[j.S.sec]&&book.secs[j.S.sec].end); }
+async function iniciarConta(){
+  const conta=document.getElementById('conta');
+  if(!sb){ conta.textContent='Jogando sem conta'; paintSave(); return; }
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(!session){ conta.innerHTML='Jogando sem conta · <a href="/">Entrar</a>'; paintSave(); return; }
+    userId=session.user.id;
+    let nome='';
+    try{ const {data}=await sb.from('profiles').select('name').eq('id',userId).maybeSingle(); nome=data&&data.name||''; }catch(e){}
+    conta.innerHTML='Jogando como <b></b>'; conta.querySelector('b').textContent=nome||session.user.email||'você';
+    const {data:row}=await sb.from('rpgsolo_saves').select('estado,atualizado_em').eq('user_id',userId).eq('aventura',AVENTURA).maybeSingle();
+    nuvem=row?'ok':'off';
+    const local=saved, remoto=row&&validSave(row.estado)?row.estado:null;
+    const tLocal=local&&local.salvo_em?Date.parse(local.salvo_em):0, tRemoto=remoto&&remoto.salvo_em?Date.parse(remoto.salvo_em):0;
+    if(remoto&&tRemoto>=tLocal) saved=remoto;
+    else if(local&&S.phase!=='play') pushNuvem(local);
+    if(S.phase==='play'&&lastSnap) pushNuvem(snapshot());
+  }catch(e){ nuvem='erro'; }
+  if(S.phase!=='play') render(); else paintSave();
+}
+function render(){
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.v===view)));
+  if(view==='edit') renderEditor(); else renderPlay();
+  const f=S&&S.fight, s=S&&S.sec&&book.secs[S.sec];
+  Music.setCombat(view==='play'&&!!f&&!f.done&&!f.goto&&!S.dead);
+  const endKey=S.dead?'morte:'+S.visited.length:(s&&s.end&&view==='play'?'fim:'+S.sec+':'+S.visited.length:'');
+  if(endKey&&endKey!==lastEnd){ if(S.dead) Music.sting(); else Music.fanfare(); }
+  lastEnd=endKey;
+  save();
+  paintSave();
+}
+function formulaText(k){const f=book.formula[k];return `${f[0]} ${f[0]===1?'dado':'dados'}${f[1]?' + '+f[1]:''}`;}
+
+function sheetHTML(){
+  const c=S.char;
+  if(!c) return `<aside class="sheet"><h2>Folha de Aventuras</h2><p class="empty">Role os atributos para preencher a ficha.</p></aside>`;
+  const pct=c.eneMax?Math.round(c.ene/c.eneMax*100):0;
+  const inFight=S.fight&&!S.fight.done&&!S.fight.goto;
+  const w=bestWeapon();
+  const statRow=k=>c[k]==null?'':`<div class="stat"><span class="k">${NAME[k]}</span><span class="val">${c[k]}<small>/${c[k+'Max']}</small></span>${k==='ene'?`<div class="bar"><i style="width:${pct}%"></i></div>`:''}</div>`;
+  return `<aside class="sheet"><h2>Folha de Aventuras</h2>
+    ${STATS.map(statRow).join('')}
+    <div class="stat"><span class="k">Ouro</span><span class="val">${c.ouro}</span></div>
+    <div class="stat"><span class="k">Provisões</span><span class="val">${c.prov}</span></div>
+    ${c.pocao?`<div class="stat"><span class="k">${esc(pocaoInfo(c.pocao.tipo).nome)}</span><span class="val">${c.pocao.doses}<small> dose</small></span></div>`:''}
+    <div class="row" style="margin-top:8px"><button class="btn small" data-act="eat" ${c.prov<1||c.ene>=c.eneMax||inFight||S.dead?'disabled':''}>Comer provisão (+4 Energia)</button>${c.pocao?`<button class="btn small" data-act="drink" ${c.pocao.doses<1||inFight||S.dead||S.phase!=='play'?'disabled':''}>Beber poção</button>`:''}</div>
+    ${w?`<h4>Arma em uso</h4><div>${esc(w)} <span class="items b">(${c.weapons[w]>=0?'+':'−'}${Math.abs(c.weapons[w])} no ataque)</span></div>`:''}
+    <h4>Equipamento e tesouros</h4>
+    ${c.items.length?`<ul class="items">${c.items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`:'<p class="empty">Nada na mochila.</p>'}
+    <h4>Pistas e acontecimentos</h4>
+    ${c.flags.length?`<ul class="items">${c.flags.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`:'<p class="empty">Nenhuma ainda.</p>'}
+    <h4>Aflições</h4>
+    ${c.afl.length?`<ul class="items afl">${c.afl.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`:'<p class="empty">Nenhuma.</p>'}
+    <h4>Caminho</h4>
+    <div class="trail">${S.visited.length?S.visited.join(' → '):'—'}</div>
+    <h4><label for="anotacoes">Anotações</label></h4>
+    <textarea id="anotacoes" placeholder="Senhas, pistas, números que valem a pena lembrar…">${esc(notesText)}</textarea>
+  </aside>`;
+}
+
+function fightHTML(s){
+  const f=S.fight, fighting=!f.done&&!f.goto;
+  let rows='';
+  s.groups.forEach((G,g)=>{
+    if(s.groups.length>1||G.foes.length>1) rows+=`<tr class="grp"><td colspan="3">${s.groups.length>1?'Luta '+(g+1):'Luta'}${G.foes.length>1?' · todos juntos':''}</td></tr>`;
+    G.foes.forEach((foe,i)=>{
+      const hp=f.hp[g][i], down=hp<=0, isNow=fighting&&g===f.g, tgt=isNow&&i===f.target&&G.foes.length>1;
+      rows+=`<tr class="${down?'down':(isNow?'now':(g>f.g?'later':''))}"><td>${esc(foe.name)}${tgt?'<span class="tag">alvo</span>':''}</td><td class="num">${foe.hab}</td><td class="num">${Math.max(0,hp)}</td></tr>`;
+    });
+  });
+  const G=s.groups[Math.min(f.g,s.groups.length-1)], alive=f.hp[Math.min(f.g,s.groups.length-1)].map((h,i)=>h>0?i:-1).filter(i=>i>=0);
+  const sel=fighting&&alive.length>1?`<div class="target"><label for="alvo">Atacar:</label><select id="alvo">${alive.map(i=>`<option value="${i}" ${i===f.target?'selected':''}>${esc(G.foes[i].name)}</option>`).join('')}</select><span class="eyebrow">os outros também atacam você</span></div>`:'';
+  return `<section class="panel"><h3>Combate</h3>
+    <div class="tablewrap"><table class="foes"><thead><tr><th>Criatura</th><th class="num">Habilidade</th><th class="num">Energia</th></tr></thead><tbody>${rows}</tbody></table></div>
+    ${sel}
+    ${f.log.length?`<div class="log">${f.log.slice(0,4).map(l=>`<div>${l}</div>`).join('')}</div>`:''}
+    ${S.dead?'':fighting?`<div class="row">
+      <button class="btn primary" data-act="attack">Atacar (rolar dados)</button>
+      <button class="btn" data-act="fluck" ${f.last&&S.char.sor>0?'':'disabled'}>Testar a Sorte ${f.last==='hit'?'(ferir mais)':f.last==='hurt'?'(reduzir ferimento)':''}</button>
+      ${s.flee?`<button class="btn" data-act="flee">Fugir para ${esc(s.flee)} (−2 Energia)</button>`:''}
+    </div>`:f.goto?`<div class="row"><button class="btn primary" data-act="go" data-to="${esc(f.goto)}">Vá para ${esc(f.goto)}</button></div>`:'<p class="res-ok" style="margin:0">Vitória. Siga adiante.</p>'}
+  </section>`;
+}
+
+function renderPlay(){
+  let page='';
+  if(!book.order.length){
+    page=`<p class="eyebrow">Nada para jogar</p><p>A história ainda não tem seções. Volte para <b>Escrever</b> e crie a primeira com <code>## 1</code>.</p>`;
+  } else if(S.phase==='start'){
+    const r=S.roll, ks=STATS.filter(k=>book.formula[k]);
+    page=`<p class="eyebrow">Novo jogo</p><h2 class="book-title">${esc(book.title)}</h2>${book.autor?`<p class="byline">Escrito por <b>${esc(book.autor)}</b></p>`:''}
+      <div class="text">${prose(book.intro)}</div>
+      <div class="rules"><p>${ks.map(k=>`<b>${NAME[k]}</b> = ${formulaText(k)}`).join(' · ')}</p>
+      <p>Você começa com ${book.prov} provisões${book.ouro?` e ${book.ouro} de ouro`:''}${book.equip.length?`, levando ${book.equip.map(esc).join(', ')}`:''}.</p></div>
+      ${r?`<div class="rollgrid">${ks.map(k=>`<div class="rollcell"><div class="eyebrow">${NAME[k]}</div><div class="v">${S.char[k]}</div><div class="how">${dice(r[k])}${book.formula[k][1]?' + '+book.formula[k][1]:''}</div></div>`).join('')}</div>`:''}
+      ${saved?`<div class="panel"><h3>Aventura em andamento</h3><p style="margin:0 0 12px">Você parou na seção ${esc(saved.S.sec)}, com Energia ${saved.S.char.ene}.</p><button class="btn primary" data-act="continue">Continuar de onde parei</button></div>`:''}
+      <p id="savestate" class="savestate"></p>
+      ${r&&book.pocoes.length?`<div class="panel"><h3>Escolha uma poção</h3><p style="margin:0 0 12px">Você pode levar uma garrafa, com uma dose. Ela pode ser bebida a qualquer momento, menos durante um combate.</p><div class="choices" style="margin:0">${book.pocoes.map(pp=>`<button class="choice" data-act="pocao" data-p="${esc(pp)}" aria-pressed="${S.char.pocao&&S.char.pocao.tipo===pp}" style="${S.char.pocao&&S.char.pocao.tipo===pp?'border-color:var(--accent);background:var(--accent-soft)':''}"><span class="n">${S.char.pocao&&S.char.pocao.tipo===pp?'✓':'·'}</span><span>${esc(pocaoInfo(pp).nome)}<span class="req">${esc(pocaoInfo(pp).txt)}</span></span></button>`).join('')}</div></div>`:''}
+      <div class="row">${r?`<button class="btn primary" data-act="begin" ${book.pocoes.length&&!S.char.pocao?'disabled':''}>Começar na seção ${esc(book.order[0])}</button><button class="btn" data-act="roll">Rolar de novo</button>`:`<button class="btn primary" data-act="roll">Rolar os atributos</button>`}</div>`;
+  } else {
+    const s=book.secs[S.sec];
+    page=`<div class="secnum">${esc(S.sec)}</div>`;
+    if(!s){page+=`<p>A seção ${esc(S.sec)} não existe no texto. Confira os números em <b>Escrever</b>.</p>`;}
+    else{
+      page+=`<div class="text">${prose(s.lines)}</div>`;
+      if(S.notes.length) page+=`<div class="notes">${S.notes.map(n=>`<span class="chip ${n.cls}">${esc(n.t)}</span>`).join('')}</div>`;
+      const f=S.fight, blocking=f&&(!f.done);
+      if(f) page+=fightHTML(s);
+      if(!S.dead && !blocking){
+        s.tests.forEach((t,i)=>{
+          const res=S.tests[i], nm=NAME[t.kind];
+          page+=`<section class="panel"><h3>Teste sua ${nm}</h3>`;
+          if(!res) page+=`<p style="margin:0 0 12px">Role dois dados. Se o total for igual ou menor que sua ${nm} (${S.char[t.kind]??0}), você passa.${t.kind==='sor'?' Cada teste custa 1 ponto de Sorte, e com Sorte 1 ou menos o resultado é sempre azar.':''}</p><button class="btn primary" data-act="test" data-i="${i}">Rolar 2 dados</button>`;
+          else page+=`<div class="log"><div>${dice(res.r)} = <b>${res.sum}</b> contra ${res.target}${res.auto?' (azar automático)':''}<br>${res.ok?'<span class="res-ok">'+(t.kind==='sor'?'Você teve sorte.':'Você conseguiu.')+'</span>':'<span class="res-bad">'+(t.kind==='sor'?'Você foi azarado.':'Você falhou.')+'</span>'}</div></div><button class="btn primary" data-act="go" data-to="${esc(res.to)}">Vá para ${esc(res.to)}</button>`;
+          page+=`</section>`;
+        });
+        if(s.choices.length) page+=`<ul class="choices">${s.choices.map(c=>{
+          const ok=c.reqs.every(reqOk);
+          return `<li><button class="choice" data-act="go" data-to="${esc(c.to)}" ${ok?'':'disabled'}><span class="n">${esc(c.to)}</span><span>${esc(c.label)}${(t=>t?`<span class="req">${esc(t)}</span>`:'')(c.reqs.filter(r=>!(r.startsWith('!')&&reqOk(r))).map(r=>reqText(r,reqOk(r))).join(' · '))}</span></button></li>`;}).join('')}</ul>`;
+        if(s.end) page+=`<div class="endcard"><p class="big">Fim</p><p>${esc(s.end)}</p><button class="btn primary" data-act="restart">Jogar de novo</button></div>`;
+      }
+      if(S.dead) page+=`<div class="endcard"><p class="big">Sua Energia chegou a zero</p><p>A aventura termina aqui. Role novos atributos e tente outro caminho.</p><button class="btn primary" data-act="restart">Jogar de novo</button></div>`;
+    }
+    page+=`<div class="authorbar row"><button class="btn small" data-act="restart" id="btn-restart">Recomeçar do zero</button><span id="savestate" class="savestate"></span></div>`;
+  }
+  app.innerHTML=`<div class="play"><div class="page">${page}</div>${sheetHTML()}</div>`;
+}
+
+function renderEditor(){
+  app.innerHTML=`<div class="editor">
+    <div class="ed-main">
+      <div class="row">
+        <button class="btn primary" data-act="playnow">Jogar esta história</button>
+        <button class="btn" data-act="copy">Copiar texto</button>
+        <button class="btn" data-act="open">Abrir arquivo .txt</button>
+        <button class="btn" data-act="load" data-which="aventura">Carregar O Castelo de Vargrav</button>
+        <button class="btn" data-act="load" data-which="exemplo">Carregar exemplo curto</button>
+      </div>
+      <label for="src" class="eyebrow">Texto da história</label>
+      <textarea id="src" spellcheck="false"></textarea>
+      <div class="status" id="status">O texto fica salvo neste navegador. Para guardar uma cópia, use Copiar texto e cole num arquivo.</div>
+    </div>
+    <div class="ed-side">
+      <section class="box"><h3>Verificação</h3><div id="check"></div></section>
+      <section class="box ref"><h3>Como escrever</h3>
+        <h4>Cabeçalho (antes da seção 1)</h4>
+        <dl>
+          <dt>Título: Nome do livro</dt><dd>O texto solto antes da primeira seção vira a introdução.</dd>
+          <dt>Habilidade: 1d6+6
+Energia: 2d6+12
+Sorte: 1d6+6
+Fé: 1d6+3</dt><dd>Como rolar cada atributo. A linha de Fé é opcional e ativa esse atributo. Habilidade, Energia e Sorte não passam do valor inicial; a Fé pode passar.</dd>
+          <dt>Equipamento: Espada, Escudo, Lanterna
+Provisões: 10
+Ouro: 0</dt><dd>O que o herói leva ao começar.</dd>
+        </dl>
+        <h4>Nas seções</h4>
+        <dl>
+          <dt>## 12</dt><dd>Começa a seção 12. Tudo abaixo é o texto dela, até a próxima.</dd>
+          <dt>-> 30 Abrir a porta</dt><dd>Escolha que leva à seção 30.</dd>
+          <dt>-> 45 [Chave de Prata] Usar a chave
+-> 46 [!Tocha] Seguir no escuro
+-> 47 [fé 7+] Erguer o crucifixo
+-> 48 [Estaca] [Crucifixo] Destruir o vampiro</dt><dd>Escolha condicionada: ter um item, pista ou aflição; não ter; ou ter um atributo no mínimo naquele valor. Vários colchetes exigem todos ao mesmo tempo.</dd>
+          <dt>ganha: Corda
+perde: Tocha</dt><dd>Adiciona ou tira um item.</dd>
+          <dt>arma: Espada Mágica | +2</dt><dd>Arma com bônus no ataque. Só conta a melhor arma que você carrega.</dd>
+          <dt>anota: Segredo da porta</dt><dd>Registra uma pista ou acontecimento. Não ocupa a mochila, mas pode ser exigido nas escolhas.</dd>
+          <dt>aflição: Maldição da lua
+cura: Maldição da lua</dt><dd>Anota ou remove uma aflição da ficha.</dd>
+          <dt>energia: -2
+sorte: +1
+fé: +1
+ouro: +10
+provisões: -1</dt><dd>Muda o atributo ao entrar na seção (respeitando o valor inicial).</dd>
+          <dt>habilidade inicial: +1</dt><dd>Aumenta o valor inicial e o atual, para quando a história permitir passar do limite.</dd>
+          <dt>combate: Lobo | 7 | 6
+combate: Ogro | 9 | 10 -> 80</dt><dd>Nome | Habilidade | Energia. Linhas separadas são lutas uma depois da outra. Com <code>-> 80</code>, vencer leva à seção 80; sem isso, as escolhas aparecem depois da vitória.</dd>
+          <dt>combate: Bandido | 7 | 6
+combate junto: Bandido | 6 | 5</dt><dd>Criaturas que atacam ao mesmo tempo. Você escolhe o alvo; as outras também rolam contra você, e você só se defende delas.</dd>
+          <dt>fuga -> 15</dt><dd>Permite fugir do combate (custa 2 de Energia).</dd>
+          <dt>teste de sorte: 40 | 50
+teste de habilidade: 40 | 50
+teste de fé: 40 | 50</dt><dd>Rola 2 dados contra o atributo. Passou vai para 40, falhou vai para 50.</dd>
+          <dt>fim: Você venceu!</dt><dd>Final da história, com mensagem.</dd>
+          <dt>*itálico*  **negrito**</dt><dd>Linha em branco separa parágrafos.</dd>
+        </dl>
+      </section>
+    </div>
+  </div>`;
+  $('#src').value=src;
+  renderCheck();
+}
+function renderCheck(){
+  const el=$('#check'); if(!el) return;
+  const probs=check(book), n=book.order.length;
+  const ends=book.order.filter(id=>book.secs[id].end).length;
+  const fights=book.order.reduce((a,id)=>a+book.secs[id].groups.reduce((x,g)=>x+g.foes.length,0),0);
+  el.innerHTML=`<div class="counts">${n} ${n===1?'seção':'seções'} · ${ends} ${ends===1?'final':'finais'} · ${fights} ${fights===1?'criatura':'criaturas'}</div>`+
+    (probs.length?`<ul class="problems">${probs.map(p=>`<li class="${p.err?'err':''}">${esc(p.msg)}</li>`).join('')}</ul>`:`<p class="check-ok" style="margin:0">Todos os números levam a seções que existem.</p>`);
+}
+function status(t){const el=$('#status');if(el)el.textContent=t;}
+
+/* ---------- Eventos ---------- */
+let resetArmed=0, timer=0;
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b||b.disabled) return;
+  const a=b.dataset.act;
+  if(a==='music'){const st=Music.toggle();b.setAttribute('aria-pressed',String(st));b.querySelector('span').textContent=st?'Desligar música':'Ligar música';if(!st&&!Music.on&&!(window.AudioContext||window.webkitAudioContext))b.querySelector('span').textContent='Sem áudio neste navegador';return;}
+  if(a==='view'){view=b.dataset.v;if(view==='play')book=parse(src);render();}
+  else if(a==='continue'){if(saved){S=saved.S;notesText=saved.notesText||'';saved=null;render();window.scrollTo({top:0});}}
+  else if(a==='roll'){rollChar();render();}
+  else if(a==='begin'){S.visited=[];enter(book.order[0]);}
+  else if(a==='go'){enter(b.dataset.to);}
+  else if(a==='attack'){attack();}
+  else if(a==='fluck'){luckInFight();}
+  else if(a==='flee'){flee();}
+  else if(a==='test'){runTest(+b.dataset.i);}
+  else if(a==='eat'){eat();}
+  else if(a==='drink'){drink();}
+  else if(a==='pocao'){if(S.char){S.char.pocao={tipo:b.dataset.p,doses:1};render();}}
+  else if(a==='restart'){
+    const inGame=S.phase==='play'&&!S.dead&&!(book.secs[S.sec]&&book.secs[S.sec].end);
+    if(inGame&&b.id==='btn-restart'&&resetArmed!=='restart'){resetArmed='restart';b.textContent='Clique de novo para apagar o progresso';setTimeout(()=>{if(resetArmed==='restart')resetArmed=0;const x=$('#btn-restart');if(x)x.textContent='Recomeçar do zero';},5000);return;}
+    resetArmed=0;S=freshState();lastSnap='';saved=null;try{localStorage.removeItem(SAVE)}catch(e){}apagarNuvem();render();window.scrollTo({top:0});
+  }
+  else if(a==='jump'){const v=($('#pular').value||'').trim();if(!v)return;if(!S.char)rollChar();S.dead=false;enter(v);}
+  else if(a==='playnow'){book=parse(src);S=freshState();view='play';render();window.scrollTo({top:0});}
+  else if(a==='open'){$('#arquivo').click();}
+  else if(a==='copy'){
+    const ta=$('#src');
+    const fallback=()=>{ta.focus();ta.select();status('Texto selecionado. Use Ctrl+C (ou Copiar no celular).');};
+    try{navigator.clipboard.writeText(src).then(()=>status('Texto copiado. Cole num arquivo .txt para guardar.'),fallback);}catch(err){fallback();}
+  }
+  else if(a==='load'){
+    const w=b.dataset.which, txt=w==='aventura'?aventura:exemplo, label=w==='aventura'?'Carregar O Castelo de Vargrav':'Carregar exemplo curto';
+    if(src===txt){status('Esse texto já está no editor.');return;}
+    if(resetArmed===w){src=txt;store.set(KEY,src);book=parse(src);S=freshState();renderEditor();status(w==='aventura'?'O Castelo de Vargrav carregado.':'Exemplo curto carregado.');resetArmed=0;}
+    else{resetArmed=w;b.textContent='Clique de novo: isso substitui o texto atual';setTimeout(()=>{if(resetArmed===w)resetArmed=0;const x=document.querySelector(`[data-which="${w}"]`);if(x)x.textContent=label;},5000);}
+  }
+});
+document.addEventListener('change',e=>{if(e.target.id==='alvo'&&S.fight){S.fight.target=+e.target.value;S.fight.last=null;render();}});
+document.addEventListener('input',e=>{
+  if(e.target.id==='src'){src=e.target.value;clearTimeout(timer);timer=setTimeout(()=>{store.set(KEY,src);book=parse(src);renderCheck();status('Salvo neste navegador.');},350);}
+  if(e.target.id==='volume'){Music.volume(+e.target.value/100);store.set('livrojogo.volume',e.target.value);}
+  if(e.target.id==='anotacoes'){notesText=e.target.value;store.set(NKEY,notesText);}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='pular'){e.preventDefault();document.querySelector('[data-act="jump"]').click();}});
+$('#arquivo').addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{src=String(r.result);store.set(KEY,src);book=parse(src);S=freshState();view='edit';render();status(`Arquivo "${f.name}" aberto.`);};
+  r.readAsText(f,'utf-8'); e.target.value='';
+});
+
+book=parse(src);
+S=freshState();
+let saved=null;
+try{const j=JSON.parse(store.get(SAVE)||'null');if(validSave(j))saved=j;}catch(e){}
+{const v=store.get('livrojogo.volume');if(v!=null){$('#volume').value=v;Music.volume(+v/100);}}
+render();
+iniciarConta();
+})();
+</script>
+
+</body>
+</html>
