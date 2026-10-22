@@ -1,0 +1,3181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="RPG Solo no Deck e Dados: jogue As Minas da Garganta Rubra, um livro-jogo de aventura subterrânea com dados, combates e Folha de Aventuras. Grátis, direto no navegador.">
+<meta property="og:title" content="RPG Solo — As Minas da Garganta Rubra">
+<meta property="og:description" content="Um livro-jogo de aventura subterrânea com 400 seções. Jogue grátis no Deck e Dados.">
+<meta property="og:image" content="https://deckedados.com.br/og-image.jpg">
+<meta property="og:url" content="https://deckedados.com.br/rpgsolo/minas-da-garganta-rubra.html">
+<link rel="icon" href="/logo-icon.png">
+<meta name="author" content="Maicon Kuzer">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Game","name":"As Minas da Garganta Rubra","genre":"Livro-jogo de aventura subterrânea","author":{"@type":"Person","name":"Maicon Kuzer"},"publisher":{"@type":"Organization","name":"Deck e Dados","url":"https://deckedados.com.br/"},"url":"https://deckedados.com.br/rpgsolo/minas-da-garganta-rubra.html","inLanguage":"pt-BR","isAccessibleForFree":true}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<title>RPG Solo — As Minas da Garganta Rubra | Deck e Dados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700;800&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: livro aberto sobre a mesa de feltro do Deck e Dados — leitura à esquerda, Folha de Aventuras à direita; empilha no celular. Tema escuro único, como o site. */
+:root{
+  --paper:#132c2a; --paper-2:#1b3a37; --sheet:#173230; --ink:#f1ede2; --ink-2:#a9bab5; --rule:rgba(241,237,226,0.14);
+  --accent:#c9a24b; --accent-soft:rgba(201,162,75,0.14); --on-accent:#132c2a; --ok:#7cc59e; --bad:#e58a7e; --edge:#8a7134;
+  --display:"Alegreya SC", Georgia, "Times New Roman", serif;
+  --body:"Alegreya", Georgia, "Times New Roman", serif;
+  --mono:"IBM Plex Mono", "Courier New", monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.wrap{max-width:1120px;margin:0 auto}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:22px 18px;border-bottom:1px solid var(--rule);margin-bottom:28px}
+.brand{font-family:var(--display);font-weight:800;font-size:1.45rem;letter-spacing:.02em;margin:0;line-height:1}
+.brand small{display:block;font-family:var(--body);font-weight:400;font-size:.85rem;color:var(--ink-2);letter-spacing:0;margin-top:6px}
+.tabs{display:flex;border:1px solid var(--rule);border-radius:999px;padding:3px;gap:2px;background:var(--paper-2)}
+.controls{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.audio{display:flex;gap:8px;align-items:center}
+.audio input{width:90px;accent-color:var(--accent)}
+#musica[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.tab{border:0;background:transparent;padding:7px 18px;border-radius:999px;cursor:pointer;font-family:var(--display);font-weight:700;font-size:1rem;color:var(--ink-2)}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--ink);background:transparent;color:var(--ink);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:1rem;line-height:1.2;text-align:left}
+.btn:hover:not(:disabled){background:var(--accent-soft)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:500}
+.btn.primary:hover:not(:disabled){filter:brightness(1.08);background:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.small{padding:5px 11px;font-size:.88rem}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+.play{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:40px;align-items:start}
+.page{min-width:0;max-width:68ch}
+.secnum{font-family:var(--display);font-weight:800;font-size:4.2rem;line-height:1;text-align:center;color:var(--accent);margin:4px 0 22px;font-variant-numeric:lining-nums}
+.secnum::after{content:"";display:block;width:56px;height:1px;background:var(--rule);margin:18px auto 0}
+.text p{margin:0 0 1em}
+.byline{margin:-10px 0 18px;font-family:var(--mono);font-size:.8rem;letter-spacing:.06em;color:var(--ink-2)}
+.byline b{color:var(--accent);font-weight:500}
+.book-title{font-family:var(--display);font-weight:800;font-size:clamp(2rem,5vw,2.9rem);line-height:1.05;margin:0 0 18px;text-wrap:balance}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+.notes{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 18px}
+.chip{font-family:var(--mono);font-size:.78rem;padding:3px 9px;border-radius:4px;border:1px solid var(--rule);background:var(--paper-2)}
+.chip.good{color:var(--ok);border-color:currentColor}
+.chip.bad{color:var(--bad);border-color:currentColor}
+
+.choices{list-style:none;padding:0;margin:26px 0 0;display:grid;gap:10px}
+.choice{width:100%;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:baseline;padding:12px 16px;border:1px solid var(--rule);background:var(--sheet);border-radius:6px;cursor:pointer;text-align:left}
+.choice:hover:not(:disabled){border-color:var(--accent)}
+.choice .n{font-family:var(--display);font-weight:800;font-size:1.25rem;color:var(--accent);min-width:2ch;text-align:right;font-variant-numeric:tabular-nums}
+.choice .req{display:block;font-family:var(--mono);font-size:.75rem;color:var(--ink-2);margin-top:2px}
+.choice:disabled{cursor:not-allowed;opacity:.55}
+
+.panel{border:1px solid var(--ink);border-radius:8px;padding:18px;margin:24px 0 0;background:var(--sheet)}
+.panel h3{font-family:var(--display);font-weight:700;font-size:1.2rem;margin:0 0 12px}
+.tablewrap{overflow-x:auto;margin-bottom:14px}
+.foes{width:100%;border-collapse:collapse;font-size:.95rem}
+.foes th{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);font-weight:500;text-align:left;padding:4px 6px;border-bottom:1px solid var(--rule)}
+.foes td{padding:7px 6px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+.foes td.num,.foes th.num{text-align:right;font-family:var(--mono)}
+.foes tr.grp td{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);padding-top:12px}
+.foes tr.down td{color:var(--ink-2);text-decoration:line-through}
+.foes tr.later td{color:var(--ink-2)}
+.foes tr.now td:first-child{font-weight:700}
+.foes .tag{font-family:var(--mono);font-size:.7rem;color:var(--accent);margin-left:6px;text-decoration:none}
+.log{font-family:var(--mono);font-size:.82rem;line-height:1.55;background:var(--paper-2);border-radius:6px;padding:10px 12px;margin-bottom:14px;overflow-x:auto}
+.log>div+div{margin-top:6px;padding-top:6px;border-top:1px dashed var(--rule)}
+.die{display:inline-grid;place-items:center;width:1.6em;height:1.6em;border:1.5px solid var(--ink);border-radius:5px;font-family:var(--mono);font-weight:600;font-size:.85rem;margin-right:3px;background:var(--sheet);vertical-align:middle}
+.res-ok{color:var(--ok);font-weight:600}.res-bad{color:var(--bad);font-weight:600}
+.target{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;font-size:.95rem}
+.target select{padding:6px 10px;border:1px solid var(--ink);border-radius:6px;background:var(--sheet)}
+
+.endcard{text-align:center;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:28px 8px;margin-top:28px}
+.endcard .big{font-family:var(--display);font-weight:800;font-size:1.8rem;margin:0 0 8px}
+.endcard p{margin:0 auto 18px;max-width:46ch;color:var(--ink-2)}
+
+.rollgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin:22px 0}
+.rollcell{border:1px solid var(--rule);border-radius:8px;padding:12px;background:var(--sheet);min-width:0}
+.rollcell .v{font-family:var(--display);font-weight:800;font-size:2rem;line-height:1.1}
+.rollcell .how{font-family:var(--mono);font-size:.72rem;color:var(--ink-2)}
+.rules{font-size:.92rem;color:var(--ink-2);border-left:2px solid var(--rule);padding-left:14px;margin:18px 0}
+.rules p{margin:0 0 6px}
+
+.authorbar{margin-top:36px;padding-top:14px;border-top:1px dashed var(--rule);font-size:.88rem;color:var(--ink-2)}
+.authorbar input{width:5.5em;padding:5px 8px;border:1px solid var(--rule);border-radius:5px;background:var(--sheet);font-family:var(--mono);font-size:.88rem}
+
+.sheet{position:sticky;top:max(16px,env(safe-area-inset-top,0px));background:var(--sheet);border:1px solid var(--ink);border-radius:8px;padding:16px 18px;font-size:.95rem;min-width:0}
+.sheet h2{font-family:var(--display);font-weight:800;font-size:1.15rem;margin:0 0 12px;border-bottom:2px solid var(--ink);padding-bottom:8px}
+.stat{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:8px;padding:6px 0;border-bottom:1px solid var(--rule)}
+.stat .k{font-family:var(--display);font-weight:700}
+.stat .val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
+.stat .val small{color:var(--ink-2);font-weight:400}
+.bar{grid-column:1/-1;height:5px;border-radius:3px;background:var(--paper-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.sheet h4{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);font-weight:500;margin:14px 0 6px}
+.items{margin:0;padding-left:1.1em}
+.items li{margin:2px 0}
+.items .b{font-family:var(--mono);font-size:.78rem;color:var(--ink-2)}
+.afl li{color:var(--bad)}
+.empty{color:var(--ink-2);font-style:italic;margin:0}
+.trail{font-family:var(--mono);font-size:.8rem;color:var(--ink-2);line-height:1.6;word-break:break-word}
+.sheet textarea{width:100%;min-height:80px;border:1px solid var(--rule);border-radius:5px;background:var(--paper);padding:8px;font-size:.9rem;resize:vertical}
+
+.editor{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:28px;align-items:start}
+.ed-main{min-width:0;display:grid;gap:12px}
+#src{width:100%;min-height:62vh;border:1px solid var(--ink);border-radius:8px;background:var(--sheet);padding:16px;font-family:var(--mono);font-size:.88rem;line-height:1.6;resize:vertical;tab-size:2}
+.status{font-family:var(--mono);font-size:.78rem;color:var(--ink-2);min-height:1.2em}
+.ed-side{display:grid;gap:18px;min-width:0}
+.box{border:1px solid var(--rule);border-radius:8px;padding:14px 16px;background:var(--sheet);min-width:0}
+.box h3{font-family:var(--display);font-weight:700;font-size:1.1rem;margin:0 0 10px}
+.check-ok{color:var(--ok)}
+.problems{margin:0;padding-left:1.1em;font-size:.9rem}
+.problems li{margin:4px 0}
+.problems li.err{color:var(--bad)}
+.counts{font-family:var(--mono);font-size:.8rem;color:var(--ink-2);margin-bottom:8px}
+.ref{font-size:.88rem}
+.ref h4{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);font-weight:500;margin:16px 0 0}
+.ref h4:first-of-type{margin-top:0}
+.ref dl{margin:0}
+.ref dt{font-family:var(--mono);font-size:.8rem;background:var(--paper-2);padding:3px 7px;border-radius:4px;margin-top:10px;overflow-x:auto;white-space:pre}
+.ref dd{margin:4px 0 0;color:var(--ink-2)}
+code{font-family:var(--mono);font-size:.85em}
+
+@media (max-width:860px){
+  .play,.editor{grid-template-columns:minmax(0,1fr)}
+  .sheet{position:static;order:-1}
+  .secnum{font-size:3.4rem}
+}
+@media (max-width:440px){ body{font-size:17px} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.panel,.sheet,.choice{border-color:var(--edge)}
+.btn{border-color:var(--edge)}
+.die{border-color:var(--ink-2);background:var(--paper)}
+.site-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:14px;border-bottom:1px solid var(--rule)}
+.site-brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:1.05rem}
+.site-brand img{width:32px;height:32px;border-radius:50%;object-fit:cover}
+.site-links{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:.85rem}
+.site-links a{color:var(--ink-2)}
+.conta{color:var(--ink-2)}
+.conta b{color:var(--ink);font-weight:600}
+.brand .kicker{display:block;text-decoration:none;font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.savestate{font-family:var(--mono);font-size:.75rem;color:var(--ink-2)}
+.savestate.ok{color:var(--ok)}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <nav class="site-nav">
+    <a class="site-brand" href="/"><img src="/logo-icon.png" alt="">Deck e Dados</a>
+    <div class="site-links"><span class="conta" id="conta">Verificando login…</span><a href="/rpgsolo.html">Todas as aventuras</a><a href="/">Voltar ao site</a></div>
+  </nav>
+  <header class="top">
+    <h1 class="brand"><a class="kicker" href="/rpgsolo.html">RPG Solo</a>As Minas da Garganta Rubra<small>Um livro-jogo de aventura subterrânea · 400 seções · escrito por Maicon Kuzer</small></h1>
+    <div class="controls">
+      <div class="audio">
+        <button class="btn small" id="musica" data-act="music" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 3v11.1A3.5 3.5 0 1 0 11 17V8h8v6.1A3.5 3.5 0 1 0 21 17V3z"/></svg><span>Ligar música</span></button>
+        <input type="range" id="volume" min="0" max="100" value="55" aria-label="Volume da música">
+      </div>
+    </div>
+  </header>
+  <main id="app"></main>
+</div>
+
+<input type="file" id="arquivo" accept=".txt,.md,text/plain" hidden>
+
+<script type="text/plain" id="aventura">
+Título: As Minas da Garganta Rubra
+Autor: Maicon Kuzer
+Habilidade: 1d6+6
+Energia: 2d6+12
+Sorte: 1d6+6
+Poções: Habilidade, Força, Fortuna
+Doses de poção: 2
+Comer: só quando o texto permitir
+Equipamento: Espada, Armadura de couro, Lanterna, Mochila
+Provisões: 10
+Ouro: 6
+
+Pedra Funda é uma vila de mineiros pendurada na encosta de uma serra de pedra vermelha. Há cem anos ela vive da prata que sai da Garganta Rubra, uma mina que desce tão fundo que os velhos dizem que lá embaixo o chão é quente.
+
+Três semanas atrás, uma equipe de mineiros abriu uma parede no nível mais baixo e encontrou do outro lado túneis que nenhum homem cavou: escadas talhadas na rocha, portas com desenhos de espirais, e um ar morno que cheirava a terra molhada e a cogumelo.
+
+Desde então, os mineiros começaram a adoecer. Primeiro um sono pesado. Depois, febre. E por fim, numa noite, levantam da cama sem acordar e caminham, de pés descalços, de volta para dentro da mina. Os que foram buscá-los não voltaram. Os poucos que a vila conseguiu amarrar na cama têm pequenos cogumelos brancos nascendo atrás das orelhas.
+
+Hoje de manhã, a capataz Bruna Tavares desceu com doze homens para trazer os sonâmbulos de volta. Ninguém subiu.
+
+A doutora Íris, a única médica da vila, encontra você na estalagem. Ela está pálida de cansaço. "Os cogumelos estão amadurecendo. Pelo que vi nos doentes, quando florescerem eles soltam esporos. A mina tem poços de ar que saem bem no meio da vila." Ela olha pela janela, para a boca escura da mina. "Pela minha conta, isso acontece ao amanhecer. Se o que está lá embaixo florescer, Pedra Funda inteira vai descer para aquela mina dormindo."
+
+O conselho da vila juntou quarenta moedas de ouro. Você aceita.
+
+## 1
+A noite cai sobre Pedra Funda. Dos poços de ar da mina, espalhados entre as casas, sai um vapor morno e adocicado. A boca da Garganta Rubra fica no alto da vila, depois do galpão das máquinas. Você tem até o amanhecer.
+pode comer
+-> 207 Percorrer a vila e se preparar antes de descer
+-> 250 Ir direto para a boca da mina
+
+## 2
+Aos pés da estátua há uma inscrição em espirais que você não consegue ler, e embaixo dela, alguém escreveu com giz, em letra de mineiro: "O SOL DE PEDRA ESTÁ NO TEMPLO. É O QUE ELES USAVAM CONTRA ELA. B.T." Bruna esteve aqui e entendeu alguma coisa.
+anota: Bilhete de Bruna na Estátua
+-> 247 Voltar à praça
+
+## 3
+Quando você enfia a mão, a água fica gelada e uma mão de pedra sai do fundo e agarra seu pulso. Você se solta, mas a pele fica roxa.
+energia: -2
+sorte: -1
+anota: Pedido Feito
+-> 247 Seguir em frente
+
+## 4
+Uma cisterna redonda da cidade velha guarda água limpa e fria, vinda de uma fonte na rocha. É a primeira água boa que você vê aqui embaixo.
+pode comer
+-> 208 [!Bebeu na Cisterna] Beber à vontade
+-> 389 Voltar
+
+## 5
+O cristal é quente na mão. Quando você o aproxima de um cogumelo pequeno na parede, o cogumelo murcha e fica preto.
+ganha: Cristal de Brasa
+anota: Cristal Pego
+-> 231 Voltar
+
+## 6
+A losna amarga corta o sono como uma faca. Você cospe o pó e segue em frente, alerta.
+perde: Infusão de Losna
+cura: Esporos no Sangue
+-> 224 Seguir em frente
+
+## 7
+Dona Benta enche um frasco com a infusão escura. "Bebe de uma vez. Amarga a alma, mas acorda."
+ouro: -2
+ganha: Infusão de Losna
+-> 346 Continuar
+
+## 8
+Você embrulha com cuidado três bananas de pólvora e um rolo de pavio. Isto pode derrubar uma parede. Ou queimar alguma coisa muito bem.
+ganha: Banana de Pólvora
+ganha: Pavio Longo
+anota: Pólvora Recolhida
+-> 318 Sair
+
+## 9
+Você limpa e enfaixa as piores feridas.
+energia: +4
+anota: Caixa de Socorros Usada
+-> 86 Continuar
+
+## 10
+A máscara segura o pó. Você recua e ele assenta no chão.
+-> 231 Voltar
+
+## 11
+Seus dedos encontram algo frio e liso. Depois, algo vivo, que morde. Você puxa o braço com marcas de dentes pequenos e agudos.
+energia: -2
+-> 115 Voltar à porta
+
+## 12
+A espada de bronze é leve e bem equilibrada. Quando você a ergue, o musgo azul da parede brilha mais forte, como se a reconhecesse.
+arma: Espada de Bronze | +1
+anota: Arsenal Visitado
+-> 247 Sair
+
+## 13
+Você luta segurando na corda com uma mão, enquanto a ponte balança.
+combate: Morcegos da Fenda | 6 | 8
+-> 387 Terminar a travessia
+
+## 14
+Atrás das tábuas, a galeria está parcialmente desmoronada. Você se espreme entre pedras soltas. De repente, ouve um ruído de patas: dezenas de ratos enormes, de pelo branco e olhos vermelhos, saem das frestas.
+combate: Ratazanas da Mina | 5 | 8
+fuga -> 140
+-> 310 Continuar pela galeria
+
+## 15
+Uma galeria do nível cinco está coberta de cristais vermelhos que brilham sozinhos, como brasas. O calor aqui é forte. No meio deles, um cristal maior está solto no chão.
+-> 5 Pegar o cristal maior
+-> 231 Voltar
+
+## 16
+Cada raiz cortada solta uma seiva branca que arde na pele. Leva muito tempo até você abrir uma passagem.
+energia: -3
+-> 378 Passar pela abertura
+
+## 17
+Você acende um punhado de fibra seca com a pederneira e o atira. A criatura de fungo grita com um som de folha amassada e se encolhe, queimando, até virar um monte de cinzas.
+-> 34 Revirar as barracas
+
+## 18
+Tonico hesita, depois corre para a saída. Antes de ir, ele lhe dá o que tem no bolso: um pedaço de giz de mineiro. "Para marcar o caminho. Meu pai sempre diz."
+ganha: Giz de Mineiro
+anota: Tonico Salvo
+-> 386 Continuar
+
+## 19
+A casa redonda é baixa, e você precisa se curvar para entrar. Lá dentro há móveis de pedra pequenos, como de criança, potes de barro e uma lareira apagada há séculos. Num canto, uma rede de dormir de fibra de cogumelo ainda pendurada.
+-> 235 [!Potes Abertos] Examinar os potes
+-> 176 Examinar a lareira
+-> 247 Sair para a rua
+
+## 20
+O templo é uma sala redonda, de teto em cúpula, com um buraco no alto por onde nada entra: não há céu aqui embaixo. No centro, sobre um pedestal, está uma esfera de cristal do tamanho de uma cabeça, opaca e cinzenta. Em volta dela, no chão, estão os ossos de dezenas de figuras pequenas, deitadas em círculo, como se tivessem morrido rezando.
+-> 156 [!Sol de Pedra] Tocar na esfera
+-> 225 [!Sol de Pedra] [Lamparina de Santa Bárbara] Aproximar a lamparina da esfera
+-> 365 [!Sol de Pedra] [Filhote de Lagarto de Fogo] Deixar o filhote de lagarto subir na esfera
+-> 247 Sair do templo
+
+## 21
+Uma galeria do nível um tem um vagonete tombado sobre trilhos quebrados. Debaixo dele, algo brilha.
+-> 65 Levantar o vagonete
+-> 140 Voltar
+
+## 22
+O túnel do rio é estreito, mas é perto. Vocês mergulham na água até os joelhos e correm curvados. A explosão vem atrás de vocês como um trovão, e uma onda de água e poeira os empurra para fora do túnel, na cidade baixa.
+-> 285 Olhar para trás
+
+## 23
+A Fenda é uma rachadura natural na rocha, tão larga que a luz da lanterna não alcança o outro lado. Uma ponte de corda e tábuas a atravessa, balançando com uma corrente de ar quente que sobe lá de baixo. Do fundo vem um brilho vermelho e fraco, como de brasas. Na beira, presa a uma estaca, está uma corda que desce pela parede da Fenda.
+-> 388 Atravessar a ponte de corda
+-> 131 Descer pela corda presa na estaca
+-> 49 [Giz de Mineiro] Marcar o lugar com giz antes de seguir
+-> 56 Voltar
+
+## 24
+A escada fica cada vez mais velha. Entre o nível três e o quatro, um degrau se parte sob seu pé.
+teste de habilidade: 56 | 73
+
+## 25
+A ficha de bronze cai no painel com um tilintar e a gaiola para suavemente no nível dois. A grade se abre sozinha.
+-> 318 Sair no nível dois
+
+## 26
+A porta é de ferro e a fechadura é boa. Você bate até perceber que, se isso der faísca, metade da serra pode cair na sua cabeça. Melhor não.
+-> 318 Desistir
+
+## 27
+O cogumelo explode numa nuvem enorme de pó dourado.
+-> 334 [Máscara de Íris] Confiar na máscara
+-> 334 [Véu Dourado] Cobrir o rosto com o véu dourado
+-> 399 Respirar sem querer
+
+## 28
+"Cuidado com o elevador", diz Joaquim. "Se o cabo estiver ruim, usa a escada de serviço. E no nível três tem a Fenda, uma rachadura natural que ninguém nunca achou o fundo. Tem uma ponte de corda. Já era velha quando eu era moço." Ele bebe. "E se encontrar meu neto, Tonico, diz pra ele que o avô espera."
+anota: Neto de Joaquim
+-> 248 Agradecer
+
+## 29
+Você canta por alguns minutos antes de acordar com um susto, de pé no meio dos mineiros, sem lembrar como chegou ali.
+energia: -2
+aflição: Esporos no Sangue
+-> 224 Afastar-se depressa
+
+## 30
+Você escorrega e cai no lago. A água é morna e grossa como sopa, e o pó dourado entra pela sua boca. Você sai do outro lado cuspindo.
+energia: -2
+aflição: Esporos no Sangue
+-> 297 Chegar à parede de raízes
+
+## 31
+Você se encolhe num nicho. A procissão passa a um palmo do seu rosto. Nenhum deles o vê. Quando o último passa, você respira de novo.
+-> 139 Voltar à galeria
+
+## 32
+"Errado." O degrau sob seus pés afunda e você cai até a cintura num buraco cheio de pedras afiadas.
+energia: -3
+anota: Enigma Resolvido
+-> 247 Sair, mancando
+
+## 33
+O espírito se desfaz. O cetro de cristal brilha fraco na sua mão. Não é uma arma, mas a luz dele faz os fungos recuarem.
+ganha: Cetro de Cristal
+anota: Ossário Visitado
+-> 389 Sair
+
+## 34
+Numa barraca há potes de sal grosso, branco e puro, que o povo antigo usava para conservar cogumelos. Noutra, um colar de contas de pedra azul.
+anota: Mercado Limpo
+-> 175 [!Sal de Pedra] Encher um saquinho com sal
+-> 162 [!Colar de Contas Azuis] Pegar o colar
+-> 247 Voltar à praça
+
+## 35
+Você aperta a manga contra o nariz e entra. O pó brilha em volta de você como neve dourada.
+teste de sorte: 224 | 399
+
+## 36
+Com os guardiões em pedaços, você empurra a porta de bronze. Ela é pesada, mas abre.
+-> 20 Entrar no templo
+
+## 37
+Seus braços cansam e você tem que parar várias vezes, pendurado no escuro, respirando aquele ar doce.
+energia: -2
+-> 320 Continuar descendo
+
+## 38
+A anciã desenha na terra com o dedo: a cidade, o jardim, um coração com raízes, e um caminho que passa por baixo, pelo rio. Depois tira do pescoço um apito de osso e o coloca na sua mão, fazendo o gesto de soprar. Por fim, enche sua mochila com cogumelos azuis.
+ganha: Apito de Osso
+ganha: Cogumelo Azul
+anota: Caminho do Rio
+anota: Aliado dos Pálidos
+sorte: +1
+-> 266 Agradecer
+
+## 39
+Você golpeia antes que ela acorde direito. Mesmo assim, ela luta.
+combate: Salamandra Cega | 7 | 7
+-> 368 Pegar a picareta
+
+## 40
+O filhote de lagarto de fogo morde seu pescoço, quente como brasa. A dor queima o sono para fora de você.
+energia: -1
+cura: Esporos no Sangue
+-> 243 Levantar-se
+
+## 41
+Um dos Pálidos colhe um punhado de cogumelos azuis e os coloca na sua mão, sorrindo com dentes pequenos.
+ganha: Cogumelo Azul
+-> 126 Continuar
+
+## 42
+"Meu nome é Severino", diz o homem. "A gente desceu atrás dos sonâmbulos e encontrou eles numa caverna de cogumelos, todos de pé, cantando. Bruna mandou acender as tochas. Aí o teto veio abaixo e eu fiquei aqui. Os outros desceram. Bruna gritou para eles voltarem, mas eles não voltaram. Estavam cantando também."
+-> 120 Levantar a viga
+
+## 43
+Os mineiros caem desacordados no musgo e logo voltam a cantar baixinho, de olhos fechados, como se nada tivesse acontecido. Você percebe que não pode salvá-los um por um. Precisa cortar o mal na raiz.
+-> 224 Seguir em frente
+
+## 44
+As pedras estão escorregadias. Quando você pisa na quarta, o pó dourado se levanta numa nuvem.
+-> 202 [Véu Dourado] Cobrir o rosto com o véu dourado
+-> 202 [Máscara de Íris] Confiar na máscara
+-> 202 [Máscara de Mineiro] Confiar na máscara
+teste de habilidade: 297 | 30
+
+## 45
+O mapa mostra os cinco níveis da mina, ligados por um elevador de gaiola e por escadas de serviço. No nível cinco, alguém desenhou a lápis um buraco na parede e, depois dele, uma rede de túneis com uma anotação: "Cidade? Escadas que descem. NÃO DESCER SEM LUZ."
+ganha: Mapa da Mina
+-> 187 Continuar
+
+## 46
+Você ajusta a máscara no rosto. O cheiro doce some quase todo, e o canto fica mais baixo, como se alguém tivesse fechado uma porta. Você entra no jardim.
+-> 224 Seguir em frente
+
+## 47
+O cristal de brasa encosta na pedra branca e começa a brilhar cada vez mais forte, até ficar branco de calor. As raízes em volta pegam fogo. O coração racha com um estalo e a chama o engole por dentro.
+perde: Cristal de Brasa
+-> 285 Ver o fogo terminar
+
+## 48
+O vestiário do nível dois tem bancos e armários de madeira com nomes pintados. Muitos estão abertos e vazios. Alguns estão trancados.
+-> 90 [!Armários Abertos] Forçar os armários trancados
+-> 160 Descansar no banco e comer
+-> 318 Sair
+
+## 49
+Você desenha uma seta grande no chão, apontando para a saída. Se tiver que voltar correndo, vai saber o caminho.
+anota: Caminho Marcado
+-> 23 Continuar
+
+## 50
+Você cai entre as cordas e fica pendurado pelos braços sobre o abismo, com os morcegos mordendo suas costas. Com esforço, se puxa e chega ao outro lado.
+energia: -4
+-> 387 Arrastar-se para a pedra firme
+
+## 51
+O poço inundado é uma galeria que desce e afunda numa água negra e parada. Bolhas sobem devagar. Na margem há uma bota de mineiro e um capacete com uma lamparina ainda acesa, debaixo d'água, iluminando o fundo.
+-> 170 Mergulhar para pegar o que brilha no fundo
+-> 380 Esperar e observar as bolhas
+-> 56 Voltar
+
+## 52
+Uma criatura de fungo do tamanho de um urso se ergue entre os cogumelos, com braços de raízes grossas e o chapéu largo cheio de dentes. Ela fareja o ar e vira para você.
+combate: Fungoide Gigante | 9 | 12
+fuga -> 224
+-> 177 Examinar a criatura caída
+
+## 53
+O caminho do meio leva direto à luz. Os cogumelos ficam maiores e as raízes, mais grossas. Na entrada de uma caverna redonda, de onde sai a luz branca, quatro mineiros cobertos de fungo montam guarda com lanças feitas de cabos de picareta.
+-> 69 Lutar com os guardas
+-> 317 [Apito de Osso] Soprar o apito de osso dos Pálidos
+-> 239 [Sol de Pedra] Erguer o Sol de Pedra
+
+## 54
+Com a lamparina de capacete, você tem as duas mãos livres e luz para onde olhar.
+ganha: Lamparina de Capacete
+-> 174 Voltar
+
+## 55
+Os cogumelos em volta do buraco são brancos e pequenos, e se viram na direção da sua lanterna como girassóis. Quando você chega perto, eles soltam uma nuvem fina de pó.
+-> 10 [Véu Dourado] Cobrir o rosto com o véu dourado
+-> 10 [Máscara de Íris] Pôr a máscara de Íris
+-> 10 [Máscara de Mineiro] Pôr a máscara de mineiro
+teste de sorte: 296 | 288
+
+## 56
+O nível três é mais quente. A pedra das paredes passa de vermelha a negra. Uma galeria leva até a Fenda, a rachadura natural de que os velhos falam. Outra leva a um poço inundado. Nas paredes, alguém desenhou com giz uma seta e uma palavra: BRUNA.
+-> 23 Seguir até a Fenda
+-> 51 [!Poço Drenado] Ir até o poço inundado
+-> 240 Seguir a seta de Bruna
+-> 372 [!Grisu Visitado] Entrar na galeria que cheira a ovo podre
+-> 74 Entrar na galeria do eco
+-> 383 [!Prata Cavada] Ir até o veio de prata
+-> 286 [Poço Drenado] [!Poço Explorado] Ir até o poço, agora drenado
+-> 351 [!Ventilador Parado] Ir até o grande ventilador
+-> 324 Voltar à escada de serviço
+
+## 57
+O burro sai trotando direto para a saída da mina, sem olhar para trás. Na baia, você vê que ele estava deitado em cima de um saco de couro escondido.
+ganha: Óleo de Lamparina
+ouro: +2
+anota: Burro Solto
+-> 140 Voltar
+
+## 58
+A porta pequena dá para uma tumba. Num sarcófago aberto de pedra jaz uma figura pequena do Povo do Musgo, envolta num manto dourado. Ao lado dela, uma placa com um desenho: a figura erguendo o Sol de Pedra diante do coração. É quem fez a Rainha dormir da outra vez.
+-> 98 Pegar o manto dourado
+-> 99 Fazer uma reverência e sair
+
+## 59
+Presa na teia há um mineiro da equipe de Bruna, enrolado como um casulo, ainda respirando. Você corta os fios. Ele tosse e abre os olhos, normais. "Obrigado... a aranha me pegou antes do canto me pegar." Ele se chama Lourenço. Ele lhe dá a única coisa que salvou: um mapa da cidade, desenhado por Bruna a giz num pedaço de couro.
+ganha: Mapa da Cidade Velha
+anota: Lourenço Salvo
+sorte: +1
+-> 329 Mandá-lo voltar para a mina
+
+## 60
+A medalha esquenta e o canto recua para longe, como uma onda que volta para o mar.
+-> 224 Seguir em frente
+
+## 61
+As setas de giz brilham na luz da lanterna. Vocês não perdem um só minuto procurando caminho, e chegam à mina antes do grosso do desabamento.
+-> 337 Subir até a superfície
+
+## 62
+No jardim, o canto fica tão forte que parece vir de dentro da sua cabeça. Você para, aperta as têmporas e percebe que está cantarolando junto.
+-> 60 [Medalha de Santa Bárbara] Apertar a medalha da santa
+teste de sorte: 224 | 29
+
+## 63
+Você desce na ponta dos pés pela lama.
+teste de sorte: 368 | 232
+
+## 64
+Nas anotações, Bruna marcou os poços de ar que ligam a mina à vila. Um deles, o Poço da Figueira, desce direto do quintal da casa velha da esquina até o nível três. Ao lado, ela escreveu: "Escada de ferro ainda boa. Saída de emergência."
+anota: Poço da Figueira
+-> 303 Continuar
+
+## 65
+Você apoia o ombro e empurra. O vagonete range e se ergue o bastante para você puxar o que estava embaixo: uma lata de biscoitos de marinheiro e uma moeda de prata.
+provisões: +2
+ouro: +1
+anota: Vagonete Levantado
+-> 140 Voltar
+
+## 66
+No jardim, perto do caminho do meio, três cogumelos altos, de chapéu vermelho, estão em fila como sentinelas. Quando você passa, eles se viram e soltam pó vermelho, que arde nos olhos.
+-> 278 Passar correndo
+-> 168 [Cristal de Brasa] Erguer o cristal de brasa
+-> 224 Voltar
+
+## 67
+A chave de Joaquim gira com facilidade. Dentro, prateleiras de madeira guardam caixas de pólvora de mina, rolos de pavio e espoletas. Quase tudo foi levado pela equipe de Bruna, mas ainda sobram algumas bananas de pólvora.
+-> 8 [!Pólvora Recolhida] Pegar a pólvora que sobrou
+-> 318 Sair
+
+## 68
+O cemitério de Pedra Funda fica num platô acima da vila. Muitas cruzes têm um capacete de mineiro pendurado. Perto do muro, um velho de terno preto, de chapéu na mão, está parado diante de uma cova. Quando você chega perto, vê que ele é transparente.
+-> 321 Falar com o velho
+-> 207 Voltar
+
+## 69
+Os guardas atacam juntos, sem dizer nada, sem sentir dor.
+combate: Guarda de Fungo | 7 | 7
+combate junto: Guarda de Fungo | 7 | 6
+combate junto: Guarda de Fungo | 6 | 6
+-> 378 Entrar na caverna
+
+## 70
+Você põe o mineiro nas costas. Ele é pesado, e cada passo dói. Mas ninguém fica para trás.
+energia: -2
+sorte: +2
+anota: Ninguém Ficou para Trás
+-> 130 Seguir com ele
+
+## 71
+O vigia ouve, coça a cabeça e acaba concordando. "Se é pra Bruna..." Ele mesmo pega uma banana de pólvora e um rolo de pavio e entrega a você.
+ganha: Banana de Pólvora
+ganha: Pavio Longo
+anota: Galpão Visitado
+-> 207 Voltar
+
+## 72
+A doutora Íris examina os mineiros um por um. Os cogumelos atrás das orelhas secaram e caem com um toque. "Vão ficar fracos por uma semana", diz ela, "mas vão ficar bem." Ela olha para você e, pela primeira vez desde que você chegou, sorri. "Vá dormir. Você parece pior do que eles."
+energia: +4
+anota: Íris Agradeceu
+-> 357 Voltar à multidão
+
+## 73
+Você escorrega vários metros, batendo nos degraus, até se agarrar à plataforma do nível três.
+energia: -3
+-> 56 Sair no nível três
+
+## 74
+A galeria do eco é um corredor longo e curvo onde qualquer som volta mil vezes. Quando você entra, ouve sua própria respiração voltando de todos os lados. E depois, outra respiração. E vozes cantando baixinho.
+-> 145 Gritar para assustar o que estiver lá
+-> 253 Avançar em silêncio
+-> 56 Voltar
+
+## 75
+O líquido queima a garganta, e depois um calor gostoso se espalha pelo corpo. Suas forças voltam.
+energia: +5
+anota: Frasco Vermelho Bebido
+-> 277 Continuar
+
+## 76
+Uma galeria do nível um corta um veio de quartzo. As paredes brilham com cristais brancos e rosados que refletem a luz da lanterna em mil pontos. Num canto, alguém deixou uma marreta e um saco meio cheio de cristais.
+-> 108 Encher os bolsos com os melhores cristais
+-> 140 Voltar
+
+## 77
+O caminho da esquerda passa entre cogumelos tão grandes que os chapéus formam um teto. Debaixo deles o ar é mais limpo. Raízes brancas correm pelo chão como cobras. Num tronco de cogumelo há uma bolsa de couro pendurada, e mais adiante, um vulto encostado num tronco: um cavaleiro de armadura antiga, coberto de fungo.
+-> 377 [!Bolsa do Bosque] Pegar a bolsa
+-> 164 [!Cavaleiro Derrotado] Aproximar-se do cavaleiro
+-> 224 Voltar
+
+## 78
+Você enfia uma viga entre as pás. O ventilador geme e para. O ar da mina para de subir para a vila. Se os cogumelos florescerem, o pó vai demorar mais para chegar às casas.
+energia: -1
+anota: Ventilador Parado
+sorte: +1
+-> 56 Voltar
+
+## 79
+"Eu cavei quarenta anos naquela mina antes de vestir batina", diz o padre Lino. "No nível mais baixo, os velhos diziam que se ouvia gente cantando atrás da rocha. A gente achava que era o vento." Ele tira do pescoço uma medalha de Santa Bárbara. "Ela protege de raio, de fogo e de desmoronamento. Do que tem lá embaixo, eu não sei. Mas leve."
+ganha: Medalha de Santa Bárbara
+-> 364 [!Bênção do Padre] Pedir uma bênção
+-> 196 Agradecer
+
+## 80
+No fundo do bosque, os cogumelos se abrem numa clareira. No centro dela, uma fonte de água limpa brota da rocha, a única coisa no jardim sem fungo. Em volta dela, o musgo é verde, não branco.
+pode comer
+-> 394 [!Bebeu da Fonte] Beber da fonte
+-> 53 Seguir para a luz
+
+## 81
+O depósito tem picaretas, pás, cordas velhas e capacetes. Num gancho, uma máscara de couro de mineiro com filtro de lã, usada contra poeira.
+-> 256 [!Máscara de Mineiro] Pegar a máscara de mineiro
+-> 116 [!Corda] Pegar uma corda velha
+-> 318 Sair
+
+## 82
+Você abre o frasco de cristal. A luz dourada escorre dele como mel e se espalha pela caverna. As raízes que ela toca murcham e caem. As outras recuam.
+perde: Luz Engarrafada
+combate: Raízes da Rainha | 7 | 7
+-> 312 Ver o que acontece com Bruna
+
+## 83
+Você baixa a espada. A voz suspira de prazer. O musgo é macio. Você se deita.
+-> 128 Dormir
+
+## 84
+O velho se chama Joaquim. "Trinta anos de mina. Era eu quem cuidava do depósito de pólvora." Ele mostra a mão enfaixada. "Um deles me mordeu quando eu tentei segurar meu neto. Mordeu igual bicho." Ele tira do bolso uma chave vermelha. "A porta vermelha do nível dois. Bruna pediu para eu guardar. Se você vai descer, leva."
+ganha: Chave Vermelha
+-> 28 Perguntar mais sobre a mina
+-> 248 Agradecer
+
+## 85
+Na metade da descida, a corda velha se parte. Você cai os últimos metros e bate na saliência com força.
+energia: -4
+-> 201 Levantar-se
+
+## 86
+No nível quatro, numa câmara lateral, a equipe de Bruna montou uma enfermaria improvisada. Há duas macas vazias, panos ensanguentados e uma caixa de primeiros socorros aberta.
+pode comer
+-> 9 [!Caixa de Socorros Usada] Usar o que restou na caixa de primeiros socorros
+-> 139 Sair
+
+## 87
+A cozinha comunal do Povo do Musgo é uma caverna com fogões de pedra e mesas compridas. Num dos fogões, o calor da terra ainda sobe por uma fresta.
+pode comer
+-> 247 Voltar à praça
+
+## 88
+Um cogumelo redondo, do tamanho de uma carroça, bloqueia o caminho estreito. Ele pulsa, inchado de pó.
+-> 302 [Pederneira] Acender fogo nele de longe
+-> 27 Furá-lo com a espada
+-> 224 Dar a volta por outro caminho
+
+## 89
+A luz dourada escorre do frasco sobre o coração e entra nas rachaduras da pedra branca. O coração para de pulsar, fica cinzento e depois se parte por dentro com um som de gelo quebrando. O canto para de vez.
+perde: Luz Engarrafada
+-> 285 Olhar o que restou
+
+## 90
+Você força os cadeados. A maioria tem roupas e marmitas. Num deles, o de nome "Teodoro", há uma garrafinha de aguardente e um frasco de unguento para queimaduras.
+ganha: Unguento de Mineiro
+anota: Armários Abertos
+-> 48 Continuar
+
+## 91
+"Visitante", diz a voz, pela boca de Bruna. "Por que tanta pressa? Lá em cima há frio, fome, dor, morte. Aqui embaixo, ninguém sofre. Todos cantam juntos. Ao amanhecer, eu subo e levo todos para o meu jardim. Você também pode vir. Deite no musgo. Durma."
+-> 237 [Esporos no Sangue] Sentir a voz puxar você
+-> 243 [!Esporos no Sangue] Recusar
+-> 295 Tentar negociar com a Rainha
+-> 83 Aceitar o convite
+
+## 92
+Caída no musgo do jardim, entre os cogumelos, há uma lanterna de capataz, com a placa "B. TAVARES" e a chama ainda acesa. Ao lado dela, pegadas que vão em direção à luz e marcas de quem foi arrastado.
+-> 190 Pegar a lanterna
+-> 224 Seguir
+
+## 93
+A pedra salgada está quebradiça como giz. Ela se parte no segundo golpe.
+-> 285 Olhar o que restou
+
+## 94
+Depois das últimas casas da cidade, o chão de pedra dá lugar a um tapete de musgo branco e macio. Cogumelos começam a aparecer, primeiro pequenos, depois do tamanho de cadeiras, depois de árvores. O ar fica espesso e doce, cheio de um pó brilhante que flutua devagar. Na frente, entre os troncos brancos, você vê vultos de pé, imóveis, cantando.
+-> 46 [Véu Dourado] Cobrir o rosto com o véu dourado e entrar
+-> 46 [Máscara de Íris] Pôr a máscara de Íris e entrar
+-> 46 [Máscara de Mineiro] Pôr a máscara de mineiro e entrar
+-> 35 Tapar o nariz com a manga e entrar
+
+## 95
+Você deposita o Sol de Pedra sobre o coração adormecido e recua. A luz dourada vai mantê-la dormindo por muito tempo, talvez séculos, como antes. Bruna e você recolhem os mineiros que conseguem acordar e sobem. No dia seguinte, Otávio e os homens da vila dinamitam o buraco do nível cinco e selam a cidade velha. Pedra Funda está a salvo. Por enquanto.
+fim: A Rainha voltou a dormir e a vila está salva, mas o mal continua lá embaixo, esperando.
+
+## 96
+A Filha da Rainha ataca com braços que se estendem como galhos e soltam pó a cada golpe.
+-> 221 [Martelo Rúnico] Enfrentá-la com o martelo rúnico
+-> 236 [Picareta de Prata] Enfrentá-la com a picareta de prata
+-> 229 [Escudo do Sol] Erguer o escudo do sol e avançar
+combate: Filha da Rainha | 10 | 12
+-> 374 Olhar o coração
+
+## 97
+O filhote pula do seu ombro para o do rapaz. O calor dele faz os cogumelos do pescoço murcharem e caírem como folhas secas. O rapaz abre os olhos, castanhos e assustados. "Onde... pai?" Você conta quem o mandou. Ele se chama Caio, filho de Otávio. Ele treme, mas aperta a picareta. "Eu sei onde fica o coração. Eu vi, em sonho. Vou com você."
+anota: Caio Acordado
+sorte: +1
+-> 282 Seguir com Caio
+
+## 98
+O manto é leve e quente, tecido com fios que brilham. Ele não cabe em você como manto, mas serve de lenço no rosto: os esporos não passam por ele.
+ganha: Véu Dourado
+anota: Tumba Visitada
+-> 333 Voltar ao rio
+
+## 99
+Você faz uma reverência ao herói antigo. Quando se vira para sair, sente uma mão pequena no ombro, e uma coragem que não é sua.
+habilidade: +1
+sorte: +1
+anota: Tumba Visitada
+-> 333 Voltar ao rio
+
+## 100
+Você espalha sal em volta dos mineiros adormecidos. Os cogumelos murcham e o musgo seca. Os homens não acordam, mas a respiração deles fica mais fácil.
+anota: Dormitório Salgado
+sorte: +1
+-> 231 Voltar
+
+## 101
+Com a picareta enfiada sob a viga, você levanta o peso o suficiente para Severino puxar a perna.
+-> 348 Ajudá-lo a se levantar
+
+## 102
+A pedra é fria e silenciosa. Você entende, sem saber como, que o coração da Rainha é feito disso, e que uma pedra assim pode ser partida.
+anota: Pedra Rachada Vista
+sorte: +1
+-> 247 Voltar
+
+## 103
+A luz dourada do Sol de Pedra faz as raízes recuarem como se tivessem tocado fogo. As que ficam perto murcham. Você só precisa lutar contra as mais grossas.
+combate: Raízes da Rainha | 7 | 8
+-> 312 Ver o que acontece com Bruna
+
+## 104
+O anfiteatro é uma meia-lua de degraus de pedra em volta de um palco. No palco, de pé, uma figura de pedra com a boca aberta. Quando você entra, ela fala, numa voz de pedra arrastando em pedra, e as palavras se formam na sua cabeça: "Responda e passe. Erre e fique. Eu cresço no escuro, como os mortos, e alimento os vivos. O que sou?"
+-> 172 Responder "o cogumelo"
+-> 32 Responder "a raiz"
+-> 316 Responder "o verme"
+-> 247 Sair sem responder
+
+## 105
+Você levanta a viga uns centímetros, mas suas costas estalam e você tem que soltar. Na segunda tentativa, com Severino empurrando, conseguem.
+energia: -2
+-> 348 Ajudá-lo a se levantar
+
+## 106
+A caixa está vazia, menos por uma ficha de bronze com o número dois gravado, esquecida no fundo. É uma ficha de passagem do elevador.
+ganha: Ficha do Elevador
+-> 187 Continuar
+
+## 107
+Você prende a corda numa coluna e atravessa segurando nela, com a água pela cintura.
+-> 58 Entrar pela porta pequena
+
+## 108
+Os cristais valem alguma coisa na cidade. Você guarda os melhores.
+ouro: +4
+anota: Quartzo Recolhido
+-> 140 Voltar
+
+## 109
+Numa praça pequena, painéis de cristal polido refletem a luz azul do musgo em todas as direções, formando um labirinto de reflexos. Você vê dezenas de cópias de si mesmo. Uma delas não se mexe quando você se mexe.
+-> 284 Seguir o reflexo que não se mexe
+-> 247 Sair do labirinto
+
+## 110
+A luz da lamparina fica forte e branca. Os morcegos guincham e fogem de volta para o fundo da Fenda. Você atravessa o resto da ponte em paz.
+-> 387 Chegar ao outro lado
+
+## 111
+A margem é longa e coberta de cogumelos pequenos que estouram quando pisados. No meio do caminho, algo se mexe dentro do lago: um sapo branco do tamanho de um bezerro, de pele cheia de fungo, salta para fora com a língua estendida.
+combate: Sapo do Lago | 7 | 9
+-> 297 Chegar à parede de raízes
+
+## 112
+O armazém de dona Zuleica vende de tudo um pouco, de pão a pavio. Ela está fechando as janelas com tábuas.
+-> 390 [ouro 2+] Comprar provisões (2 moedas, 3 refeições)
+-> 341 [ouro 1+] [!Óleo de Lamparina] Comprar óleo de lamparina (1 moeda)
+-> 188 [ouro 1+] [!Pederneira] Comprar pederneira e pavio (1 moeda)
+-> 207 Sair
+
+## 113
+A escada é longa. Muito longa. Seus braços doem e o ar fica mais quente e mais doce a cada degrau. Na metade da descida, você ouve vozes subindo pelo poço: um canto baixinho.
+teste de habilidade: 320 | 37
+
+## 114
+Você o derruba e amarra os braços dele com a corda. Ele luta, depois fica mole e começa a roncar. Os cogumelos atrás da orelha dele murcham um pouco longe do ar da mina. Você o leva de volta para a esposa, que chora de alívio.
+sorte: +2
+anota: Sonâmbulo Salvo
+-> 207 Voltar à praça
+
+## 115
+O templo de cúpula tem uma porta de bronze verde, fechada. No centro da porta, um baixo-relevo do sol, com um buraco redondo no meio. Dos lados da porta, duas estátuas de guerreiros de pedra, maiores do que as outras figuras da cidade.
+-> 217 Empurrar a porta
+-> 353 [Sementes de Sol] Colocar as sementes de sol no buraco do relevo
+-> 336 Procurar outra entrada pelos lados
+-> 247 Voltar à praça
+
+## 116
+A corda é velha, mas ainda aguenta o peso de um homem.
+ganha: Corda
+-> 81 Continuar
+
+## 117
+As raízes adormecidas não se defendem. Você arma a pólvora em volta do coração e acende o pavio.
+anota: Pólvora Armada
+-> 171 Correr
+
+## 118
+Você entra na gaiola e puxa a corda do sinal. Lá em cima, o motor ronca e a gaiola começa a descer, rangendo. Há botões de latão para os cinco níveis.
+-> 25 [Ficha do Elevador] Pôr a ficha no painel e descer ao nível dois
+-> 376 Descer direto até o nível cinco
+-> 122 [Cabo Gasto] Lembrar do cabo gasto e descer devagar
+
+## 119
+A explosão sacode a caverna inteira. Pedras caem das torres da cidade velha, mas vocês estão longe o bastante. O canto para, de uma vez.
+-> 285 Olhar para trás
+
+## 120
+A viga é pesada.
+-> 101 [Picareta de Guerra] Usar a picareta como alavanca
+teste de habilidade: 348 | 105
+
+## 121
+"Sal grosso, de salina. Mofo nenhum aguenta." Ela fecha o saquinho com um barbante.
+ouro: -1
+ganha: Sal de Pedra
+-> 346 Continuar
+
+## 122
+Você desce aos poucos, parando a cada nível. No nível três, ouve um estalo lá em cima: um fio do cabo arrebentou. Você salta da gaiola para a plataforma bem a tempo. A gaiola dá um tranco, mas aguenta, pendurada.
+-> 56 Sair no nível três
+
+## 123
+Você acende uma vela. A pequena chama ilumina a imagem da santa, e você sente uma calma que não sentia desde que chegou.
+sorte: +1
+anota: Vela Acesa
+-> 391 Continuar
+
+## 124
+O sal cai sobre o coração e as raízes chiam e murcham, mas a pedra branca no centro continua pulsando. O sal enfraquece a Rainha, mas não a mata.
+perde: Sal de Pedra
+anota: Coração Salgado
+-> 379 Golpear o coração enfraquecido
+
+## 125
+A câmara é uma antiga sala de explosivos, agora vazia. A luz vem de uma lanterna pendurada, e debaixo dela, sentado contra a parede, está um homem grande de barba ruiva, com a perna presa por uma viga. É um dos homens de Bruna. "Graças a Deus. Me tira daqui."
+-> 120 Levantar a viga
+-> 42 Perguntar o que aconteceu primeiro
+
+## 126
+Atrás da caverna dos Pálidos há uma horta subterrânea de cogumelos azuis, cultivados em canteiros de pedra. Alguns Pálidos regam os canteiros com cuidado.
+-> 41 [!Cogumelo Azul] Pedir com gestos alguns cogumelos
+-> 266 Voltar à fogueira
+
+## 127
+Você derrama o óleo da lamparina sobre o coração e acende com a pederneira. As chamas sobem, e as raízes se contorcem tentando apagá-las com seiva. O fogo é teimoso.
+teste de sorte: 285 | 260
+
+## 128
+Você dorme. No sonho, você está num jardim branco, cheio de gente sorrindo, e não sente frio, nem fome, nem dor. Ao amanhecer, os cogumelos florescem, e os esporos sobem pelos poços de ar até as casas de Pedra Funda. Naquela noite, a vila inteira desce a ladeira cantando.
+fim: Você se tornou parte do jardim da Rainha. A aventura termina aqui.
+
+## 129
+O frasco de barro se quebra no peito da criatura e explode num fogo azul que gruda como resina. A Filha da Rainha uiva com mil vozes e se debate, queimando, mas ainda vem na sua direção, mais fraca.
+perde: Fogo-de-Barro
+combate: Filha da Rainha | 8 | 8
+-> 374 Olhar o coração
+
+## 130
+Você, Bruna e os mineiros acordados correm pela cidade velha, que desmorona atrás de vocês. Os mais fracos são carregados pelos mais fortes. Lá na frente, a porta redonda de pedra, a escada em espiral e o buraco do nível cinco.
+-> 154 [Aliado dos Pálidos] Pedir que os Pálidos venham também
+-> 61 [Caminho Marcado] Seguir as marcas de giz que você deixou
+-> 178 [Caldeira Acesa] Correr para o elevador, que ainda tem pressão
+-> 227 [!Ninguém Ficou para Trás] Voltar para ajudar um mineiro que caiu
+-> 290 Correr pelo caminho que lembrar
+
+## 131
+A corda desce pela parede da Fenda até uma saliência, vinte metros abaixo, onde o brilho vermelho fica mais forte. É uma descida longa.
+-> 311 [Gancho de Ferro] Prender seu gancho e sua própria corda como reforço
+teste de habilidade: 201 | 85
+
+## 132
+As raízes chicoteiam de todos os lados, tentando agarrar seus braços e pernas.
+-> 82 [Luz Engarrafada] Abrir o frasco de luz engarrafada
+-> 103 [Sol de Pedra] Erguer o Sol de Pedra
+-> 279 [Cetro de Cristal] Erguer o cetro de cristal
+combate: Raízes da Rainha | 9 | 12
+-> 312 Ver o que acontece com Bruna
+
+## 133
+O amargo da losna, ou o frescor do cogumelo azul, rasga o sono como uma lâmina. Você se levanta de um salto.
+cura: Esporos no Sangue
+-> 243 Recusar o convite
+
+## 134
+A correnteza é forte e a água gelada.
+teste de habilidade: 58 | 211
+
+## 135
+No fundo do caldeirão há um resto de pasta cinzenta e seca. Quando você mexe, sobe uma nuvem de pó que o faz espirrar. Depois disso, sua cabeça fica mais clara.
+cura: Esporos no Sangue
+anota: Caldeirão Mexido
+-> 277 Voltar
+
+## 136
+O jovem guarda Davi está chorando sem vergonha, abraçado ao pai, um dos mineiros que subiram. Quando ele vê você, solta o pai por um instante só para bater continência.
+anota: Davi Agradeceu
+-> 357 Voltar à multidão
+
+## 137
+O velho Joaquim está sentado num caixote, com o neto Tonico no colo, os dois chorando e rindo. Quando vê você, ele se levanta e lhe aperta a mão com a mão boa. "Trinta anos de mina e nunca vi coisa igual. Trinta anos." Ele não solta sua mão por um bom tempo.
+anota: Joaquim Agradeceu
+-> 357 Voltar à multidão
+
+## 138
+No nível quatro há a sala dos capatazes, com uma mesa, cadeiras e uma estante com garrafas. É um bom lugar para recuperar o fôlego.
+pode comer
+-> 342 [!Garrafa dos Capatazes] Beber um gole da garrafa de conhaque
+-> 139 Voltar
+
+## 139
+O nível quatro está meio desmoronado. Vigas quebradas, pedras soltas e poeira por todo lado. O ar está mais quente e o cheiro adocicado é mais forte. Você ouve, lá embaixo, o canto de muitas vozes. Uma galeria leva para baixo, ao nível cinco. Outra leva a uma câmara de onde vem luz.
+-> 231 Descer ao nível cinco
+-> 125 [!Severino Salvo] Ir até a câmara iluminada
+-> 287 [!Procissão Vista] Investigar o som de passos arrastados
+-> 86 Entrar na câmara da enfermaria
+-> 138 Entrar na sala dos capatazes
+-> 23 Procurar o caminho até a Fenda
+
+## 140
+O nível um é o mais antigo e o mais raso. Galerias estreitas se abrem para os lados. Os trilhos levam a um refeitório de mineiros. Uma galeria lateral está fechada com tábuas e uma placa: "DESMORONAMENTO - NÃO ENTRAR".
+-> 386 Seguir os trilhos até o refeitório
+-> 14 [!Galeria Desmoronada] Arrancar as tábuas e entrar na galeria fechada
+-> 391 Entrar na capelinha de Santa Bárbara dos mineiros
+-> 251 [!Burro Solto] Entrar no estábulo dos burros
+-> 76 [!Quartzo Recolhido] Seguir pela galeria que brilha
+-> 21 [!Vagonete Levantado] Ir até o vagonete tombado
+-> 238 Voltar ao poço do elevador
+
+## 141
+"Acorda!", grita Caio, e joga um balde de água fria da fonte na sua cara. Você engasga e acorda, encharcado e furioso.
+cura: Esporos no Sangue
+-> 243 Levantar-se
+
+## 142
+O cavaleiro desmorona. Dentro da armadura não há nada além de fungo e pó. Ele deve ter descido aqui há séculos. O escudo dele, de bronze, tem um sol gravado e ainda está inteiro.
+ganha: Escudo do Sol
+energia inicial: +2
+anota: Cavaleiro Derrotado
+-> 80 Seguir pelo bosque
+
+## 143
+Severino, mancando de muleta, e o irmão velho que você encontrou no jardim se abraçam no meio da praça, dois homens grandes chorando como meninos. Eles acenam para você ao mesmo tempo.
+anota: Irmãos Reunidos
+sorte: +1
+-> 357 Voltar à multidão
+
+## 144
+Você faz uma oração curta pelos mortos de um povo que não conhece. Os crânios ficam em silêncio. Quando você se vira para sair, há um anel de prata no chão, à sua frente, que não estava ali antes.
+ganha: Anel de Prata
+sorte: +2
+anota: Ossário Visitado
+-> 389 Sair
+
+## 145
+Seu grito volta mil vezes, ensurdecedor. Pedras se soltam do teto e caem à sua volta.
+energia: -2
+-> 253 Seguir em frente
+
+## 146
+No escuro, você tateia a parede. Seus dedos encontram um gancho com uma bolsa de lona pendurada. Você a leva e sai antes que o gás o deixe tonto. Lá fora, abre a bolsa: há três bananas de pólvora e um rolo de pavio, deixados ali para explodir o gás algum dia.
+ganha: Banana de Pólvora
+ganha: Pavio Longo
+anota: Grisu Visitado
+-> 56 Voltar
+
+## 147
+Peixes cegos e brancos nadam devagar. De repente, a água se agita: uma enguia grossa como um braço salta e morde sua mão.
+combate: Enguia-Cega | 5 | 6
+-> 333 Voltar ao caminho
+
+## 148
+Pela luneta você vê os poços de ar soltando vapor. Num deles, o da casa velha da esquina com a figueira, o vapor está mais forte. Deve ser um caminho direto para o fundo da mina.
+anota: Poço da Figueira
+-> 207 Descer
+
+## 149
+Você cai de joelhos. A voz é doce e o musgo é macio. Lá longe, uma parte de você grita, mas é tão longe.
+energia: -4
+-> 141 [Caio Acordado] Ouvir Caio gritar seu nome
+-> 40 [Filhote de Lagarto de Fogo] Sentir uma mordida quente no pescoço
+-> 128 Deixar-se levar
+
+## 150
+O aqueduto termina numa cisterna redonda no alto da cidade, sobre o observatório. Ali dentro a água é limpa e fria.
+pode comer
+-> 159 Descer até o observatório
+
+## 151
+As raízes pegam fogo com um chiado e se retorcem para longe da chama, abrindo uma passagem.
+-> 378 Passar pela abertura
+
+## 152
+Você fecha os olhos por alguns minutos. Quando os abre, se sente mais leve.
+energia: +2
+anota: Descansou na Capela
+-> 391 Continuar
+
+## 153
+Você joga uma moeda e pede para todos voltarem vivos. A água borbulha, e você sente um calor no peito.
+ouro: -1
+sorte: +2
+anota: Pedido Feito
+-> 247 Seguir em frente
+
+## 154
+A anciã dos Pálidos aparece na beira da praça, com seu povo. Você faz o gesto de subir. Ela olha para cima, para a escuridão, e depois para você. Balança a cabeça devagar e aponta para o rio: eles têm outro caminho, mais fundo, para outra caverna. Antes de sumir, ela toca o seu peito com a mão fria e deixa ali uma pedra azul que brilha. Depois, os Pálidos somem na escuridão.
+ganha: Pedra Azul dos Pálidos
+sorte: +1
+-> 290 Correr para a mina
+
+## 155
+Você e Davi empurram uma carroça de minério para a entrada e a viram. Os sonâmbulos batem nela, cantando, e depois param, viram as costas e descem de novo.
+anota: Saída Barrada
+sorte: +1
+-> 250 Voltar à boca da mina
+
+## 156
+A esfera é fria e pesada. Nada acontece. Ela precisa de alguma luz ou calor para acordar. Ainda assim, você a guarda. É pesada como uma pedra de moinho, mas cabe na mochila.
+ganha: Sol de Pedra Apagado
+-> 262 Olhar em volta
+
+## 157
+A criatura ataca com braços que soltam nuvens de pó a cada golpe.
+combate: Fungoide | 7 | 8
+-> 34 Revirar as barracas
+
+## 158
+O menino pisca e os olhos dele estão normais, castanhos e assustados. "Eu sou o Tonico. Vim atrás do meu pai e me escondi. Eles passaram cantando, todos, descendo. Eu tapei o nariz com a camisa." Ele treme. "Tinha uma mulher no meio deles. A capataz. Ela ainda era ela. Ela me viu e mandou eu ficar aqui."
+-> 18 Mandá-lo subir para a vila
+-> 292 [Neto de Joaquim] Dizer que o avô Joaquim espera por ele
+
+## 159
+O observatório é uma sala redonda com o teto cravejado de cristais que brilham como estrelas. No centro, um disco de pedra mostra os túneis da cidade em relevo. Quando você toca o disco, uma das linhas se acende: um caminho que sai do rio, passa por baixo do jardim e chega ao coração por trás.
+anota: Caminho do Rio
+anota: Observatório Visitado
+-> 247 Descer até a praça
+
+## 160
+Você se senta no banco frio do vestiário. É um lugar seguro, longe do ar doce.
+pode comer
+-> 318 Voltar ao trabalho
+
+## 161
+Seu pé escorrega no salto e você cai na rua lá embaixo, quebrando um telhado de pedra na queda.
+energia: -4
+-> 389 Levantar-se na cidade baixa
+
+## 162
+O colar é bonito e leve. Quando você o põe no pescoço, sente a cabeça mais clara.
+ganha: Colar de Contas Azuis
+-> 34 Continuar
+
+## 163
+O gancho prende na pedra do outro lado. Você atravessa pendurado na corda, com as pernas balançando sobre a rua.
+-> 150 Seguir em frente
+
+## 164
+O cavaleiro levanta a cabeça. Dentro do elmo, onde deveria haver um rosto, há só fungo branco, e dois cogumelos pequenos no lugar dos olhos. Ele se ergue com um ranger de metal velho e puxa uma espada coberta de musgo.
+combate: Cavaleiro de Micélio | 9 | 10
+fuga -> 224
+-> 142 Examinar a armadura
+
+## 165
+Encostado num tronco de cogumelo, um mineiro velho resiste ao sono, mordendo os lábios até sangrar. Os cogumelos sobem pelo pescoço dele. "Não deixa eu dormir", ele pede.
+-> 273 [Cogumelo Azul] Dar a ele um cogumelo azul
+-> 195 [Infusão de Losna] Dar a ele a infusão de losna
+-> 359 Conversar com ele para mantê-lo acordado
+
+## 166
+Uma rocha prende sua perna. Bruna e dois mineiros a afastam com as mãos, gritando, enquanto pedrinhas continuam caindo. Você sai mancando, com a perna sangrando, mas sai.
+energia: -4
+-> 337 Subir até a superfície
+
+## 167
+O freio guincha e solta faíscas. O vagonete para a um palmo dos trilhos quebrados. Você desce e segue a pé pela galeria, que termina no nível três.
+-> 56 Seguir em frente
+
+## 168
+O cristal de brasa esquenta, e os cogumelos vermelhos murcham como flores ao sol. Você passa sem problema.
+-> 53 Seguir em frente
+
+## 169
+A cota de malha é leve e quente, e se ajusta ao seu corpo como uma segunda pele.
+ganha: Cota Dourada
+energia inicial: +3
+anota: Cota Pega
+-> 201 Voltar à saliência pelas pedras
+
+## 170
+A água é gelada. No fundo, ao lado da lamparina acesa, está o corpo de um mineiro da equipe de Bruna, preso por uma pedra. No cinto dele há uma picareta de cabo curto com a lâmina prateada.
+teste de habilidade: 368 | 183
+
+## 171
+O pavio chia, correndo para a pólvora. Você corre pelo jardim, saltando raízes, com Bruna ao seu lado.
+-> 22 [Entrada Escondida] Fugir pelo túnel do rio, por onde você entrou
+-> 370 Fugir pelo caminho do meio, pela cidade velha
+
+## 172
+A estátua fecha a boca com um estalo. O piso do palco se abre, revelando um nicho com um frasco de cristal cheio de luz dourada líquida.
+ganha: Luz Engarrafada
+anota: Enigma Resolvido
+-> 247 Sair do anfiteatro
+
+## 173
+Da saliência, uma trilha estreita desce até o fundo da Fenda, onde corre o rio de lava. O calor é quase insuportável. Do outro lado da lava, numa caverna, você vê o brilho de uma armadura dourada.
+-> 397 Atravessar pelas pedras que saem da lava
+-> 201 Voltar à saliência
+
+## 174
+A oficina tem vagonetes desmontados, rodas e ferramentas. Um vagonete inteiro está sobre os trilhos que descem em rampa para os níveis de baixo, pela galeria inclinada. Os freios parecem bons.
+-> 322 Subir no vagonete e descer pela galeria inclinada
+-> 226 [!Lamparina de Capacete] Procurar ferramentas úteis
+-> 318 Sair
+
+## 175
+O sal é áspero e seco. Fungos não crescem onde há sal.
+ganha: Sal de Pedra
+-> 34 Continuar
+
+## 176
+Quando você mexe nas cinzas da lareira, um alçapão de pedra se revela embaixo delas. Ele se abre para um túnel estreito que desce.
+-> 389 Descer pelo alçapão
+-> 19 Fechar o alçapão
+
+## 177
+Dentro da criatura há uma bolsa de couro engolida, com moedas e um frasco de infusão de losna ainda inteiro.
+ouro: +5
+ganha: Infusão de Losna
+anota: Fungoide Gigante Derrotado
+-> 224 Seguir em frente
+
+## 178
+No nível cinco, o elevador está parado onde você o deixou. A caldeira lá em cima ainda tem pressão. Você empurra todos para dentro da gaiola e puxa a corda do sinal com força. O motor ronca, e a gaiola sobe, lenta e cheia.
+-> 357 Chegar à superfície
+
+## 179
+Você gira a manivela por meia hora, suando. Lá embaixo, a água desce e o barulho da bomba ecoa pelas galerias. Quando termina, o poço inundado do nível três deve estar quase seco.
+energia: -2
+anota: Poço Drenado
+-> 318 Sair
+
+## 180
+O guarda se chama Davi e tem dezessete anos. "Eles sobem às vezes, os sonâmbulos. Ficam ali na entrada, olhando para a vila, e depois descem de novo. Como se estivessem esperando." Ele engole em seco. "Tem uma coisa que você precisa saber: a doutora disse que se os cogumelos florescerem, é para eu tocar o sino e todo mundo fugir da vila. Mas para onde?"
+-> 250 Voltar
+
+## 181
+Otávio larga a picareta. "Meu filho Caio estava na equipe que abriu a parede. Ele voltou para casa, dormiu dois dias e depois foi embora andando. Eu segurei ele e ele me olhou com olhos que não eram dele." Ele aperta os punhos. "Uma coisa eu sei: aqueles cogumelos odeiam fogo. Quando ele estava com febre, eu acendi a lareira e os cogumelos atrás da orelha murcharam."
+anota: Conselho de Otávio
+-> 298 Continuar
+
+## 182
+"Bruna Tavares! Capataz! Seus homens precisam de você!" Os olhos de Bruna piscam. Por um instante, eles ficam castanhos. Ela arranca um braço do casulo, depois o outro, e começa a se soltar sozinha, gritando de dor e de raiva.
+-> 132 Proteger Bruna das raízes enquanto ela se solta
+
+## 183
+A pedra que prende o corpo não cede. Você volta à tona engasgado, sem nada.
+energia: -2
+anota: Poço Explorado
+-> 56 Sair da água
+
+## 184
+Numa casa de porta aberta, uma mulher chora ao lado de uma cama vazia, com cordas cortadas penduradas na cabeceira. "Meu marido. Ele soltou as cordas com os dentes e foi embora. Agora mesmo." Ela aponta para a rua. Um homem de camisola, descalço, sobe a ladeira em direção à mina, devagar, com passos de sonâmbulo.
+anota: Visitou a Casa
+-> 366 Correr atrás dele
+-> 198 Deixá-lo ir e consolar a mulher
+
+## 185
+Você ergue o Sol de Pedra. A luz dourada enche a caverna, e o coração para de pulsar. As raízes em volta dele ficam rígidas e cinzentas, e os chapéus dos cogumelos se fecham. O canto vira um suspiro longo e baixo, como alguém pegando no sono. A Rainha não morreu. Ela dorme, como dormiu da outra vez.
+-> 304 [Pederneira] Aproveitar o sono dela e pôr fogo no coração
+-> 304 [Filhote de Lagarto de Fogo] Pedir ao filhote que queime o coração adormecido
+-> 117 [Banana de Pólvora] Armar a pólvora no coração adormecido
+-> 95 Deixar o Sol de Pedra aqui, para que ela durma para sempre
+
+## 186
+Você guarda o giz. A menina bate continência, séria.
+ganha: Giz de Mineiro
+-> 207 Voltar à praça
+
+## 187
+O escritório da mina tem mapas presos nas paredes, livros de contabilidade e uma caixa de ferro com o cadeado arrombado. Sobre a mesa, o diário da capataz Bruna está aberto.
+-> 45 [!Mapa da Mina] Levar o mapa dos níveis da mina
+-> 265 Ler o diário de Bruna
+-> 106 [!Ficha do Elevador] Examinar a caixa de ferro
+-> 207 Sair
+
+## 188
+Uma pederneira de aço e um rolo de pavio de mina, que queima devagar e não apaga com umidade.
+ouro: -1
+ganha: Pederneira
+-> 112 Continuar
+
+## 189
+Íris lhe entrega uma máscara de pano grosso, costurada com camadas de carvão moído por dentro. "Mantenha úmida. Não segura tudo, mas segura muito."
+ganha: Máscara de Íris
+-> 354 Continuar
+
+## 190
+A lanterna de Bruna é boa e forte. Quando você a pega, sente que ela ainda está viva em algum lugar ali na frente.
+ganha: Lanterna de Bruna
+anota: Bruna Ainda Luta
+anota: Lanterna Achada
+-> 224 Seguir
+
+## 191
+Antes de seguir pelo caminho que leva ao jardim, há uma pequena gruta seca, protegida, onde o canto mal se ouve. Um bom lugar para recuperar as forças antes do fim.
+pode comer
+-> 94 Seguir para o jardim
+
+## 192
+O galpão das máquinas tem uma caldeira apagada, um motor a vapor enorme e o tambor onde se enrola o cabo do elevador. Uma alavanca grande, com a placa "SUBIR/DESCER", está travada com um cadeado.
+-> 210 [!Caldeira Acesa] Acender a caldeira
+-> 393 [!Cabo Gasto] Examinar o cabo do elevador
+-> 250 Sair
+
+## 193
+O túnel do rio é baixo, e você caminha curvado, com água pelos joelhos. Depois de muito tempo, ele sobe e termina atrás de uma cortina de raízes. Do outro lado, uma luz branca pulsa, e o canto é muito alto. Você está atrás do jardim, perto do coração dele, sem ter passado pela entrada principal.
+anota: Entrada Escondida
+-> 355 Afastar as raízes
+
+## 194
+Você está a vinte passos quando a explosão sacode a caverna. Pedaços brancos voam para todos os lados, e o coração se parte em mil fragmentos. O canto vira um grito e para.
+-> 285 Olhar o que restou
+
+## 195
+O velho bebe a infusão e cospe pó branco. Os fungos do pescoço dele murcham. "Deus lhe pague", diz. Ele tira do bolso um isqueiro de mineiro.
+perde: Infusão de Losna
+ganha: Pederneira
+anota: Velho Salvo
+-> 224 Seguir em frente
+
+## 196
+A capela de Santa Bárbara, padroeira dos mineiros, está cheia de velas acesas por mães e esposas. Na parede, centenas de lamparinas de mina pendem de pregos, uma para cada mineiro que morreu lá embaixo nos últimos cem anos. O padre Lino, um homem gordo de mãos calejadas, ex-mineiro, reza de joelhos.
+-> 79 [!Medalha de Santa Bárbara] Falar com o padre Lino
+-> 254 [!Lamparina de Santa Bárbara] Examinar as lamparinas na parede
+-> 207 Sair
+
+## 197
+A torre atarracada tem uma escada em caracol por dentro. Lá de cima você vê a cidade inteira à luz azul do musgo. No fundo da caverna, além das últimas casas, há um brilho branco e pulsante, como um coração de luz, e dele vem o canto. Do lado esquerdo, um templo de cúpula. Do lado direito, uma ponte de pedra sobre um rio subterrâneo. E bem embaixo da torre, numa rua estreita, figuras pequenas e pálidas correm de sombra em sombra, fugindo da sua luz.
+anota: Visão da Torre
+-> 381 [!Cogumelo Azul] Descer e seguir as figuras pálidas
+-> 247 Descer até a praça
+
+## 198
+A mulher agarra seu braço. "Você vai descer? Traz ele de volta. Por favor." Ela coloca na sua mão um pacote de bolinhos de milho ainda quentes.
+provisões: +1
+-> 207 Voltar à praça
+
+## 199
+O vigia olha para os lados e embolsa as moedas. "Eu não vi nada." Ele abre o portão. Lá dentro, você pega duas bananas de pólvora e um rolo de pavio.
+ouro: -5
+ganha: Banana de Pólvora
+ganha: Pavio Longo
+anota: Galpão Visitado
+-> 207 Voltar
+
+## 200
+No ninho há três ovos grandes, de casca vermelha, quentes como brasas. Quando você toca num deles, ouve um silvo atrás de você. Um lagarto de fogo, do tamanho de um cão grande, de escamas que brilham como carvão aceso, abre a boca.
+combate: Lagarto de Fogo | 8 | 8
+fuga -> 201
+-> 213 Pegar um ovo
+
+## 201
+A saliência é uma plataforma de pedra que entra numa caverna lateral. O brilho vermelho vem de um rio de lava estreita que corre lá embaixo, no fundo da Fenda. O calor é forte. Na caverna há ossos e um ninho de pedras quentes.
+-> 200 [!Ninho Visitado] Examinar o ninho
+-> 331 Entrar na caverna
+-> 173 [!Cota Pega] Descer até o fundo da Fenda
+-> 23 Subir de volta
+
+## 202
+A máscara segura a nuvem. Você atravessa as pedras com cuidado até a parede de raízes.
+-> 297 Chegar à parede de raízes
+
+## 203
+O cinturão tem bolsos para ferramentas, pavio e uma lâmina curta de mineiro numa bainha. Ele se ajusta bem na sua cintura e deixa as mãos livres.
+ganha: Cinturão de Mineiro
+habilidade: +1
+-> 303 Continuar
+
+## 204
+Você sacode o rapaz. Os olhos dele se abrem, brancos, e todos os mineiros em volta param de cantar ao mesmo tempo e se viram para você. Depois, avançam juntos.
+combate: Mineiro Cantor | 6 | 6
+combate junto: Mineiro Cantor | 6 | 5
+combate junto: Mineiro Cantor | 5 | 6
+fuga -> 224
+-> 43 Ver os homens caídos
+
+## 205
+"Losna, alho e casca de salgueiro", diz Íris. "Não cura, mas faz os cogumelos murcharem por um tempo. Se você respirar esporos lá embaixo e começar a sentir sono, beba isto." Ela enche dois frascos.
+ganha: Infusão de Losna
+-> 354 Continuar
+
+## 206
+Na cidade velha há um jardim feito só de pedras coloridas, arrumadas em espirais no chão. No centro, uma pedra branca, lisa, igual às das placas da biblioteca, mas pequena e rachada ao meio. Está morta.
+-> 102 Tocar na pedra rachada
+-> 247 Voltar
+
+## 207
+A praça de Pedra Funda é um largo de terra batida com um chafariz seco no meio. Em volta dela ficam a capela de Santa Bárbara, a ferraria, o armazém, a casa da doutora Íris, o escritório da mina e a estalagem do Lampião. Muitas portas estão marcadas com cruzes de giz. Lá no alto, a boca da mina parece uma garganta aberta.
+-> 196 Entrar na capela de Santa Bárbara
+-> 298 Ir à ferraria
+-> 112 Entrar no armazém
+-> 354 Bater na casa da doutora Íris
+-> 187 Entrar no escritório da mina
+-> 248 Voltar à estalagem do Lampião
+-> 184 [!Visitou a Casa] Seguir um choro que vem de uma casa com a porta aberta
+-> 303 Entrar na casa da capataz Bruna
+-> 281 Subir à torre do sino
+-> 306 [!Galpão Visitado] Ir até o galpão de explosivos da companhia
+-> 275 [Poço da Figueira] Ir ao quintal da figueira, onde fica o poço de ar
+-> 68 [!Fogo, Luz e Sal] Subir ao cemitério da vila
+-> 346 Entrar na casinha das ervas de dona Benta
+-> 259 [!Giz de Mineiro] Ir até umas crianças que brincam na rua de baixo
+-> 250 Subir até a boca da mina
+
+## 208
+A água fria desce como um presente.
+energia: +3
+anota: Bebeu na Cisterna
+-> 4 Continuar
+
+## 209
+A infusão é amarga como fel. A vontade de dormir passa, e o canto volta a ficar baixinho.
+perde: Infusão de Losna
+cura: Esporos no Sangue
+-> 231 Voltar
+
+## 210
+Você enche a fornalha de carvão e acende o fogo. Leva quase meia hora até a pressão subir. A caldeira chia e o motor estremece, pronto para mover o elevador.
+anota: Caldeira Acesa
+-> 192 Continuar
+
+## 211
+A correnteza o arrasta para longe e o joga contra pedras antes de você se agarrar à margem, muito abaixo.
+energia: -4
+-> 333 Voltar ao caminho do rio
+
+## 212
+Nas mochilas há moedas antigas, uma corda boa e um frasco de fogo-de-barro rachado, que ainda tem um pouco de líquido.
+ouro: +7
+ganha: Corda
+ganha: Fogo-de-Barro
+anota: Antigos Revistados
+-> 224 Voltar
+
+## 213
+O ovo é pesado e quente. Por dentro, algo se mexe. Você o embrulha num pano. Talvez ele queime alguma coisa que precise ser queimada.
+ganha: Ovo de Lagarto de Fogo
+anota: Ninho Visitado
+-> 201 Voltar
+
+## 214
+Você guarda os cogumelos azuis. Se os esporos o pegarem, eles podem ajudar.
+ganha: Cogumelo Azul
+-> 247 Voltar à praça
+
+## 215
+O ovo esquenta, racha, e de dentro sai um filhote de lagarto de fogo, pequeno como um gato, brilhando como uma brasa. Ele olha para você, sobe pelo seu braço e se aninha no seu ombro. Ele é quente, mas não queima você. Os cogumelos em volta murcham quando ele passa.
+perde: Ovo de Lagarto de Fogo
+ganha: Filhote de Lagarto de Fogo
+anota: Ovo Chocado
+-> 326 Continuar
+
+## 216
+Você observa em silêncio. Os guardas se movem como um só, sempre de frente para a entrada principal. Ninguém olha para trás. Você terá um momento de surpresa.
+anota: Ataque Surpresa
+-> 378 Entrar pela fresta
+
+## 217
+Quando você toca a porta, as duas estátuas de pedra viram a cabeça com um ruído de moinho. Elas descem dos pedestais, devagar, erguendo as lanças de pedra.
+combate: Guardião de Pedra | 8 | 10
+combate junto: Guardião de Pedra | 8 | 10
+fuga -> 247
+-> 36 Abrir a porta
+
+## 218
+No fundo da biblioteca, uma aranha das cavernas, branca e do tamanho de uma mesa, está tecendo uma teia sobre os nichos. Ela para e vira seus oito olhos cegos para você.
+combate: Aranha Branca | 7 | 9
+fuga -> 329
+-> 59 Examinar a teia
+
+## 219
+O filhote pula do seu ombro para o coração. Ele brilha cada vez mais forte, como uma brasa soprada, até que as raízes em volta dele pegam fogo. O coração se contorce e grita com mil vozes, e as chamas o engolem. Quando o fogo baixa, o filhote volta correndo para o seu ombro, quente e satisfeito.
+-> 285 Ver o fogo terminar
+
+## 220
+Você abaixa a lanterna e chama. Depois de um longo silêncio, uma figura sai da sombra: uma criatura pequena, da altura de uma criança, de pele branca como papel e olhos enormes, sem cor. Ela segura uma lança de osso. Atrás dela aparecem outras. É o Povo Pálido, o que restou do Povo do Musgo.
+-> 313 Apagar a lanterna, porque a luz parece machucar os olhos deles
+-> 369 Oferecer comida
+-> 319 Atacar
+
+## 221
+As espirais do martelo brilham a cada golpe, e o fungo da criatura se queima onde ele toca.
+combate: Filha da Rainha | 9 | 10
+-> 374 Olhar o coração
+
+## 222
+O ossário é uma caverna onde o Povo do Musgo guardava os mortos: milhares de pequenos crânios empilhados em desenhos de espiral. No centro, sobre um altar, um esqueleto maior que os outros, com uma coroa de pedra e um cetro de cristal.
+-> 234 Pegar o cetro de cristal
+-> 144 Fazer uma oração pelos mortos
+-> 389 Sair
+
+## 223
+Você toma impulso e salta. Cai do outro lado de joelhos, mas inteiro.
+-> 150 Seguir em frente
+
+## 224
+Você está no Jardim. Cogumelos gigantes se erguem como colunas de uma catedral, brancos e pulsantes. Entre eles, de pé, imóveis, estão dezenas de pessoas: mineiros de Pedra Funda, e outros, mais antigos, de roupas que você não reconhece, cobertos de fungo até o pescoço. Todos cantam de olhos fechados, virados para o fundo da caverna, de onde vem uma luz branca. Três caminhos atravessam o jardim.
+-> 283 Aproximar-se dos mineiros que cantam
+-> 77 Seguir pelo caminho da esquerda, entre os chapéus gigantes
+-> 308 Seguir pelo caminho da direita, na direção de um lago brilhante
+-> 332 Atravessar o trecho cheio de buracos
+-> 88 [!Antigos Revistados] Seguir por um caminho estreito bloqueado por um cogumelo redondo
+-> 375 [!Homens de Bruna Soltos] Entrar na galeria dos casulos
+-> 52 [!Fungoide Gigante Derrotado] Investigar um rugido entre os cogumelos
+-> 165 [!Velho Salvo] Ir até um velho que geme encostado num tronco
+-> 66 Seguir pelo caminho dos cogumelos vermelhos
+-> 92 [!Lanterna Achada] Ir até uma luz amarela caída no musgo
+-> 53 Seguir pelo caminho do meio, direto para a luz
+-> 62 Parar e escutar o canto
+
+## 225
+A chama da lamparina de Santa Bárbara toca o cristal, e por dentro dele uma luz se acende, primeiro fraca, depois forte, dourada como o sol que ninguém aqui embaixo vê há séculos. A esfera fica morna. O canto, lá longe, vacila e para por um instante.
+ganha: Sol de Pedra
+-> 262 Olhar em volta
+
+## 226
+Numa gaveta há uma lata de graxa, uma chave de roda e uma lamparina de capacete, daquelas que se prendem na testa.
+-> 54 [!Lamparina de Capacete] Pegar a lamparina de capacete
+-> 174 Voltar
+
+## 227
+Alguns dos mineiros que acordaram estão fracos demais para correr. Um deles cai no meio da rua, e outros dois param para levantá-lo.
+-> 70 Carregá-lo nas costas
+-> 130 Seguir em frente e confiar nos outros
+
+## 228
+Sua arma resvala na pedra como se ela fosse de vidro. Raízes se enrolam nos seus braços e apertam. Os chapéus dos cogumelos se abrem por toda a caverna, e o primeiro pó dourado começa a subir.
+energia: -3
+-> 335 Ver o que acontece
+
+## 229
+O sol gravado no escudo de bronze aquece e o pó que a criatura solta se queima antes de chegar ao seu rosto.
+combate: Filha da Rainha | 9 | 11
+-> 374 Olhar o coração
+
+## 230
+Na caverna, sentado num trono de pedra, está um esqueleto vestido com uma cota de malha dourada que não enferrujou. Ao lado dele, um escudo redondo. Nada se mexe.
+-> 169 Pegar a cota de malha
+-> 173 Voltar
+
+## 231
+O nível cinco é o mais fundo da mina. O calor é forte e as paredes suam. No fim da galeria principal, a parede de pedra foi aberta a picareta: um buraco irregular, alto como um homem, e do outro lado, degraus talhados na rocha que descem para a escuridão, com espirais gravadas nas paredes. O canto vem dali.
+-> 345 Atravessar o buraco e descer os degraus
+-> 55 Examinar os pequenos cogumelos que crescem em volta do buraco
+-> 384 Entrar na sala do topógrafo
+-> 339 [!Dormitório Salgado] Entrar na galeria onde muitos dormem
+-> 15 [!Cristal Pego] Entrar na galeria dos cristais vermelhos
+-> 139 Voltar ao nível quatro
+
+## 232
+A lama faz um barulho de sucção sob sua bota. A salamandra abre a boca.
+combate: Salamandra Cega | 7 | 10
+-> 368 Pegar a picareta
+
+## 233
+Nas mochilas você encontra cantis, um frasco de infusão de losna pela metade e um rolo de pavio.
+ganha: Infusão de Losna
+ganha: Pavio Longo
+anota: Mochilas Revistadas
+-> 240 Continuar
+
+## 234
+Quando você ergue o cetro, os crânios todos se viram para você com um estalo seco. Uma névoa cinza sobe do altar e toma a forma de um rei pequeno e furioso.
+combate: Rei Sem Descanso | 8 | 7
+-> 33 Ver o que restou
+
+## 235
+A maioria dos potes está vazia ou cheia de pó. Num deles, fechado com cera, há sementes douradas que brilham fracamente. Quando você abre a tampa, elas esquentam na sua mão como brasas.
+ganha: Sementes de Sol
+anota: Potes Abertos
+-> 19 Continuar
+
+## 236
+A prata da picareta faz o fungo chiar e murchar a cada golpe.
+combate: Filha da Rainha | 9 | 10
+-> 374 Olhar o coração
+
+## 237
+Os esporos no seu sangue respondem à voz. Suas pernas ficam pesadas, sua espada parece pesar como uma bigorna. Você se pega dobrando os joelhos para deitar no musgo.
+-> 133 [Infusão de Losna] Beber a infusão de losna
+-> 133 [Cogumelo Azul] Mastigar um cogumelo azul
+-> 385 [Medalha de Santa Bárbara] Apertar a medalha de Santa Bárbara
+teste de sorte: 243 | 149
+
+## 238
+A primeira galeria da mina é larga e escorada com vigas grossas. Trilhos de vagonete correm pelo chão até a escuridão. A lanterna mostra paredes vermelhas, úmidas, e marcas de picareta antigas. Depois de uns cinquenta passos você chega ao poço do elevador: uma gaiola de ferro parada, presa a um cabo que sobe até o galpão. Ao lado dela, uma escada de serviço de madeira desce pelo poço.
+-> 118 [Caldeira Acesa] Entrar na gaiola do elevador
+-> 324 Descer pela escada de serviço
+-> 367 [!Placa Antiga] Ler uma placa de bronze na parede
+-> 140 Explorar primeiro o nível um, seguindo os trilhos
+
+## 239
+Você ergue o Sol de Pedra acima da cabeça, como a estátua da praça. A luz dourada explode pelo jardim. Os guardas soltam as lanças e caem de joelhos, cobrindo os olhos, e os fungos dos ombros deles murcham. O canto vira um grito.
+anota: Guardas Derrubados
+-> 378 Entrar na caverna
+
+## 240
+A seta leva a uma câmara lateral onde a equipe de Bruna parou para descansar. Há mochilas largadas, cantis e uma marmita aberta. Num caixote, Bruna escreveu com giz: "Sonâmbulos passam por aqui de hora em hora. Seguimos pela Fenda. Se ler isto, não respire o ar perto dos cogumelos."
+pode comer
+-> 233 [!Mochilas Revistadas] Revistar as mochilas
+-> 56 Voltar
+
+## 241
+O homem cai desacordado, ferido mas vivo. Você o carrega de volta para casa. A esposa não diz nada, só olha os ferimentos dele e depois para você.
+-> 207 Voltar à praça
+
+## 242
+O pavio da banana é curto demais. Você acende e joga no meio das raízes, e corre.
+teste de sorte: 194 | 307
+
+## 243
+"Não", você diz. A voz da Rainha fica fria. "Então será adubo." As raízes nas paredes se soltam da rocha e se erguem como serpentes. Bruna, lá no alto, grita com a própria voz, por um instante: "O coração! Queima o coração!"
+-> 246 [Caio Acordado] Pedir a Caio que solte Bruna enquanto você distrai a Rainha
+-> 182 [Bruna Ainda Luta] Chamar Bruna pelo nome
+-> 132 Enfrentar as raízes
+
+## 244
+O arsenal do Povo do Musgo guarda armas pequenas demais para você: lanças curtas, arcos de osso, escudos redondos do tamanho de pratos. Mas num suporte há uma única arma de tamanho humano: uma espada curta de bronze, com espirais no cabo, deixada por algum visitante antigo.
+-> 12 Pegar a espada de bronze
+-> 247 Sair
+
+## 245
+A sopa é grossa e quente. Você raspa o prato.
+ouro: -1
+energia: +3
+anota: Sopa Tomada
+-> 248 Continuar
+
+## 246
+Caio corre pela lateral da massa branca, sobe pelas raízes e começa a cortar o casulo com a picareta. As raízes se viram para ele, e você ataca para atrair a atenção delas.
+combate: Raízes da Rainha | 8 | 10
+-> 312 Ver Bruna cair do casulo
+
+## 247
+A rua principal leva a uma praça redonda com uma fonte seca no centro. Sobre a fonte há a estátua de uma figura pequena, de cabeça grande, segurando um sol de pedra acima da cabeça. Da praça saem várias ruas: uma para um prédio de colunas, uma para uma forja com chaminé de pedra, uma para um templo de cúpula, uma para baixo, em escadarias, e uma que segue na direção de onde vem o canto.
+-> 2 [!Bilhete de Bruna na Estátua] Examinar a estátua
+-> 329 Ir ao prédio de colunas
+-> 326 Ir à forja de chaminé de pedra
+-> 115 Ir ao templo de cúpula
+-> 389 Descer as escadarias
+-> 293 [!Mercado Limpo] Atravessar o mercado de barracas de pedra
+-> 263 Subir ao aqueduto
+-> 277 Entrar na casa de chaminé torta
+-> 104 [!Enigma Resolvido] Ir ao anfiteatro
+-> 87 Entrar na cozinha comunal
+-> 267 [!Pedido Feito] Ir até a praça do poço
+-> 244 [!Arsenal Visitado] Entrar no arsenal
+-> 109 [!Espelhos Visitados] Entrar na praça dos cristais polidos
+-> 206 [!Pedra Rachada Vista] Visitar o jardim de pedras coloridas
+-> 191 Seguir na direção do canto
+
+## 248
+A estalagem do Lampião está quase vazia. O estalajadeiro, seu Firmino, serve sopa de feijão. Num canto, um velho mineiro de barba amarelada de tabaco, com a mão enfaixada, bebe sozinho.
+pode comer
+-> 245 [ouro 1+] [!Sopa Tomada] Pedir um prato de sopa (1 moeda)
+-> 84 [!Chave Vermelha] Sentar-se com o velho mineiro
+-> 207 Sair
+
+## 249
+Atrás da porta redonda se abre uma caverna enorme, tão grande que a lanterna não alcança o teto. Nela foi construída uma cidade inteira de pedra: casas redondas, pontes, escadarias e torres atarracadas. Não há ninguém. Uma luz azulada e fraca vem de musgos nas paredes. Esta é a Cidade Velha, que os mineiros encontraram.
+-> 247 Seguir pela rua principal
+-> 197 Subir na torre mais próxima para ter uma visão geral
+-> 19 Entrar numa das casas redondas
+
+## 250
+A boca da Garganta Rubra é um arco de pedra vermelha escorado com vigas, ao lado do galpão das máquinas, onde o motor do elevador está parado. Um guarda da vila, jovem e assustado, vigia a entrada com uma espingarda. De lá de dentro vem o ar morno e adocicado, e, muito baixinho, um som que parece gente cantando.
+-> 180 Falar com o guarda
+-> 192 Entrar no galpão das máquinas
+-> 238 Entrar na mina
+-> 352 [!Saída Barrada] Ouvir o grito do guarda Davi
+-> 207 Voltar à vila
+
+## 251
+Uma galeria lateral do nível um era o estábulo dos burros que puxavam vagonetes. Restou só um burro, velho e magro, amarrado num canto, que zurra de medo quando vê sua luz.
+-> 57 Soltar o burro
+-> 309 [provisões 1+] Dar comida ao burro
+-> 140 Voltar
+
+## 252
+Bruna Tavares senta-se numa pedra na boca da mina, enrolada num cobertor, olhando o sol nascer. Quando você se aproxima, ela ri, uma risada cansada. "Doze homens eu levei. Doze homens eu trouxe. Mais uns quarenta de lambuja." Ela estende a mão. "Bruna. Muito prazer. Quando quiser trabalho de verdade, a mina é sua."
+anota: Bruna Agradeceu
+sorte: +1
+-> 357 Voltar à multidão
+
+## 253
+No fim da galeria há uma rachadura na parede, por onde o canto entra. Encostando o ouvido, você ouve com clareza: é uma voz de mulher, repetindo nomes de mineiros, um por um, como quem chama para jantar. E no meio dos nomes, uma voz diferente grita "Não!" e se cala.
+anota: Bruna Ainda Luta
+-> 56 Voltar
+
+## 254
+Entre as lamparinas velhas, uma brilha diferente: é feita de latão claro, com uma pequena imagem da santa gravada no vidro. Uma plaquinha diz: "Do primeiro mineiro, que desceu sozinho e voltou." O padre Lino vê você olhando. "Pode levar. Ela não apaga com vento de mina. E dizem que onde ela brilha, coisa ruim não chega perto."
+ganha: Lamparina de Santa Bárbara
+-> 196 Agradecer
+
+## 255
+Bruna ajuda você a encaixar as bananas de pólvora entre as raízes, junto às cargas que os homens dela deixaram. Você estende o pavio longo até a entrada da caverna e acende. A chama começa a correr pelo pavio, chiando. Vocês têm alguns minutos.
+anota: Pólvora Armada
+-> 171 Correr
+
+## 256
+Não é tão boa quanto uma máscara de médico, mas segura poeira e, talvez, esporos.
+ganha: Máscara de Mineiro
+-> 81 Continuar
+
+## 257
+Trinta metros de corda grossa de cânhamo.
+ouro: -2
+ganha: Corda
+-> 298 Continuar
+
+## 258
+A banana de pólvora explode no meio dos guardas com um estrondo que sacode a caverna. Eles voam para os lados e ficam no chão, atordoados. Pedras caem do teto. Pelo menos o caminho está livre.
+perde: Banana de Pólvora
+anota: Guardas Derrubados
+-> 378 Entrar pela fresta
+
+## 259
+Na rua de baixo, três crianças brincam de mina com caixotes e cordas, apesar da hora. Uma menina de tranças é a capataz. "Você vai descer de verdade?", ela pergunta. "Leva isso. É de mineiro de verdade." É um toco de giz branco.
+-> 186 [!Giz de Mineiro] Aceitar o giz
+-> 207 Agradecer e voltar
+
+## 260
+A seiva apaga o fogo antes que ele chegue ao coração. A pedra branca pulsa mais forte, irritada.
+energia: -2
+-> 379 Golpear o coração com a arma
+
+## 261
+Na gaveta há um retrato de Bruna jovem ao lado de um homem de bigode, os dois com capacete de mina, e uma carta nunca enviada. "Mãe, se eu não voltar, a casa é sua. Desci porque ninguém mais desceria." Debaixo da carta, uma bolsa com as economias dela, com um bilhete: "Para quem me tirar de lá."
+ouro: +8
+anota: Gaveta de Bruna
+-> 303 Continuar
+
+## 262
+No pedestal, onde estava a esfera, há uma inscrição em espirais e, embaixo, a mesma figura das placas da biblioteca: um sol erguido diante de um coração cercado de raízes.
+-> 350 [Sol de Pedra Apagado] [Óleo de Lamparina] Tentar acender a esfera com óleo e fogo
+-> 247 Sair do templo
+
+## 263
+Um aqueduto de pedra atravessa a cidade velha no alto, levando água de uma fonte nas paredes até cisternas redondas. Uma escada estreita sobe até ele. De lá de cima, você vê a cidade inteira e caminha sobre os telhados.
+-> 360 Caminhar pelo aqueduto
+-> 247 Descer
+
+## 264
+O cogumelo azul derrete na boca do rapaz. Ele tosse, cospe pó branco e abre os olhos, castanhos e assustados. "Onde... pai?" Ele se chama Caio, filho de Otávio. "Eu vi o coração em sonho. Sei o caminho. Deixa eu ajudar."
+anota: Caio Acordado
+sorte: +1
+-> 282 Seguir com Caio
+
+## 265
+A última página do diário diz: "Vou descer com doze homens. Levamos pólvora. Se a coisa for o que eu penso, vamos explodir a passagem para a cidade velha e selar tudo. Deixei as bananas de pólvora extras no depósito do nível dois, atrás da porta vermelha. A chave está com o velho Joaquim."
+anota: Pólvora no Nível Dois
+-> 187 Continuar
+
+## 266
+A anciã leva você por becos estreitos até uma caverna escondida, onde vivem umas trinta criaturas pálidas, em volta de uma fogueira pequena de musgo seco. Elas cuidam de três mineiros adormecidos, deitados em camas de fibra, com cogumelos atrás das orelhas murchando sob compressas de cogumelo azul.
+pode comer
+-> 325 Examinar os mineiros
+-> 38 [!Aliado dos Pálidos] Esperar o que a anciã quer mostrar
+-> 126 Visitar a horta de cogumelos azuis
+-> 389 Voltar
+
+## 267
+No meio de uma praça pequena há um poço com moedas antigas no fundo, brilhando sob a água clara. Uma inscrição em espirais rodeia a boca do poço.
+-> 153 [ouro 1+] Jogar uma moeda e fazer um pedido
+-> 3 Enfiar a mão e pegar as moedas antigas
+-> 247 Seguir em frente
+
+## 268
+A explosão vem quando vocês ainda estão no jardim. A onda de choque derruba vocês dois, e uma chuva de pedras e pedaços de fungo cai do teto.
+energia: -5
+-> 285 Levantar-se
+
+## 269
+O padre Lino toca o sino da capela até os braços doerem. Quando você passa, ele desce correndo e lhe dá um abraço de urso que cheira a vela e a suor. "Santa Bárbara desceu com você", ele diz. "Eu sei que desceu."
+anota: Lino Agradeceu
+-> 357 Voltar à multidão
+
+## 270
+Você arranca a página e a guarda.
+ganha: Mapa da Cidade Velha
+-> 231 Voltar
+
+## 271
+O sal faz as raízes murcharem e se encolherem como lesmas. Uma passagem se abre.
+-> 378 Passar pela abertura
+
+## 272
+No meio da ponte de pedra, um verme enorme, de pele rosada e boca redonda cheia de dentes, sai da água e se ergue na sua frente, bloqueando o caminho.
+combate: Verme da Rocha | 8 | 11
+fuga -> 333
+-> 94 Seguir pelo outro lado da ponte
+
+## 273
+O velho mastiga o cogumelo e os fungos do pescoço dele murcham. Ele chora de alívio. "Severino é meu irmão. Se encontrar ele, diz que eu tô vivo." Ele tira do bolso um isqueiro de mineiro.
+ganha: Pederneira
+anota: Velho Salvo
+-> 224 Seguir em frente
+
+## 274
+Você dá três passos. O ar em volta da lanterna acende com um estalo azul, e uma explosão de fogo o joga para trás.
+energia: -6
+-> 56 Arrastar-se para fora
+
+## 275
+No quintal da casa velha da esquina, ao lado de uma figueira seca, há uma tampa de ferro no chão. Debaixo dela, o poço de ar desce reto para a escuridão, com uma escada de ferro presa à parede. Um vapor morno e doce sobe lá de baixo.
+-> 113 Descer pela escada do poço
+-> 207 Voltar à praça
+
+## 276
+O vagonete descarrila na curva e tomba. Você é atirado contra a parede de pedra.
+energia: -4
+-> 56 Levantar-se
+
+## 277
+Uma casa maior que as outras, com uma chaminé torta, era a casa de um alquimista do Povo do Musgo. Lá dentro há prateleiras de frascos de barro, almofarizes e um caldeirão de pedra. Alguns frascos ainda estão lacrados.
+-> 398 [!Frasco Vermelho Bebido] Abrir os frascos lacrados
+-> 135 [!Caldeirão Mexido] Examinar o caldeirão
+-> 247 Sair
+
+## 278
+Você corre com os olhos fechados, mas o pó vermelho queima o rosto e a garganta.
+energia: -2
+-> 53 Seguir em frente
+
+## 279
+O cetro de cristal acende com uma luz fria, e as raízes hesitam, encolhidas. Você ataca as que se aproximam.
+combate: Raízes da Rainha | 8 | 9
+-> 312 Ver o que acontece com Bruna
+
+## 280
+O mineiro que você sacode não acorda. Os cogumelos em volta dele se viram para você e soltam uma nuvem de pó.
+-> 10 [Máscara de Íris] Pôr a máscara
+-> 10 [Máscara de Mineiro] Pôr a máscara
+-> 288 Recuar tossindo
+
+## 281
+A torre do sino da vila fica ao lado da capela. Lá em cima, o guarda mais velho da vila, seu Neco, vigia os poços de ar com uma luneta. "Quando os cogumelos florescerem, o pó vai sair por ali, por ali e por ali", ele aponta. "Eu toco o sino e todo mundo foge para o alto do morro. Se der tempo."
+-> 148 Pedir a luneta emprestada
+-> 207 Descer
+
+## 282
+Caio caminha ao seu lado, segurando a picareta. "O coração fica numa caverna atrás da luz. Bruna está lá. Ela é a única que ainda grita lá dentro da cabeça. A Rainha quer usar ela para falar." Ele aponta. "Tem um jeito de chegar por trás, pelo lago. Ou pelo meio, mas lá tem os guardas dela."
+-> 308 Ir pelo lago
+-> 53 Ir pelo meio
+
+## 283
+Os mineiros cantam de olhos fechados. De perto, você reconhece rostos da vila, das portas marcadas com giz. Entre eles, um rapaz alto, de braços fortes de ferreiro, com cogumelos já subindo pelo pescoço.
+-> 204 Sacudir o rapaz
+-> 97 [!Caio Acordado] [Filhote de Lagarto de Fogo] Deixar o filhote de lagarto chegar perto dele
+-> 264 [!Caio Acordado] [Cogumelo Azul] Pôr um cogumelo azul na boca dele
+-> 224 Deixá-los e seguir
+
+## 284
+O reflexo caminha pelo labirinto e você o segue. No fim, ele aponta para o chão e some. No ponto que ele apontou há uma pedra solta, e embaixo dela, um saquinho com sementes douradas que brilham.
+ganha: Sementes de Sol
+anota: Espelhos Visitados
+-> 247 Sair
+
+## 285
+O coração da Rainha não existe mais. No lugar dele, só há pó, pedras e raízes cinzentas que se desfazem ao toque. Pelo jardim, os cogumelos murcham e tombam, um por um, como velas apagadas. E os mineiros que cantavam piscam, tossem, e começam a acordar, sem saber onde estão. O teto da caverna estala. A cidade velha está desabando.
+anota: Rainha Destruída
+-> 130 Levar todos para fora
+
+## 286
+O poço inundado agora é só lama e poças. No fundo, você vê a lamparina, ainda acesa, e ao lado dela o corpo de um mineiro da equipe de Bruna, preso por uma pedra. No cinto dele há uma picareta de lâmina prateada. Ao lado da poça maior, enrolada, dorme uma salamandra cega enorme, sem água para nadar.
+-> 63 Descer devagar e pegar a picareta sem acordá-la
+-> 39 Atacar a salamandra enquanto dorme
+
+## 287
+No nível quatro, você ouve passos. Muitos passos, arrastados, descalços. Uma procissão de sonâmbulos desce pela galeria em fila, cantando de olhos fechados. São mineiros, e também uma mulher de camisola e um menino. Eles vêm na sua direção.
+anota: Procissão Vista
+-> 31 Esconder-se num nicho da parede
+-> 362 Seguir atrás deles, no fim da fila
+-> 361 Ficar no meio da galeria para bloquear a passagem
+
+## 288
+Você respira um pouco do pó. Tem gosto de mel e de terra. Por um instante, você ouve o canto muito mais alto, e uma vontade mansa de descer e se deitar.
+aflição: Esporos no Sangue
+-> 209 [Infusão de Losna] Beber a infusão de losna
+-> 231 Sacudir a cabeça e voltar
+
+## 289
+Otávio não fala muito. Ele entra na ferraria e sai com uma espada nova, de lâmina limpa e cabo de chifre. "Fiz esta noite. Não consegui dormir." Ele a coloca nas suas mãos. "Ela é sua."
+arma: Espada de Otávio | +1
+anota: Presente de Otávio
+-> 357 Voltar à multidão
+
+## 290
+Vocês correm. Uma parte do teto da galeria do nível cinco desaba atrás de vocês, e outra na frente. Você precisa abrir passagem entre as pedras.
+teste de habilidade: 337 | 166
+
+## 291
+Quatro mineiros cobertos de fungo se viram ao mesmo tempo e avançam com lanças feitas de cabos de picareta.
+combate: Guarda de Fungo | 7 | 7
+combate junto: Guarda de Fungo | 7 | 6
+combate junto: Guarda de Fungo | 6 | 6
+-> 91 Encarar Bruna
+
+## 292
+Os olhos do menino se enchem de lágrimas. "O vô?" Ele abraça você com força. Depois enfia a mão no bolso. "A capataz deixou cair isso quando passou. Eu guardei." É uma lata de pólvora de mina, pequena, com pavio.
+ganha: Banana de Pólvora
+anota: Tonico Salvo
+sorte: +1
+-> 386 Mandá-lo subir para a vila
+
+## 293
+O mercado é uma praça de barracas de pedra, vazias. Em algumas ainda há potes, cestos e ferramentas pequenas. No meio dele, um cogumelo branco, alto como um homem, está de pé. Quando você chega perto, ele se vira. Não é um cogumelo: é uma criatura de fungo, com braços de raiz e uma boca no chapéu.
+-> 157 Lutar
+-> 17 [Pederneira] Acender fogo na direção dele
+-> 247 Voltar
+
+## 294
+O martelo das espirais desce sobre a pedra, e as espirais brilham como fogo. A pedra racha de ponta a ponta. Você golpeia de novo, e ela se parte em pedaços que se desfazem em pó.
+-> 285 Olhar o que restou
+
+## 295
+"E se eu levar você embora daqui?", você diz. "Para longe da vila, para outra montanha?" A voz ri pela boca de Bruna, uma risada de muitas bocas. "Eu sou a montanha. Eu sou o jardim. Não há longe para mim." As raízes começam a se erguer.
+-> 243 Preparar-se
+
+## 296
+Você prende a respiração e recua a tempo.
+-> 231 Voltar
+
+## 297
+A parede de raízes é grossa, viva e pulsa como veias. Atrás dela você ouve o canto muito alto, e uma voz de mulher gritando no meio dele.
+-> 16 Cortar as raízes com a espada
+-> 151 [Pederneira] Queimar as raízes
+-> 271 [Sal de Pedra] Jogar sal nas raízes
+
+## 298
+A ferraria é quente e barulhenta. O ferreiro, um homem alto e calado chamado Otávio, afia picaretas de mineiro. Na parede há martelos, cunhas, ganchos e cordas.
+-> 299 [!Picareta de Prata] [ouro 4+] [!Picareta de Guerra] Comprar uma picareta de guerra (4 moedas)
+-> 257 [ouro 2+] [!Corda] Comprar corda (2 moedas)
+-> 314 [ouro 2+] [!Gancho de Ferro] Comprar um gancho de ferro (2 moedas)
+-> 181 [!Conselho de Otávio] Perguntar o que ele sabe da mina
+-> 207 Sair
+
+## 299
+É uma picareta de cabo curto, com uma ponta afiada como lança e a outra como machado. "Corta pedra e corta o resto", diz Otávio.
+ouro: -4
+arma: Picareta de Guerra | +1
+-> 298 Continuar
+
+## 300
+No meio da ponte de corda, uma sombra enorme passa por baixo dela: um morcego do tamanho de um homem, de asas rasgadas, sobe da Fenda e se agarra às cordas, que balançam como numa tempestade.
+combate: Morcegão da Fenda | 8 | 9
+fuga -> 23
+-> 387 Terminar a travessia
+
+## 301
+Você corta os casulos um por um. Seis mineiros caem no chão, cobertos de fibras, tossindo. Eles estão fracos e confusos, mas acordados. "Bruna", diz um deles. "Ela está no coração. A Rainha quer ela para falar."
+anota: Bruna Ainda Luta
+anota: Homens de Bruna Soltos
+sorte: +2
+-> 349 Mandá-los subir
+
+## 302
+O cogumelo pega fogo e explode numa nuvem de pó em chamas que se apaga no ar. O caminho fica livre.
+-> 395 Seguir pelo caminho aberto
+
+## 303
+A casa da capataz Bruna fica ao lado do escritório da mina. É simples e arrumada como um quartel. A porta está destrancada. Na parede há um mapa da mina cheio de anotações, e num gancho, um cinturão de couro com bolsos.
+-> 203 [!Cinturão de Mineiro] Pegar o cinturão de couro
+-> 64 Ler as anotações no mapa
+-> 261 [!Gaveta de Bruna] Abrir a gaveta da mesa
+-> 207 Sair
+
+## 304
+Com a Rainha adormecida, as raízes não se mexem. O fogo pega no coração e sobe em chamas brancas, estalando como lenha seca. Desta vez, ela não acorda mais.
+-> 285 Ver o fogo terminar
+
+## 305
+Os desenhos contam uma história em quadros. O Povo do Musgo vivia na caverna e plantava cogumelos. Um dia, cavando, encontraram uma pedra branca que pulsava. Da pedra nasceu um cogumelo enorme, uma Rainha, que cantava. O povo foi dormir no jardim dela, um por um. Os últimos subiram ao templo, ergueram o Sol de Pedra, e a luz fez a Rainha dormir. Depois, fecharam a cidade.
+anota: A História da Rainha
+-> 329 Continuar
+
+## 306
+O galpão de explosivos da companhia fica afastado da vila, cercado de arame. Um vigia sonolento, de espingarda no colo, guarda o portão. "Ninguém entra. Ordem do conselho."
+-> 199 [ouro 5+] Oferecer 5 moedas ao vigia
+-> 71 [Pólvora no Nível Dois] Explicar que Bruna precisa de pólvora lá embaixo
+-> 207 Voltar
+
+## 307
+A explosão vem antes do que você esperava. A onda de choque o joga contra a parede, e pedras caem do teto. Mas o coração se parte, e o canto para.
+energia: -6
+-> 285 Levantar-se, se conseguir
+
+## 308
+O caminho da direita chega a um lago de água parada, coberto de uma camada de pó dourado que brilha. Do outro lado do lago, uma parede de raízes pulsa, e atrás dela vem a luz. Uma trilha de pedras chatas atravessa o lago.
+-> 44 Atravessar pelas pedras
+-> 111 Contornar o lago pela margem
+-> 224 Voltar
+
+## 309
+O burro come da sua mão e esfrega a cabeça no seu ombro. Depois você o solta, e ele trota para a saída. Ao sair, ele deixa à mostra um saco de couro escondido na palha.
+provisões: -1
+ganha: Óleo de Lamparina
+ouro: +2
+sorte: +1
+anota: Burro Solto
+-> 140 Voltar
+
+## 310
+No fim da galeria desmoronada há o corpo de um mineiro antigo, coberto de poeira, morto há décadas. Na mão dele, um saquinho de couro com pepitas de prata.
+ouro: +6
+anota: Galeria Desmoronada
+-> 140 Voltar
+
+## 311
+Com a segunda corda presa ao gancho, você desce em segurança até a saliência.
+-> 201 Chegar à saliência
+
+## 312
+Bruna cai do casulo e rola pelas raízes até o chão, coberta de fibras, mas viva e em si. "Eu sabia que alguém vinha", ela diz, com a voz rouca. "A pólvora. Meus homens deixaram cargas em volta do coração antes de dormirem. Mas o pavio molhou." Do alto, a massa branca se abre como uma boca. De dentro dela sai uma criatura: um corpo alto, feito de fungo, com o rosto de muitos mineiros misturados. A Filha da Rainha.
+anota: Bruna Salva
+-> 96 Enfrentar a Filha da Rainha
+-> 129 [Fogo-de-Barro] Arremessar o frasco de fogo-de-barro nela
+
+## 313
+Você cobre a lanterna com a mão. As criaturas relaxam. A primeira, uma fêmea velha de pele enrugada, se aproxima e toca sua mão com dedos frios. Ela fala numa língua de estalos, mas faz gestos claros: aponta para o canto, faz cara de sono, e depois aponta para você e faz o gesto de quebrar alguma coisa.
+-> 266 Segui-la
+-> 389 Agradecer com um gesto e se afastar
+
+## 314
+Um gancho de ferro de três pontas, para prender a corda.
+ouro: -2
+ganha: Gancho de Ferro
+-> 298 Continuar
+
+## 315
+Seu pé escorrega e encosta na lava por um instante. A dor é terrível. Você chega do outro lado com a bota fumegando.
+energia: -4
+-> 230 Entrar na caverna
+
+## 316
+"Errado." Uma rajada de vento frio sai da boca da estátua e o joga contra os degraus.
+energia: -3
+anota: Enigma Resolvido
+-> 247 Sair do anfiteatro
+
+## 317
+O apito de osso solta um som agudo que você mal ouve. Mas lá de trás, entre os cogumelos, dezenas de figuras pálidas surgem com lanças de osso e redes. O Povo Pálido derruba os guardas e os amarra no chão. A anciã faz um gesto para você: vá.
+anota: Guardas Derrubados
+anota: Pálidos na Batalha
+-> 378 Entrar na caverna
+
+## 318
+O nível dois tem o depósito de ferramentas, a oficina de vagonetes e, ao fundo, uma porta pintada de vermelho com uma caveira e a palavra PÓLVORA. O chão está coberto de pegadas de pés descalços, todas indo para baixo.
+-> 67 [Chave Vermelha] Abrir a porta vermelha
+-> 26 [!Chave Vermelha] Tentar arrombar a porta vermelha
+-> 174 Entrar na oficina de vagonetes
+-> 81 Entrar no depósito de ferramentas
+-> 48 Entrar no vestiário
+-> 328 [!Poço Drenado] Entrar na casa de bombas
+-> 324 Voltar à escada de serviço
+
+## 319
+As criaturas fogem gritando para todos os lados. Uma lança de osso voa da escuridão e acerta seu ombro. Quando você se recompõe, a cidade baixa está vazia e silenciosa. Eles não vão voltar.
+energia: -2
+anota: Pálidos Hostis
+-> 389 Seguir sozinho
+
+## 320
+A escada termina numa grade, que se abre para uma galeria do nível três. Você economizou muito tempo.
+-> 56 Sair no nível três
+
+## 321
+"Eu fui o primeiro capataz desta mina", diz o fantasma, sem se virar. "Cem anos atrás, nós também ouvimos o canto atrás da rocha. Eu mandei fechar o nível cinco com pedra e cal, e proibi todo mundo de cavar lá. Eles esqueceram." Ele suspira. "Fogo, luz e sal. Foi o que o meu avô me ensinou. Fogo, luz e sal."
+anota: Fogo, Luz e Sal
+sorte: +1
+-> 68 Despedir-se
+
+## 322
+Você solta o freio e o vagonete despenca pela rampa, ganhando velocidade nos trilhos. O vento uiva. Lá na frente, a lanterna mostra uma curva fechada e, logo depois, um trecho em que os trilhos estão quebrados.
+-> 167 Puxar o freio antes da curva
+-> 340 Pular do vagonete
+teste de sorte: 338 | 276
+
+## 323
+Você cava por meia hora e enche um saquinho com pedaços de prata. Seu braço dói.
+energia: -1
+ouro: +6
+anota: Prata Cavada
+-> 56 Voltar
+
+## 324
+A escada de serviço desce pela parede do poço, presa com ganchos de ferro. Os degraus estão escorregadios de umidade. De vez em quando há uma plataforma com uma porta para um nível.
+-> 140 Sair no nível um
+-> 318 Descer até o nível dois
+-> 24 Continuar descendo até o fundo
+
+## 325
+Os mineiros respiram tranquilos. Os Pálidos os resgataram da beira do jardim. Um deles abre os olhos e o reconhece como alguém da superfície. "A capataz... ela está lá, no meio do jardim. Ela ainda luta. A Rainha quer ela para ser a boca dela." Ele fecha os olhos de novo.
+anota: Bruna Ainda Luta
+-> 266 Voltar à fogueira
+
+## 326
+A forja antiga tem uma bigorna de pedra negra e um forno escavado na rocha, que ainda está morno: um respiro de calor sobe do fundo da terra por um cano de pedra. Ferramentas pequenas e estranhas pendem das paredes. Num suporte, coberto de pó, há um martelo de cabeça redonda, com espirais gravadas.
+-> 392 [!Martelo Pego] Pegar o martelo
+-> 363 Examinar o forno
+-> 247 Sair
+
+## 327
+A pedra racha. Você golpeia de novo e de novo, até ela se partir em pedaços.
+-> 285 Olhar o que restou
+
+## 328
+A casa de bombas do nível dois tem uma bomba de água grande, movida a manivela, ligada a canos que descem para o nível três. Uma placa diz: "Poço inundado. Bombear só em emergência."
+-> 179 Girar a manivela e esvaziar o poço inundado
+-> 318 Sair
+
+## 329
+O prédio de colunas é uma biblioteca de pedra. Em vez de livros, há milhares de placas de pedra empilhadas em nichos, gravadas com espirais e desenhos. Uma luz azul fraca vem do teto. No centro, uma mesa de pedra com uma placa maior que as outras, de desenhos bem conservados.
+-> 305 Examinar a placa grande
+-> 347 [!Nichos Revistados] Procurar entre os nichos
+-> 218 [!Lourenço Salvo] Investigar um som de raspar vindo do fundo
+-> 247 Sair
+
+## 330
+Você se inclina sobre um mineiro jovem. Ele abre os olhos de repente, olhos brancos como leite, e sussurra com uma voz que não é dele: "Desça. Ela está esperando. Ela tem lugar para todos no jardim." Depois fecha os olhos de novo, e a voz some.
+anota: A Voz do Jardim
+-> 354 Afastar-se
+
+## 331
+A caverna lateral é estreita e sobe em rampa, até um ponto em que ela se abre numa galeria com colunas. Você está dentro da cidade antiga, por baixo.
+-> 389 Seguir em frente
+
+## 332
+No jardim, entre os cogumelos, o chão está cheio de buracos redondos. Dentro deles, vermes brancos do tamanho de um braço se enroscam. Quando você passa, eles saem todos ao mesmo tempo.
+combate: Vermes do Jardim | 6 | 8
+fuga -> 224
+-> 224 Seguir
+
+## 333
+O rio subterrâneo é escuro e rápido, mas raso nas bordas. Um caminho estreito de pedra segue ao lado dele. Mais adiante há uma ponte de pedra, e depois dela o rio entra num túnel baixo.
+-> 272 Atravessar a ponte
+-> 193 [Caminho do Rio] Seguir pelo túnel do rio, como a anciã mostrou
+-> 147 Observar a água
+-> 358 [!Tumba Visitada] Seguir até a ponte quebrada
+-> 389 Voltar
+
+## 334
+O pó não passa. Quando a nuvem assenta, o caminho está livre.
+-> 395 Seguir pelo caminho aberto
+
+## 335
+A floração começa. O pó dourado sobe em colunas pelos poços de ar, rumo à superfície. Você luta até o fim, mas não há fogo, nem luz, nem pólvora. Ao amanhecer, os sinos de Pedra Funda tocam uma única vez, e depois param.
+fim: A Rainha floresceu. Pedra Funda caiu no sono. A aventura termina aqui.
+
+## 336
+Contornando o templo, você encontra uma janela estreita, alta, com grades de bronze, e uma rachadura na parede, por onde passa um braço. Lá dentro você vê uma luz dourada e quente.
+-> 11 Enfiar o braço e tatear
+-> 115 Voltar à porta
+
+## 337
+Vocês sobem. Pela escada de serviço, pelo elevador quando ele funciona, de mão em mão. No nível um, os primeiros raios de sol entram pela boca da mina. É o amanhecer, e não há pó dourado no ar. Só o cheiro de terra e de manhã.
+-> 357 Sair para a luz
+
+## 338
+O vagonete pula sobre os trilhos quebrados, voa por um instante e cai do outro lado, raspando em faíscas até parar na plataforma do nível três.
+-> 56 Descer do vagonete
+
+## 339
+Numa galeria do nível cinco, dezenas de mineiros estão deitados no chão, lado a lado, dormindo. Cogumelos brotam do musgo em volta deles. Eles são os que chegaram primeiro, e estão sendo plantados.
+-> 280 Tentar acordar um deles
+-> 100 [Sal de Pedra] Espalhar sal em volta deles
+-> 231 Recuar devagar
+
+## 340
+Você salta e rola pelo chão de pedra. O vagonete continua e voa pela ponta dos trilhos quebrados, sumindo num buraco escuro com um estrondo.
+energia: -2
+-> 56 Seguir a pé
+
+## 341
+Um frasco de óleo grosso. Dá para encher a lanterna duas vezes, ou para fazer fogo onde precisar.
+ouro: -1
+ganha: Óleo de Lamparina
+-> 112 Continuar
+
+## 342
+O conhaque desce queimando. Você se sente mais forte, e um pouco mais corajoso do que deveria.
+energia: +2
+sorte: +1
+anota: Garrafa dos Capatazes
+-> 138 Continuar
+
+## 343
+A maioria da comida estragou, mas há pão em lata e carne seca em bom estado.
+provisões: +2
+anota: Marmitas Revistadas
+-> 386 Continuar
+
+## 344
+O freio segura. A gaiola para, torta, na altura do nível quatro. Você força a grade e sai, tremendo.
+-> 139 Sair no nível quatro
+
+## 345
+Os degraus atrás do buraco descem em espiral, largos e lisos, gastos por milhares de pés ao longo de séculos. Nas paredes, as espirais gravadas formam desenhos: figuras pequenas, de cabeças grandes, carregando cestos de cogumelos. O canto fica mais alto. Ao fim da escada, uma porta redonda de pedra.
+-> 249 Passar pela porta redonda
+
+## 346
+Numa casinha coberta de plantas mora dona Benta, uma velha que vende ervas. A casa cheira a losna e a alecrim. Ela já está separando maços quando você entra. "A doutora manda as pessoas aqui. A losna é minha."
+-> 7 [ouro 2+] [!Infusão de Losna] Comprar infusão de losna (2 moedas)
+-> 121 [ouro 1+] [!Sal de Pedra] Comprar um saquinho de sal grosso (1 moeda)
+-> 207 Sair
+
+## 347
+Entre as placas, uma está solta e pintada de vermelho. Nela, há só um desenho: uma figura com uma tocha entrando num buraco, e embaixo, um coração cercado de raízes que pegam fogo. Atrás da placa vermelha, no nicho, há um frasco de barro lacrado com um símbolo de chama.
+ganha: Fogo-de-Barro
+anota: Nichos Revistados
+-> 329 Continuar
+
+## 348
+Severino se levanta mancando. "Não posso descer com essa perna. Mas tenho isto." Ele lhe entrega um saco de lona com duas bananas de pólvora e um isqueiro de mineiro. "A gente ia explodir a entrada da cidade velha. Faz você." Ele começa a subir, devagar, apoiado na parede.
+ganha: Banana de Pólvora
+ganha: Pederneira
+anota: Severino Salvo
+sorte: +1
+-> 139 Voltar
+
+## 349
+Os mineiros se ajudam e começam a voltar, devagar, pelo caminho do jardim. Um deles lhe entrega um saco de lona. Dentro há duas bananas de pólvora.
+ganha: Banana de Pólvora
+-> 224 Seguir em frente
+
+## 350
+Você esfrega óleo na esfera e encosta a chama da lanterna. O óleo queima por um minuto inteiro, e quando a chama apaga, a esfera está acesa por dentro, com uma luz dourada fraca, mas viva.
+perde: Sol de Pedra Apagado
+perde: Óleo de Lamparina
+ganha: Sol de Pedra
+-> 247 Sair do templo
+
+## 351
+No nível três, uma galeria leva a um ventilador enorme de pás de madeira, movido por uma roda d'água subterrânea. Ele empurra o ar da mina para cima, pelos poços, até a vila. O ar que passa por ele é morno e doce.
+-> 78 Travar o ventilador
+-> 56 Voltar
+
+## 352
+Na boca da mina, o guarda Davi grita e aponta: uma fila de sonâmbulos sobe pela galeria do nível um, cantando, em direção à vila. Estão saindo!
+-> 155 Ajudar Davi a barrar a saída
+-> 238 Ignorar e descer
+
+## 353
+As sementes encaixam no buraco do relevo e começam a brilhar. O sol de bronze esquenta e a porta se abre sozinha, com um suspiro de ar quente. As estátuas dos lados se curvam numa reverência de pedra e ficam imóveis.
+-> 20 Entrar no templo
+
+## 354
+A casa da doutora Íris virou enfermaria. Em seis camas, mineiros dormem amarrados, suando de febre. Atrás da orelha de cada um, pequenos cogumelos brancos pulsam devagar, como se respirassem. Íris mistura alguma coisa num caldeirão.
+-> 205 [!Infusão de Losna] Perguntar o que ela está preparando
+-> 189 [!Máscara de Íris] Pedir alguma proteção contra os esporos
+-> 330 [!A Voz do Jardim] Examinar um dos doentes
+-> 207 Sair
+
+## 355
+Atrás da cortina de raízes, você está numa galeria estreita que corre por trás da caverna do coração. Por uma fresta na parede, você vê tudo: uma caverna redonda, no centro dela uma massa branca e pulsante do tamanho de uma casa, cheia de raízes, e no alto dela, presa até a cintura, uma mulher de cabelos curtos e roupa de capataz. Bruna. Em volta, quatro mineiros cobertos de fungo montam guarda, de lanças nas mãos.
+-> 216 Esperar o momento certo
+-> 258 [Banana de Pólvora] Acender uma banana de pólvora e jogar entre os guardas
+-> 378 Entrar pela fresta
+
+## 356
+É fogo-de-barro, a arma que o povo antigo usava contra o fungo.
+ganha: Fogo-de-Barro
+-> 277 Continuar
+
+## 357
+Na boca da mina, a vila inteira está esperando. Quando os primeiros mineiros saem para a luz, piscando, um grito sobe da multidão. Mães correm, esposas choram, crianças se agarram às pernas dos pais. Otávio, o ferreiro, aperta o filho nos braços sem dizer uma palavra.
+-> 137 [Tonico Salvo] [!Joaquim Agradeceu] Procurar o velho Joaquim
+-> 289 [Caio Acordado] [!Presente de Otávio] Falar com Otávio
+-> 72 [!Íris Agradeceu] Ir até a doutora Íris
+-> 252 [Bruna Salva] [!Bruna Agradeceu] Procurar Bruna
+-> 136 [!Davi Agradeceu] Procurar o guarda Davi
+-> 269 [!Lino Agradeceu] Procurar o padre Lino
+-> 143 [Severino Salvo] [Velho Salvo] [!Irmãos Reunidos] Ver o reencontro de Severino e o irmão
+-> 400 Receber a recompensa
+
+## 358
+Uma ponte de pedra sobre o rio está quebrada no meio. Do outro lado, uma porta pequena brilha com a luz dourada que vem de dentro.
+-> 134 Atravessar o rio nadando
+-> 107 [Corda] Amarrar a corda e atravessar
+-> 333 Voltar
+
+## 359
+Você conversa com o velho sobre a vila, a mina, os netos dele. Ele ri, chora, e aos poucos os olhos dele ficam mais firmes. "Vou subir", diz. "Devagar. Mas vou." Ele não tem nada para lhe dar, só um aperto de mão.
+sorte: +1
+anota: Velho Salvo
+-> 224 Seguir em frente
+
+## 360
+O canal do aqueduto é estreito e escorregadio. No meio do caminho, uma parte dele desabou, e há um vão de três metros sobre uma rua lá embaixo.
+-> 163 [Corda] [Gancho de Ferro] Lançar o gancho e atravessar pela corda
+teste de habilidade: 223 | 161
+
+## 361
+Os sonâmbulos param à sua frente. Todos abrem os olhos ao mesmo tempo, olhos brancos, e avançam como um só.
+combate: Sonâmbulo | 5 | 5
+combate junto: Sonâmbulo | 5 | 5
+combate junto: Sonâmbulo | 5 | 4
+fuga -> 139
+-> 139 Deixar os sonâmbulos caídos
+
+## 362
+Você caminha no fim da fila, cantarolando. A procissão desce até o nível cinco e entra pelo buraco da parede, descendo os degraus da cidade velha. Ninguém nota você.
+-> 345 Descer com eles
+
+## 363
+O forno está ligado ao calor da terra. Se você colocar ali alguma coisa por alguns minutos, ela esquenta até ficar vermelha.
+-> 215 [!Ovo Chocado] [Ovo de Lagarto de Fogo] Colocar o ovo de lagarto de fogo no forno
+-> 326 Voltar
+
+## 364
+O padre põe a mão pesada na sua cabeça e reza em voz baixa. Você sente um calor no peito, como uma lamparina se acendendo.
+anota: Bênção do Padre
+sorte: +1
+-> 196 Agradecer
+
+## 365
+O filhote sobe na esfera e se enrosca em cima dela, brilhando. O calor dele passa para o cristal, e uma luz dourada acende lá dentro, forte e firme. O filhote parece satisfeito e volta para o seu ombro.
+ganha: Sol de Pedra
+-> 262 Olhar em volta
+
+## 366
+Você alcança o homem perto do galpão das máquinas e segura o braço dele. Ele se vira com olhos brancos e rosna, mostrando os dentes, e ataca com as unhas.
+-> 114 [Corda] Imobilizá-lo com a corda
+combate: Mineiro Sonâmbulo | 6 | 6
+-> 241 Ver o homem caído
+
+## 367
+Na parede da primeira galeria, quase coberta pela poeira, há uma placa de bronze antiga: "Nível cinco fechado por ordem do capataz. Não cavar além da marca vermelha. Lá embaixo canta o que não deve ser ouvido." Alguém, recentemente, riscou a placa com uma picareta.
+anota: Placa Antiga
+-> 238 Seguir em frente
+
+## 368
+Você solta a picareta e volta à tona com os pulmões explodindo. A lâmina tem um brilho estranho: é aço com prata, forjado para cortar veios duros. E os cogumelos, você nota mais tarde, murcham quando ela passa perto.
+arma: Picareta de Prata | +2
+anota: Poço Explorado
+-> 56 Sair da água
+
+## 369
+Você estende pão e linguiça. As criaturas cheiram, desconfiadas, depois comem com gosto. A mais velha delas, uma fêmea de pele enrugada, faz uma reverência e o convida, com gestos, a segui-la.
+provisões: -1
+-> 266 Segui-la
+
+## 370
+Vocês correm pelo jardim, pela rua principal, pela praça.
+teste de sorte: 119 | 268
+
+## 371
+O cogumelo é crocante e fresco. Uma sensação de clareza sobe pela sua cabeça, e o canto ao longe fica mais fraco. Estes cogumelos são remédio, não veneno.
+energia: +2
+cura: Esporos no Sangue
+-> 214 [!Cogumelo Azul] Guardar o resto
+-> 247 Voltar à praça
+
+## 372
+Uma galeria lateral do nível três cheira estranho, um cheiro forte de ovo podre. Placas velhas na entrada dizem: "GRISU. NÃO ENTRAR COM CHAMA."
+-> 274 Entrar com a lanterna acesa
+-> 146 Apagar a lanterna e entrar tateando
+-> 56 Voltar
+
+## 373
+O freio segura só em parte. A gaiola desce aos trancos e bate no fundo do poço com um estrondo. Você é jogado contra as grades.
+energia: -5
+-> 139 Arrastar-se para fora no nível quatro
+
+## 374
+A Filha da Rainha desaba em pó. A massa branca no centro da caverna treme e se abre, e lá dentro você vê o coração: uma pedra branca, do tamanho de uma cabeça, envolta em raízes, que pulsa como uma coisa viva. É a pedra das placas da biblioteca. Os cogumelos em volta começam a abrir os chapéus. A floração está começando.
+-> 89 [Luz Engarrafada] Derramar a luz engarrafada sobre o coração
+-> 255 [Banana de Pólvora] [Pavio Longo] Armar a pólvora com o pavio longo em volta do coração
+-> 242 [Banana de Pólvora] [!Pavio Longo] Acender a banana de pólvora com o pavio curto dela
+-> 185 [Sol de Pedra] Erguer o Sol de Pedra diante do coração
+-> 219 [Filhote de Lagarto de Fogo] Pedir ao filhote de lagarto que queime o coração
+-> 127 [Pederneira] [Óleo de Lamparina] Encharcar o coração de óleo e pôr fogo
+-> 124 [Sal de Pedra] Cobrir o coração de sal
+-> 47 [Cristal de Brasa] Encostar o cristal de brasa no coração
+-> 379 Golpear o coração com a sua arma
+
+## 375
+No jardim há uma galeria cheia de casulos brancos pendurados nas raízes, cada um do tamanho de um homem. Dentro deles, sombras se mexem devagar. São os homens de Bruna.
+-> 301 Cortar os casulos e libertá-los
+-> 224 Seguir em frente
+
+## 376
+A gaiola desce rápido demais. Entre o nível três e o quatro, o cabo estala, e a gaiola cai em queda livre por um instante antes que o freio de emergência trave nos trilhos com um guincho de metal.
+teste de sorte: 344 | 373
+
+## 377
+A bolsa era de um dos homens de Bruna. Dentro há um frasco de infusão de losna e uma banana de pólvora.
+ganha: Infusão de Losna
+ganha: Banana de Pólvora
+anota: Bolsa do Bosque
+-> 77 Continuar
+
+## 378
+A caverna do coração é redonda e alta. No centro, uma massa branca do tamanho de uma casa pulsa devagar, coberta de raízes grossas que se espalham pelas paredes e somem nas rochas, subindo, subindo, em direção à vila lá em cima. No alto da massa, presa até a cintura num casulo de fibras, está Bruna Tavares, a capataz. Os olhos dela estão brancos. Quando ela fala, a voz é de muitas pessoas ao mesmo tempo.
+-> 291 [!Guardas Derrubados] [!Ataque Surpresa] Olhar em volta
+-> 91 [Guardas Derrubados] Encarar Bruna
+-> 91 [Ataque Surpresa] Encarar Bruna
+
+## 379
+Você ergue a arma e golpeia a pedra branca com toda a força.
+-> 294 [Martelo Rúnico] Golpear com o martelo rúnico
+-> 93 [Coração Salgado] Aproveitar que o sal o enfraqueceu
+teste de habilidade: 327 | 228
+
+## 380
+As bolhas aumentam. Uma cabeça enorme, lisa e cinzenta sai da água: uma salamandra cega do tamanho de um boi, com a boca cheia de dentes finos. Ela fareja o ar, sente seu cheiro e avança.
+combate: Salamandra Cega | 7 | 10
+fuga -> 56
+-> 170 Mergulhar agora que a salamandra está morta
+
+## 381
+Você desce correndo, mas as figuras desaparecem num beco. No chão do beco, deixaram cair um cesto de vime com cogumelos azuis, de um tipo diferente dos brancos. Têm cheiro de hortelã.
+-> 371 Comer um dos cogumelos azuis
+-> 214 [!Cogumelo Azul] Guardar o cesto
+-> 247 Deixar o cesto e voltar à praça
+
+## 382
+Você corre pelas tábuas. Uma delas se parte.
+teste de sorte: 387 | 50
+
+## 383
+Uma galeria do nível três termina num veio de prata recém-aberto. A prata brilha na rocha negra. Picaretas largadas e sacos vazios mostram que os mineiros pararam de trabalhar de repente.
+-> 323 Cavar um pouco de prata
+-> 56 Voltar
+
+## 384
+No nível cinco, a sala do topógrafo da mina tem uma mesa com instrumentos de medição e cadernos. O último caderno tem um desenho cuidadoso da cidade velha, feito por alguém que espiou pelo buraco antes de todos: a praça, o templo de cúpula, a ponte sobre o rio e, no fundo, uma caverna marcada com um X e a palavra "LUZ?".
+-> 270 [!Mapa da Cidade Velha] Levar o desenho
+-> 231 Voltar
+
+## 385
+A medalha esquenta na sua mão e você lembra do padre Lino, das lamparinas na parede da capela, de cem anos de mineiros que desceram e voltaram. A voz perde a força.
+-> 243 Recusar o convite
+
+## 386
+O refeitório tem mesas compridas e bancos. Sobre as mesas ainda há marmitas abertas, com a comida estragada. Alguém saiu às pressas. Num canto, encolhido debaixo da mesa, um menino de uns doze anos dorme de olhos abertos.
+pode comer
+-> 158 [!Tonico Salvo] Acordar o menino
+-> 343 [!Marmitas Revistadas] Procurar comida boa nas marmitas
+-> 140 Sair
+
+## 387
+Do outro lado da Fenda, uma passagem estreita entra na rocha. As paredes aqui não têm marcas de picareta: foram alisadas, há muito tempo, por mãos que não eram humanas. Espirais gravadas na pedra levam a uma porta redonda de pedra, entreaberta.
+-> 249 Passar pela porta redonda
+-> 23 Voltar pela ponte
+
+## 388
+A ponte balança a cada passo. Várias tábuas estão podres. No meio, você ouve um bater de asas: morcegos enormes, de asas de couro e focinho de porco, saem da Fenda e voam em volta de você.
+-> 110 [Lamparina de Santa Bárbara] Erguer a lamparina de Santa Bárbara
+-> 13 Lutar sobre a ponte
+-> 382 Correr até o outro lado
+-> 300 Seguir devagar, segurando firme nas cordas
+
+## 389
+As escadarias descem para a parte baixa da cidade, onde as casas são escavadas na rocha e um rio subterrâneo corre entre muros de pedra. Aqui o ar é mais fresco. Você ouve vozes miúdas cochichando nas sombras, e a luz azul do musgo está apagada em alguns lugares, como se alguém a tivesse raspado de propósito.
+-> 220 [!Aliado dos Pálidos] Chamar as vozes, em voz baixa
+-> 333 Seguir o rio
+-> 222 [!Ossário Visitado] Entrar numa abertura com crânios pequenos empilhados na entrada
+-> 4 Ir até a cisterna de água limpa
+-> 247 Subir de volta à praça
+
+## 390
+Pão duro, linguiça defumada e queijo de cabra.
+ouro: -2
+provisões: +3
+-> 112 Continuar
+
+## 391
+No nível um, numa reentrância da galeria, os mineiros construíram uma pequena capela de pedra para Santa Bárbara. Há velas apagadas, flores de papel e um banco. É um lugar quieto, onde o ar doce não chega.
+pode comer
+-> 123 [!Vela Acesa] Acender uma vela
+-> 152 [!Descansou na Capela] Sentar-se no banco e descansar
+-> 140 Voltar à galeria
+
+## 392
+O martelo é pequeno, mas pesado, e se ajusta à sua mão como se tivesse sido feito para ela. Quando você o ergue, as espirais brilham com uma luz quente e o musgo azul em volta encolhe.
+arma: Martelo Rúnico | +2
+anota: Martelo Pego
+-> 326 Continuar
+
+## 393
+O cabo de aço do elevador está gasto e, num ponto, alguns fios estão arrebentados. Aguenta? Talvez. Talvez não.
+anota: Cabo Gasto
+-> 192 Continuar
+
+## 394
+A água é fria e tem gosto de pedra. O sono doce some, e suas forças voltam.
+energia: +4
+cura: Esporos no Sangue
+anota: Bebeu da Fonte
+-> 80 Continuar
+
+## 395
+Atrás do cogumelo gigante há uma clareira com corpos antigos, cobertos de fungo. São aventureiros de outros tempos, com armaduras e mochilas de modelos que você nunca viu. Eles também desceram para destruir a Rainha.
+-> 212 Revistar as mochilas
+-> 224 Voltar
+
+## 396
+O cogumelo azul tem gosto de hortelã e limpa a sua cabeça na hora.
+cura: Esporos no Sangue
+-> 224 Seguir em frente
+
+## 397
+As pedras são quentes como chapas de fogão. Você salta de uma para outra.
+teste de habilidade: 230 | 315
+
+## 398
+A maioria dos frascos virou pó. Um deles tem um líquido vermelho que cheira a canela. Outro tem o mesmo símbolo de chama da biblioteca.
+-> 75 Beber o líquido vermelho
+-> 356 [!Fogo-de-Barro] Guardar o frasco com o símbolo de chama
+-> 277 Voltar
+
+## 399
+O pó entra pelo seu nariz. Um sono doce sobe pelo corpo, e você se pega parando, pensando em como seria bom deitar no musgo macio e cantar também.
+aflição: Esporos no Sangue
+-> 6 [Infusão de Losna] Beber a infusão de losna
+-> 396 [Cogumelo Azul] Mastigar um cogumelo azul
+-> 224 Lutar contra o sono e seguir
+
+## 400
+O conselho da vila entrega as quarenta moedas de ouro, e mais um saco de prata que os mineiros juntam entre si, moeda por moeda. Naquela noite, a estalagem do Lampião faz uma festa que dura até de manhã. O padre Lino pendura uma lamparina nova na parede da capela, entre as de cem anos de mortos: uma lamparina acesa, para quem desceu e voltou.
+
+Semanas depois, quando você deixa Pedra Funda, os mineiros já voltaram ao trabalho. A Garganta Rubra continua dando prata. E ninguém, nunca mais, ouve canto atrás da rocha.
+ouro: +40
+fim: Você destruiu a Rainha-Fungo, salvou os mineiros e Pedra Funda. Vitória!
+</script>
+
+<script type="text/plain" id="exemplo">Título: A Torre do Relojoeiro
+Habilidade: 1d6+6
+Energia: 2d6+12
+Sorte: 1d6+6
+Fé: 1d6+3
+Equipamento: Espada, Armadura de couro, Lanterna
+Provisões: 10
+
+O relojoeiro Anselmo desapareceu há três noites, e com ele parou o grande relógio da vila de Vau Cinzento. Os moradores dizem que algo se mudou para a torre.
+
+Você aceitou subir até lá e descobrir o que aconteceu.
+
+## 1
+A porta da torre está entreaberta. Lá dentro, o ar cheira a óleo velho e ferrugem. Uma escada em espiral sobe para a escuridão. À esquerda, há uma pequena oficina com uma vela ainda acesa.
+-> 2 Entrar na oficina
+-> 3 Subir a escada imediatamente
+
+## 2
+A bancada está coberta de engrenagens. Sob um pano você encontra uma chave de latão com dentes em forma de roda dentada. Pendurado na parede há um martelo de relojoeiro, pesado e bem equilibrado.
+ganha: Chave de Engrenagem
+arma: Martelo do Relojoeiro | +1
+-> 3 Voltar e subir a escada
+
+## 3
+No meio da escada, um degrau range e cede sob o seu pé.
+teste de sorte: 4 | 5
+
+## 4
+Você se agarra ao corrimão bem a tempo. O degrau despenca no escuro e leva vários segundos até bater no chão.
+-> 6 Seguir até o topo
+
+## 5
+Você escorrega e torce o tornozelo na pedra antes de conseguir se segurar.
+energia: -2
+aflição: Tornozelo torcido
+-> 6 Mancar até o topo
+
+## 6
+A sala do mecanismo é enorme. Sobre o eixo principal está empoleirado um corvo feito de latão, do tamanho de um cão. Ao mesmo tempo, um rato de corda sai de trás de um pêndulo. Os dois atacam juntos.
+combate: Corvo de Latão | 7 | 8
+combate junto: Rato de Corda | 5 | 4
+fuga -> 9
+-> 7 Examinar o mecanismo
+
+## 7
+Com os autômatos desmontados no chão, você enxerga o problema: uma portinhola trancada no coração do mecanismo, de onde vêm batidas abafadas.
+-> 8 [Chave de Engrenagem] Usar a chave de latão
+-> 14 [fé 7+] Pôr a mão sobre a portinhola e rezar
+-> 10 Forçar a portinhola com as mãos
+
+## 8
+A chave gira com um estalo. Encolhido entre as engrenagens está o próprio Anselmo, faminto mas vivo. Ele construiu os autômatos para guardar a torre e acabou trancado pela própria criação.
+
+Juntos, vocês dão corda no grande relógio. Lá embaixo, a vila inteira ouve o primeiro badalo em três dias.
+ouro: +20
+fé: +1
+cura: Tornozelo torcido
+fim: Você salvou o relojoeiro e devolveu as horas a Vau Cinzento.
+
+## 9
+Você desce correndo e só para do lado de fora. A torre continua em silêncio.
+fim: Você sobreviveu, mas o relógio continua parado.
+
+## 10
+Você puxa a portinhola com toda a força. Uma engrenagem solta prende sua manga e arrasta seu braço para dentro do mecanismo.
+energia: -3
+teste de habilidade: 11 | 12
+
+## 11
+Com um puxão firme você se solta. Do outro lado da portinhola, uma voz rouca grita: *"A chave! Ficou na oficina!"*
+-> 13 Descer até a oficina
+
+## 12
+A engrenagem não solta. Quando finalmente se livra, você está ferido demais para continuar, e os moradores precisam carregá-lo de volta para a vila.
+fim: Sua aventura termina aqui.
+
+## 13
+Você desce pulando o degrau quebrado e encontra a chave de latão na bancada.
+ganha: Chave de Engrenagem
+-> 8 Voltar e abrir a portinhola
+
+## 14
+Por um instante as engrenagens param de girar. A portinhola se abre sozinha, como se o próprio mecanismo reconhecesse suas boas intenções.
+habilidade inicial: +1
+-> 8 Entrar
+</script>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const app=$('#app');
+const d6=()=>1+Math.floor(Math.random()*6);
+const KEY='livrojogo.texto.v2', NKEY='livrojogo.anotacoes';
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const exemplo=$('#exemplo').textContent.replace(/^\n/,'');
+const aventura=$('#aventura').textContent.replace(/^\n/,'');
+
+let src=aventura;
+let book, view='play', S, notesText=store.get(NKEY)||'';
+
+/* ---------- Trilha de suspense (sintetizada no navegador) ---------- */
+const Music=(()=>{
+  let ctx=null,master,bus,lp,on=false,combat=false,vol=0.55,timer=0,nextNote=0,nextBeat=0;
+  const AC=window.AudioContext||window.webkitAudioContext;
+  const SCALE=[62,63,65,67,69,70,72,74,75,77]; // ré frígio
+  const mtof=m=>440*Math.pow(2,(m-69)/12);
+  function impulse(sec){const n=ctx.sampleRate*sec,b=ctx.createBuffer(2,n,ctx.sampleRate);for(let c=0;c<2;c++){const d=b.getChannelData(c);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3);}return b;}
+  function osc(type,f,det,g,dest){const o=ctx.createOscillator();o.type=type;o.frequency.value=f;o.detune.value=det;const gn=ctx.createGain();gn.gain.value=g;o.connect(gn);gn.connect(dest);o.start();return gn;}
+  function build(){
+    ctx=new AC();
+    master=ctx.createGain();master.gain.value=0;master.connect(ctx.destination);
+    const verb=ctx.createConvolver();verb.buffer=impulse(5);const wet=ctx.createGain();wet.gain.value=0.7;verb.connect(wet);wet.connect(master);
+    const dry=ctx.createGain();dry.gain.value=0.55;dry.connect(master);
+    bus={verb,dry};
+    lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=200;lp.Q.value=5;lp.connect(dry);lp.connect(verb);
+    const lfo=ctx.createOscillator();lfo.frequency.value=0.045;const lg=ctx.createGain();lg.gain.value=110;lfo.connect(lg);lg.connect(lp.frequency);lfo.start();
+    osc('sawtooth',36.71,-8,0.16,lp);osc('sawtooth',36.71,8,0.16,lp);osc('sawtooth',55,-5,0.08,lp);osc('triangle',73.42,4,0.10,lp);
+    const dis=osc('sine',77.78,0,0,lp); // mi bemol: a dissonância que vai e volta
+    bus.dis=dis;
+    const nb=ctx.createBuffer(1,ctx.sampleRate*3,ctx.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
+    const ns=ctx.createBufferSource();ns.buffer=nb;ns.loop=true;
+    const bp=ctx.createBiquadFilter();bp.type='bandpass';bp.frequency.value=450;bp.Q.value=0.9;
+    const wg=ctx.createGain();wg.gain.value=0.035;ns.connect(bp);bp.connect(wg);wg.connect(verb);ns.start();
+    const wl=ctx.createOscillator();wl.frequency.value=0.07;const wlg=ctx.createGain();wlg.gain.value=280;wl.connect(wlg);wlg.connect(bp.frequency);wl.start();
+    nextNote=ctx.currentTime+2;nextBeat=ctx.currentTime;
+  }
+  function bell(f,t,amp,len){
+    [1,2.01,2.76,5.4].forEach((r,i)=>{const o=ctx.createOscillator();o.type='sine';o.frequency.value=f*r;const g=ctx.createGain();
+      g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(amp/(i+1.5),t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+len/(1+i*0.7));
+      o.connect(g);g.connect(bus.verb);if(i===0)g.connect(bus.dry);o.start(t);o.stop(t+len+0.1);});
+  }
+  function thump(t,amp){const o=ctx.createOscillator();o.frequency.setValueAtTime(95,t);o.frequency.exponentialRampToValueAtTime(38,t+0.16);
+    const g=ctx.createGain();g.gain.setValueAtTime(amp,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.28);o.connect(g);g.connect(bus.dry);o.start(t);o.stop(t+0.32);}
+  function tick(){
+    if(!on||!ctx) return;
+    const now=ctx.currentTime;
+    while(nextNote<now+0.5){
+      const n=1+Math.floor(Math.random()*(combat?3:2));
+      for(let i=0;i<n;i++){const m=SCALE[Math.floor(Math.random()*SCALE.length)]-(Math.random()<0.35?12:0);bell(mtof(m),nextNote+i*(combat?0.35:0.9),combat?0.09:0.06,combat?2.5:5);}
+      if(Math.random()<0.4){bus.dis.gain.cancelScheduledValues(nextNote);bus.dis.gain.setTargetAtTime(combat?0.12:0.07,nextNote,2);bus.dis.gain.setTargetAtTime(0,nextNote+5,3);}
+      nextNote+=combat?1.6+Math.random()*1.4:4+Math.random()*5;
+    }
+    if(combat){while(nextBeat<now+0.5){thump(nextBeat,0.55);thump(nextBeat+0.24,0.38);nextBeat+=0.82;}}
+    else nextBeat=now;
+  }
+  function level(){if(master&&ctx)master.gain.setTargetAtTime(on?vol*0.7:0,ctx.currentTime,0.6);}
+  return {
+    get on(){return on;},
+    toggle(){
+      if(!AC) return false;
+      try{ if(!ctx) build(); on=!on;
+        if(on){ctx.resume();nextNote=Math.max(nextNote,ctx.currentTime+0.5);clearInterval(timer);timer=setInterval(tick,200);}
+        else{clearInterval(timer);setTimeout(()=>{if(!on&&ctx)ctx.suspend();},2500);}
+        level(); return on;
+      }catch(e){on=false;return false;}
+    },
+    volume(v){vol=v;level();},
+    setCombat(c){
+      if(c===combat) return; combat=c;
+      if(ctx&&on){lp.frequency.cancelScheduledValues(ctx.currentTime);lp.frequency.setTargetAtTime(c?520:200,ctx.currentTime,1.2);nextNote=ctx.currentTime+0.3;}
+    },
+    sting(){ if(!ctx||!on) return; const t=ctx.currentTime+0.05; [50,51,57].forEach(m=>bell(mtof(m),t,0.16,7)); thump(t,0.9); },
+    fanfare(){ if(!ctx||!on) return; const t=ctx.currentTime+0.05; [62,66,69,74].forEach((m,i)=>bell(mtof(m),t+i*0.35,0.11,6)); }
+  };
+})();
+
+/* ---------- Leitor do formato ---------- */
+const STATKEY={habilidade:'hab',energia:'ene',sorte:'sor','fé':'fe',fe:'fe',ouro:'ouro','provisões':'prov',provisoes:'prov'};
+const NAME={hab:'Habilidade',ene:'Energia',sor:'Sorte',fe:'Fé',ouro:'Ouro',prov:'Provisões'};
+const sk=w=>STATKEY[w.toLowerCase()];
+const W='(habilidade|energia|sorte|f[éÉeE]|ouro|provis[õÕoO]es)';
+const RX={
+  formula:new RegExp('^'+W+'\\s*:\\s*(\\d+)\\s*d6\\s*(?:\\+\\s*(\\d+))?\\s*$','i'),
+  max:new RegExp('^'+W+'\\s+inicial\\s*:\\s*([+-]?\\d+)\\s*$','i'),
+  stat:new RegExp('^'+W+'\\s*:\\s*([+-]?\\d+)\\s*$','i'),
+  test:new RegExp('^teste\\s+de\\s+(sorte|habilidade|f[éÉeE])\\s*:\\s*(\\d+)\\s*\\|\\s*(\\d+)\\s*$','i'),
+  req:new RegExp('^'+W+'\\s+(\\d+)\\s*\\+$','i')
+};
+function parse(text){
+  const b={title:'Sem título',autor:'',intro:[],secs:{},order:[],errors:[],formula:{hab:[1,6],ene:[2,12],sor:[1,6]},equip:[],prov:10,ouro:0,pocoes:[],doses:1,eatRestricted:false};
+  let cur=null;
+  text.split(/\r?\n/).forEach((raw,i)=>{
+    const t=raw.trim(), ln=i+1; let m;
+    if(!cur){
+      if(m=t.match(/^t[íÍiI]tulo\s*:\s*(.+)$/i)){b.title=m[1];return;}
+      if(m=t.match(/^autor\s*:\s*(.+)$/i)){b.autor=m[1].trim();return;}
+      if(m=t.match(RX.formula)){b.formula[sk(m[1])]=[+m[2],+(m[3]||0)];return;}
+      if(m=t.match(/^doses\s+de\s+po[çÇcC][ãÃaA]o\s*:\s*(\d+)\s*$/i)){b.doses=Math.max(1,+m[1]);return;}
+      if(/^comer\s*:/i.test(t)){b.eatRestricted=true;return;}
+      if(m=t.match(/^po[çÇcC][õÕoO]es\s*:\s*(.+)$/i)){b.pocoes=m[1].split(/[,;]/).map(s=>s.trim()).filter(Boolean);return;}
+      if(m=t.match(/^equipamento\s*:\s*(.+)$/i)){b.equip=m[1].split(/[,;]/).map(s=>s.trim()).filter(Boolean);return;}
+      if(m=t.match(/^provis[õÕoO]es\s*:\s*(\d+)\s*$/i)){b.prov=+m[1];return;}
+      if(m=t.match(/^ouro\s*:\s*(\d+)\s*$/i)){b.ouro=+m[1];return;}
+    }
+    if(m=t.match(/^#+\s*(\d+)\s*$/)){
+      if(b.secs[m[1]]) b.errors.push(`Seção ${m[1]} aparece duas vezes (linha ${ln}).`);
+      cur={id:m[1],canEat:false,lines:[],choices:[],effects:[],groups:[],tests:[],flee:null,end:null};
+      b.secs[m[1]]=cur;b.order.push(m[1]);return;
+    }
+    if(!cur){b.intro.push(raw);return;}
+    if(m=t.match(/^->\s*(\d+)\s*((?:\[[^\]]+\]\s*)*)(.*)$/)){const reqs=[...m[2].matchAll(/\[([^\]]+)\]/g)].map(x=>x[1].trim());cur.choices.push({to:m[1],reqs,label:m[3].trim()||('Vá para '+m[1])});return;}
+    if(/^->/.test(t)){b.errors.push(`Linha ${ln}: escolha sem número de destino.`);return;}
+    if(m=t.match(/^combate(\s+junto|\s*\+)?\s*:\s*(.+?)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*(?:->\s*(\d+))?\s*$/i)){
+      const foe={name:m[2],hab:+m[3],ene:+m[4]};
+      let g; if(m[1]&&cur.groups.length){g=cur.groups[cur.groups.length-1];g.foes.push(foe);} else {g={foes:[foe],to:null};cur.groups.push(g);}
+      if(m[5]) g.to=m[5]; return;
+    }
+    if(/^combate/i.test(t)&&/:/.test(t)){b.errors.push(`Linha ${ln}: combate fora do formato "Nome | HAB | ENE".`);return;}
+    if(/^pode\s+comer\s*$/i.test(t)){cur.canEat=true;return;}
+    if(m=t.match(/^fuga\s*->\s*(\d+)\s*$/i)){cur.flee=m[1];return;}
+    if(m=t.match(RX.test)){cur.tests.push({kind:sk(m[1]),ok:m[2],fail:m[3]});return;}
+    if(m=t.match(/^(ganha|perde)\s*:\s*(.+)$/i)){cur.effects.push({type:m[1].toLowerCase(),item:m[2].trim()});return;}
+    if(m=t.match(/^arma\s*:\s*(.+?)\s*(?:\|\s*([+-]?\d+))?\s*$/i)){cur.effects.push({type:'arma',item:m[1],n:+(m[2]||0)});return;}
+    if(m=t.match(/^afli[çÇcC][ãÃaA]o\s*:\s*(.+)$/i)){cur.effects.push({type:'afl',item:m[1].trim()});return;}
+    if(m=t.match(/^cura\s*:\s*(.+)$/i)){cur.effects.push({type:'cura',item:m[1].trim()});return;}
+    if(m=t.match(/^anota\s*:\s*(.+)$/i)){cur.effects.push({type:'anota',item:m[1].trim()});return;}
+    if(m=t.match(RX.max)){cur.effects.push({type:'max',stat:sk(m[1]),n:+m[2]});return;}
+    if(m=t.match(RX.stat)){cur.effects.push({type:'stat',stat:sk(m[1]),n:+m[2]});return;}
+    if(m=t.match(/^fim\s*(?::\s*(.*))?$/i)){cur.end=(m[1]||'').trim()||'Fim da aventura.';return;}
+    cur.lines.push(raw);
+  });
+  return b;
+}
+function targets(s){return [...s.choices.map(c=>c.to),...s.groups.map(g=>g.to).filter(Boolean),...(s.flee?[s.flee]:[]),...s.tests.flatMap(t=>[t.ok,t.fail])];}
+function check(b){
+  const probs=b.errors.map(e=>({err:true,msg:e}));
+  if(!b.order.length){probs.push({err:true,msg:'Nenhuma seção encontrada. Comece uma com "## 1".'});return probs;}
+  b.order.forEach(id=>{const s=b.secs[id];
+    targets(s).forEach(t=>{if(!b.secs[t])probs.push({err:true,msg:`Seção ${id} manda para ${t}, que não existe.`});});
+    s.tests.forEach(t=>{if(t.kind==='fe'&&!b.formula.fe)probs.push({err:true,msg:`Seção ${id} testa a Fé, mas o cabeçalho não tem "Fé: 1d6+3".`});});
+    if(!s.end && !s.choices.length && !s.tests.length && !s.groups.some(g=>g.to)) probs.push({err:false,msg:`Seção ${id} não tem saída nem "fim".`});
+  });
+  const seen=new Set([b.order[0]]),q=[b.order[0]];
+  while(q.length){const s=b.secs[q.shift()];targets(s).forEach(t=>{if(b.secs[t]&&!seen.has(t)){seen.add(t);q.push(t);}});}
+  const orphan=b.order.filter(id=>!seen.has(id));
+  if(orphan.length) probs.push({err:false,msg:`Ninguém chega a: ${orphan.join(', ')}.`});
+  return probs;
+}
+
+/* ---------- Estado de jogo ---------- */
+function freshState(){return {phase:'start',char:null,roll:null,sec:null,visited:[],fight:null,tests:{},notes:[],dead:false};}
+const STATS=['hab','ene','sor','fe'];
+function rollChar(){
+  const c={items:[...book.equip],weapons:{},afl:[],flags:[],ouro:book.ouro,prov:book.prov}; S.roll={};
+  STATS.forEach(k=>{const f=book.formula[k];if(!f)return;const r=Array.from({length:f[0]},d6);const v=r.reduce((a,x)=>a+x,0)+f[1];S.roll[k]=r;c[k]=v;c[k+'Max']=v;});
+  S.char=c;
+}
+const lc=s=>s.toLowerCase();
+const has=n=>[S.char.items,S.char.afl,S.char.flags].some(L=>L.some(i=>lc(i)===lc(n)));
+function reqOk(req){
+  if(!req) return true; let m;
+  if(m=req.match(RX.req)) return (S.char[sk(m[1])]||0)>=+m[2];
+  if(req.startsWith('!')) return !has(req.slice(1).trim());
+  return has(req);
+}
+function reqText(req,ok){
+  let m;
+  if(m=req.match(RX.req)) return `Requer ${NAME[sk(m[1])]} ${m[2]} ou mais`;
+  if(req.startsWith('!')) return ok?`Você não tem: ${req.slice(1).trim()}`:`Só sem: ${req.slice(1).trim()}`;
+  return ok?`Você tem: ${req}`:`Requer: ${req}`;
+}
+const bonus=()=>{const v=Object.values(S.char.weapons);return v.length?Math.max(...v):0;};
+const bestWeapon=()=>{let n=null,b=-99;for(const [k,v] of Object.entries(S.char.weapons)){if(v>b){b=v;n=k;}}return n;};
+function clamp(c){
+  ['hab','ene','sor'].forEach(k=>{c[k]=Math.max(0,Math.min(c[k],c[k+'Max']));});
+  if(c.fe!=null) c.fe=Math.max(0,c.fe);
+  c.ouro=Math.max(0,c.ouro);c.prov=Math.max(0,c.prov);
+}
+function enter(id){
+  const s=book.secs[id], c=S.char;
+  S.phase='play';S.sec=id;S.visited.push(id);S.tests={};S.notes=[];S.fight=null;
+  if(!s){render();return;}
+  const sign=n=>(n>=0?'+':'−')+Math.abs(n);
+  s.effects.forEach(f=>{
+    if(f.type==='ganha'){if(!has(f.item))c.items.push(f.item);S.notes.push({cls:'good',t:'Ganhou: '+f.item});}
+    else if(f.type==='anota'){if(!c.flags.some(i=>lc(i)===lc(f.item))){c.flags.push(f.item);S.notes.push({cls:'',t:'Anotado: '+f.item});}}
+    else if(f.type==='perde'){c.items=c.items.filter(i=>lc(i)!==lc(f.item));c.flags=c.flags.filter(i=>lc(i)!==lc(f.item));for(const k in c.weapons)if(lc(k)===lc(f.item))delete c.weapons[k];S.notes.push({cls:'bad',t:'Perdeu: '+f.item});}
+    else if(f.type==='arma'){if(!c.items.some(i=>lc(i)===lc(f.item)))c.items.push(f.item);c.weapons[f.item]=f.n;S.notes.push({cls:'good',t:`Arma: ${f.item}${f.n?' ('+sign(f.n)+' Habilidade)':''}`});}
+    else if(f.type==='afl'){if(!c.afl.some(i=>lc(i)===lc(f.item)))c.afl.push(f.item);S.notes.push({cls:'bad',t:'Aflição: '+f.item});}
+    else if(f.type==='cura'){if(c.afl.some(i=>lc(i)===lc(f.item))){c.afl=c.afl.filter(i=>lc(i)!==lc(f.item));S.notes.push({cls:'good',t:'Livrou-se de: '+f.item});}}
+    else if(f.type==='max'){if(c[f.stat+'Max']!=null)c[f.stat+'Max']+=f.n;c[f.stat]=(c[f.stat]||0)+f.n;S.notes.push({cls:f.n>=0?'good':'bad',t:`${NAME[f.stat]} inicial ${sign(f.n)}`});}
+    else {c[f.stat]=(c[f.stat]||0)+f.n;S.notes.push({cls:f.n>=0?'good':'bad',t:`${NAME[f.stat]} ${sign(f.n)}`});}
+  });
+  clamp(c);
+  if(s.groups.length) S.fight={g:0,hp:s.groups.map(g=>g.foes.map(f=>f.ene)),target:0,log:[],last:null,goto:null,done:false};
+  if(c.ene<=0) S.dead=true;
+  render(); window.scrollTo({top:0,behavior:'smooth'});
+}
+const dice=a=>a.map(n=>`<span class="die">${n}</span>`).join('');
+function testLuck(){
+  const r=[d6(),d6()],sum=r[0]+r[1],before=S.char.sor;
+  const ok=before>1&&sum<=before; S.char.sor=Math.max(0,before-1);
+  return {r,sum,target:before,ok,auto:before<=1};
+}
+
+function attack(){
+  const s=book.secs[S.sec],f=S.fight,G=s.groups[f.g],hp=f.hp[f.g];
+  const a=[d6(),d6()],B=bonus(),fa=a[0]+a[1]+S.char.hab+B;
+  let hit=false,hurt=false;
+  const lines=[];
+  G.foes.forEach((foe,i)=>{
+    if(hp[i]<=0) return;
+    const r=[d6(),d6()],fb=r[0]+r[1]+foe.hab; let res;
+    if(i===f.target){
+      if(fa>fb){hp[i]-=2;hit=true;res=`<span class="res-ok">você feriu (−2)</span>`;}
+      else if(fb>fa){S.char.ene-=2;hurt=true;res=`<span class="res-bad">feriu você (−2)</span>`;}
+      else res='golpes evitados';
+    } else {
+      if(fb>fa){S.char.ene-=2;hurt=true;res=`<span class="res-bad">feriu você (−2)</span>`;}
+      else res='você se defendeu';
+    }
+    lines.push(`${esc(foe.name)} ${dice(r)}+${foe.hab} = <b>${fb}</b> → ${res}`);
+  });
+  lines.push(`Você ${dice(a)}+${S.char.hab}${B?(B>0?'+':'−')+Math.abs(B):''} = <b>${fa}</b>`);
+  f.last=hit?'hit':(hurt?'hurt':null);
+  f.log.unshift(lines.join('<br>'));
+  settle();
+}
+function luckInFight(){
+  const s=book.secs[S.sec],f=S.fight,foe=s.groups[f.g].foes[f.target],L=testLuck();
+  let t;
+  if(f.last==='hit'){ if(L.ok){f.hp[f.g][f.target]-=2;t=`<span class="res-ok">Sorte! Ferimento sério em ${esc(foe.name)} (−2 extra).</span>`;} else {f.hp[f.g][f.target]+=1;t=`<span class="res-bad">Azar. Foi só um arranhão (${esc(foe.name)} recupera 1).</span>`;} }
+  else { if(L.ok){S.char.ene+=1;t='<span class="res-ok">Sorte! Você evitou parte do golpe (+1 Energia).</span>';} else {S.char.ene-=1;t='<span class="res-bad">Azar. O golpe foi mais sério (−1 Energia).</span>';} }
+  f.log.unshift(`Testar a Sorte ${dice(L.r)} = <b>${L.sum}</b> contra ${L.target}${L.auto?' (Sorte 1 ou menos: azar automático)':''}<br>${t}`);
+  f.last=null; settle();
+}
+function settle(){
+  const s=book.secs[S.sec],f=S.fight; clamp(S.char);
+  if(S.char.ene<=0){S.dead=true;render();return;}
+  const G=s.groups[f.g],hp=f.hp[f.g];
+  if(hp[f.target]<=0){
+    f.log.unshift(`<b>${esc(G.foes[f.target].name)} foi derrotado.</b>`); f.last=null;
+    const next=hp.findIndex(h=>h>0);
+    if(next>=0) f.target=next;
+    else if(G.to) f.goto=G.to;
+    else {f.g++;f.target=0;if(f.g>=s.groups.length)f.done=true;}
+  }
+  render();
+}
+function flee(){S.char.ene-=2;clamp(S.char);if(S.char.ene<=0){S.dead=true;render();return;}enter(book.secs[S.sec].flee);}
+function runTest(idx){
+  const t=book.secs[S.sec].tests[idx]; let res;
+  if(t.kind==='sor') res=testLuck();
+  else {const r=[d6(),d6()],sum=r[0]+r[1],target=S.char[t.kind]||0;res={r,sum,target,ok:sum<=target};}
+  res.to=res.ok?t.ok:t.fail; S.tests[idx]=res; render();
+}
+const POCOES_INFO={
+  'habilidade':{nome:'Poção da Habilidade',txt:'Devolve a Habilidade ao valor inicial.'},
+  'força':{nome:'Poção da Força',txt:'Devolve a Energia ao valor inicial.'},
+  'forca':{nome:'Poção da Força',txt:'Devolve a Energia ao valor inicial.'},
+  'fortuna':{nome:'Poção da Fortuna',txt:'Devolve a Sorte ao valor inicial e aumenta a Sorte inicial em 1.'}
+};
+const pocaoInfo=k=>POCOES_INFO[(k||'').toLowerCase()]||{nome:'Poção de '+k,txt:''};
+function drink(){
+  const c=S.char; if(!c||!c.pocao||c.pocao.doses<1) return;
+  const k=c.pocao.tipo.toLowerCase();
+  if(k==='habilidade') c.hab=c.habMax;
+  else if(k==='força'||k==='forca') c.ene=c.eneMax;
+  else if(k==='fortuna'){ c.sorMax+=1; c.sor=c.sorMax; }
+  c.pocao.doses--; S.notes=[...(S.notes||[]),{cls:'good',t:pocaoInfo(c.pocao.tipo).nome+' bebida'}]; render();
+}
+const canEatHere=()=>!book.eatRestricted||(S.phase==='play'&&book.secs[S.sec]&&book.secs[S.sec].canEat);
+function eat(){if(canEatHere()&&S.char.prov>0&&S.char.ene<S.char.eneMax){S.char.prov--;S.char.ene+=4;clamp(S.char);render();}}
+
+/* ---------- Desenho ---------- */
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function prose(lines){
+  const t=lines.join('\n').trim(); if(!t) return '';
+  return t.split(/\n\s*\n/).map(p=>'<p>'+esc(p).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>')+'</p>').join('');
+}
+let lastEnd='';
+const SAVE='minas.progresso', AVENTURA='minas-da-garganta-rubra';
+const SUPABASE_URL="https://baoquuhwoqftboziight.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhb3F1dWh3b3FmdGJvemlpZ2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0NTE1MjcsImV4cCI6MjEwMzAyNzUyN30.5ut-Gd9OWdy99sX2YnUQPimssfYCbtn0cLjBRERXO-w";
+let sb=null, userId=null, nuvem='off', lastSnap='', pushTimer=0;
+try{ if(window.supabase) sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY); }catch(e){ sb=null; }
+function snapshot(){ return {S,notesText,salvo_em:new Date().toISOString(),fim:!!(S.dead||(book.secs[S.sec]&&book.secs[S.sec].end))}; }
+function save(){
+  if(S.phase!=='play') return;
+  const snap=snapshot(), key=JSON.stringify({S,notesText});
+  if(key===lastSnap) return; lastSnap=key;
+  store.set(SAVE,JSON.stringify(snap));
+  if(sb&&userId){ clearTimeout(pushTimer); pushTimer=setTimeout(()=>pushNuvem(snap),1200); }
+}
+async function pushNuvem(snap){
+  try{
+    const {error}=await sb.from('rpgsolo_saves').upsert({user_id:userId,aventura:AVENTURA,estado:snap,atualizado_em:snap.salvo_em});
+    nuvem=error?'erro':'ok';
+  }catch(e){ nuvem='erro'; }
+  paintSave();
+}
+async function apagarNuvem(){ if(sb&&userId){ try{ await sb.from('rpgsolo_saves').delete().eq('user_id',userId).eq('aventura',AVENTURA); }catch(e){} } }
+function paintSave(){
+  const el=document.getElementById('savestate'); if(!el) return;
+  if(userId&&nuvem==='ok'){el.textContent='Progresso salvo na sua conta';el.className='savestate ok';}
+  else if(userId&&nuvem==='erro'){el.textContent='Não consegui salvar na conta agora. O progresso ficou salvo neste navegador.';el.className='savestate';}
+  else if(userId){el.textContent='Seu progresso é salvo na sua conta';el.className='savestate';}
+  else {el.innerHTML='Progresso salvo só neste navegador. <a href="/">Entre no site</a> para salvar na sua conta e continuar em qualquer aparelho.';el.className='savestate';}
+}
+function validSave(j){ return j&&j.S&&j.S.phase==='play'&&j.S.char&&!j.S.dead&&!(book.secs[j.S.sec]&&book.secs[j.S.sec].end); }
+async function iniciarConta(){
+  const conta=document.getElementById('conta');
+  if(!sb){ conta.textContent='Jogando sem conta'; paintSave(); return; }
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(!session){ conta.innerHTML='Jogando sem conta · <a href="/">Entrar</a>'; paintSave(); return; }
+    userId=session.user.id;
+    let nome='';
+    try{ const {data}=await sb.from('profiles').select('name').eq('id',userId).maybeSingle(); nome=data&&data.name||''; }catch(e){}
+    conta.innerHTML='Jogando como <b></b>'; conta.querySelector('b').textContent=nome||session.user.email||'você';
+    const {data:row}=await sb.from('rpgsolo_saves').select('estado,atualizado_em').eq('user_id',userId).eq('aventura',AVENTURA).maybeSingle();
+    nuvem=row?'ok':'off';
+    const local=saved, remoto=row&&validSave(row.estado)?row.estado:null;
+    const tLocal=local&&local.salvo_em?Date.parse(local.salvo_em):0, tRemoto=remoto&&remoto.salvo_em?Date.parse(remoto.salvo_em):0;
+    if(remoto&&tRemoto>=tLocal) saved=remoto;
+    else if(local&&S.phase!=='play') pushNuvem(local);
+    if(S.phase==='play'&&lastSnap) pushNuvem(snapshot());
+  }catch(e){ nuvem='erro'; }
+  if(S.phase!=='play') render(); else paintSave();
+}
+function render(){
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.v===view)));
+  if(view==='edit') renderEditor(); else renderPlay();
+  const f=S&&S.fight, s=S&&S.sec&&book.secs[S.sec];
+  Music.setCombat(view==='play'&&!!f&&!f.done&&!f.goto&&!S.dead);
+  const endKey=S.dead?'morte:'+S.visited.length:(s&&s.end&&view==='play'?'fim:'+S.sec+':'+S.visited.length:'');
+  if(endKey&&endKey!==lastEnd){ if(S.dead) Music.sting(); else Music.fanfare(); }
+  lastEnd=endKey;
+  save();
+  paintSave();
+}
+function formulaText(k){const f=book.formula[k];return `${f[0]} ${f[0]===1?'dado':'dados'}${f[1]?' + '+f[1]:''}`;}
+
+function sheetHTML(){
+  const c=S.char;
+  if(!c) return `<aside class="sheet"><h2>Folha de Aventuras</h2><p class="empty">Role os atributos para preencher a ficha.</p></aside>`;
+  const pct=c.eneMax?Math.round(c.ene/c.eneMax*100):0;
+  const inFight=S.fight&&!S.fight.done&&!S.fight.goto;
+  const w=bestWeapon();
+  const statRow=k=>c[k]==null?'':`<div class="stat"><span class="k">${NAME[k]}</span><span class="val">${c[k]}<small>/${c[k+'Max']}</small></span>${k==='ene'?`<div class="bar"><i style="width:${pct}%"></i></div>`:''}</div>`;
+  return `<aside class="sheet"><h2>Folha de Aventuras</h2>
+    ${STATS.map(statRow).join('')}
+    <div class="stat"><span class="k">Ouro</span><span class="val">${c.ouro}</span></div>
+    <div class="stat"><span class="k">Provisões</span><span class="val">${c.prov}</span></div>
+    ${c.pocao?`<div class="stat"><span class="k">${esc(pocaoInfo(c.pocao.tipo).nome)}</span><span class="val">${c.pocao.doses}<small> ${c.pocao.doses===1?'dose':'doses'}</small></span></div>`:''}
+    <div class="row" style="margin-top:8px"><button class="btn small" data-act="eat" ${c.prov<1||c.ene>=c.eneMax||inFight||S.dead||!canEatHere()?'disabled':''} title="${book.eatRestricted?'Só nos pontos de descanso indicados no texto':''}">Comer provisão (+4 Energia)</button>${c.pocao?`<button class="btn small" data-act="drink" ${c.pocao.doses<1||inFight||S.dead||S.phase!=='play'?'disabled':''}>Beber poção</button>`:''}</div>
+    ${w?`<h4>Arma em uso</h4><div>${esc(w)} <span class="items b">(${c.weapons[w]>=0?'+':'−'}${Math.abs(c.weapons[w])} no ataque)</span></div>`:''}
+    <h4>Equipamento e tesouros</h4>
+    ${c.items.length?`<ul class="items">${c.items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`:'<p class="empty">Nada na mochila.</p>'}
+    <h4>Pistas e acontecimentos</h4>
+    ${c.flags.length?`<ul class="items">${c.flags.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`:'<p class="empty">Nenhuma ainda.</p>'}
+    <h4>Aflições</h4>
+    ${c.afl.length?`<ul class="items afl">${c.afl.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`:'<p class="empty">Nenhuma.</p>'}
+    <h4>Caminho</h4>
+    <div class="trail">${S.visited.length?S.visited.join(' → '):'—'}</div>
+    <h4><label for="anotacoes">Anotações</label></h4>
+    <textarea id="anotacoes" placeholder="Senhas, pistas, números que valem a pena lembrar…">${esc(notesText)}</textarea>
+  </aside>`;
+}
+
+function fightHTML(s){
+  const f=S.fight, fighting=!f.done&&!f.goto;
+  let rows='';
+  s.groups.forEach((G,g)=>{
+    if(s.groups.length>1||G.foes.length>1) rows+=`<tr class="grp"><td colspan="3">${s.groups.length>1?'Luta '+(g+1):'Luta'}${G.foes.length>1?' · todos juntos':''}</td></tr>`;
+    G.foes.forEach((foe,i)=>{
+      const hp=f.hp[g][i], down=hp<=0, isNow=fighting&&g===f.g, tgt=isNow&&i===f.target&&G.foes.length>1;
+      rows+=`<tr class="${down?'down':(isNow?'now':(g>f.g?'later':''))}"><td>${esc(foe.name)}${tgt?'<span class="tag">alvo</span>':''}</td><td class="num">${foe.hab}</td><td class="num">${Math.max(0,hp)}</td></tr>`;
+    });
+  });
+  const G=s.groups[Math.min(f.g,s.groups.length-1)], alive=f.hp[Math.min(f.g,s.groups.length-1)].map((h,i)=>h>0?i:-1).filter(i=>i>=0);
+  const sel=fighting&&alive.length>1?`<div class="target"><label for="alvo">Atacar:</label><select id="alvo">${alive.map(i=>`<option value="${i}" ${i===f.target?'selected':''}>${esc(G.foes[i].name)}</option>`).join('')}</select><span class="eyebrow">os outros também atacam você</span></div>`:'';
+  return `<section class="panel"><h3>Combate</h3>
+    <div class="tablewrap"><table class="foes"><thead><tr><th>Criatura</th><th class="num">Habilidade</th><th class="num">Energia</th></tr></thead><tbody>${rows}</tbody></table></div>
+    ${sel}
+    ${f.log.length?`<div class="log">${f.log.slice(0,4).map(l=>`<div>${l}</div>`).join('')}</div>`:''}
+    ${S.dead?'':fighting?`<div class="row">
+      <button class="btn primary" data-act="attack">Atacar (rolar dados)</button>
+      <button class="btn" data-act="fluck" ${f.last&&S.char.sor>0?'':'disabled'}>Testar a Sorte ${f.last==='hit'?'(ferir mais)':f.last==='hurt'?'(reduzir ferimento)':''}</button>
+      ${s.flee?`<button class="btn" data-act="flee">Fugir para ${esc(s.flee)} (−2 Energia)</button>`:''}
+    </div>`:f.goto?`<div class="row"><button class="btn primary" data-act="go" data-to="${esc(f.goto)}">Vá para ${esc(f.goto)}</button></div>`:'<p class="res-ok" style="margin:0">Vitória. Siga adiante.</p>'}
+  </section>`;
+}
+
+function renderPlay(){
+  let page='';
+  if(!book.order.length){
+    page=`<p class="eyebrow">Nada para jogar</p><p>A história ainda não tem seções. Volte para <b>Escrever</b> e crie a primeira com <code>## 1</code>.</p>`;
+  } else if(S.phase==='start'){
+    const r=S.roll, ks=STATS.filter(k=>book.formula[k]);
+    page=`<p class="eyebrow">Novo jogo</p><h2 class="book-title">${esc(book.title)}</h2>${book.autor?`<p class="byline">Escrito por <b>${esc(book.autor)}</b></p>`:''}
+      <div class="text">${prose(book.intro)}</div>
+      <div class="rules"><p>${ks.map(k=>`<b>${NAME[k]}</b> = ${formulaText(k)}`).join(' · ')}</p>
+      <p>Você começa com ${book.prov} provisões${book.ouro?` e ${book.ouro} de ouro`:''}${book.equip.length?`, levando ${book.equip.map(esc).join(', ')}`:''}.</p></div>
+      ${r?`<div class="rollgrid">${ks.map(k=>`<div class="rollcell"><div class="eyebrow">${NAME[k]}</div><div class="v">${S.char[k]}</div><div class="how">${dice(r[k])}${book.formula[k][1]?' + '+book.formula[k][1]:''}</div></div>`).join('')}</div>`:''}
+      ${saved?`<div class="panel"><h3>Aventura em andamento</h3><p style="margin:0 0 12px">Você parou na seção ${esc(saved.S.sec)}, com Energia ${saved.S.char.ene}.</p><button class="btn primary" data-act="continue">Continuar de onde parei</button></div>`:''}
+      <p id="savestate" class="savestate"></p>
+      ${r&&book.pocoes.length?`<div class="panel"><h3>Escolha uma poção</h3><p style="margin:0 0 12px">Você pode levar uma garrafa, com ${book.doses===1?'uma dose':book.doses+' doses'}. Ela pode ser bebida a qualquer momento, menos durante um combate.</p><div class="choices" style="margin:0">${book.pocoes.map(pp=>`<button class="choice" data-act="pocao" data-p="${esc(pp)}" aria-pressed="${S.char.pocao&&S.char.pocao.tipo===pp}" style="${S.char.pocao&&S.char.pocao.tipo===pp?'border-color:var(--accent);background:var(--accent-soft)':''}"><span class="n">${S.char.pocao&&S.char.pocao.tipo===pp?'✓':'·'}</span><span>${esc(pocaoInfo(pp).nome)}<span class="req">${esc(pocaoInfo(pp).txt)}</span></span></button>`).join('')}</div></div>`:''}
+      <div class="row">${r?`<button class="btn primary" data-act="begin" ${book.pocoes.length&&!S.char.pocao?'disabled':''}>Começar na seção ${esc(book.order[0])}</button><button class="btn" data-act="roll">Rolar de novo</button>`:`<button class="btn primary" data-act="roll">Rolar os atributos</button>`}</div>`;
+  } else {
+    const s=book.secs[S.sec];
+    page=`<div class="secnum">${esc(S.sec)}</div>`;
+    if(!s){page+=`<p>A seção ${esc(S.sec)} não existe no texto. Confira os números em <b>Escrever</b>.</p>`;}
+    else{
+      page+=`<div class="text">${prose(s.lines)}</div>`;
+      if(book.eatRestricted&&s.canEat&&!S.dead) S.notes=[...S.notes.filter(n=>n.t!=='Você pode comer aqui'),{cls:'good',t:'Você pode comer aqui'}];
+      if(S.notes.length) page+=`<div class="notes">${S.notes.map(n=>`<span class="chip ${n.cls}">${esc(n.t)}</span>`).join('')}</div>`;
+      const f=S.fight, blocking=f&&(!f.done);
+      if(f) page+=fightHTML(s);
+      if(!S.dead && !blocking){
+        s.tests.forEach((t,i)=>{
+          const res=S.tests[i], nm=NAME[t.kind];
+          page+=`<section class="panel"><h3>Teste sua ${nm}</h3>`;
+          if(!res) page+=`<p style="margin:0 0 12px">Role dois dados. Se o total for igual ou menor que sua ${nm} (${S.char[t.kind]??0}), você passa.${t.kind==='sor'?' Cada teste custa 1 ponto de Sorte, e com Sorte 1 ou menos o resultado é sempre azar.':''}</p><button class="btn primary" data-act="test" data-i="${i}">Rolar 2 dados</button>`;
+          else page+=`<div class="log"><div>${dice(res.r)} = <b>${res.sum}</b> contra ${res.target}${res.auto?' (azar automático)':''}<br>${res.ok?'<span class="res-ok">'+(t.kind==='sor'?'Você teve sorte.':'Você conseguiu.')+'</span>':'<span class="res-bad">'+(t.kind==='sor'?'Você foi azarado.':'Você falhou.')+'</span>'}</div></div><button class="btn primary" data-act="go" data-to="${esc(res.to)}">Vá para ${esc(res.to)}</button>`;
+          page+=`</section>`;
+        });
+        if(s.choices.length) page+=`<ul class="choices">${s.choices.map(c=>{
+          const ok=c.reqs.every(reqOk);
+          return `<li><button class="choice" data-act="go" data-to="${esc(c.to)}" ${ok?'':'disabled'}><span class="n">${esc(c.to)}</span><span>${esc(c.label)}${(t=>t?`<span class="req">${esc(t)}</span>`:'')(c.reqs.filter(r=>!(r.startsWith('!')&&reqOk(r))).map(r=>reqText(r,reqOk(r))).join(' · '))}</span></button></li>`;}).join('')}</ul>`;
+        if(s.end) page+=`<div class="endcard"><p class="big">Fim</p><p>${esc(s.end)}</p><button class="btn primary" data-act="restart">Jogar de novo</button></div>`;
+      }
+      if(S.dead) page+=`<div class="endcard"><p class="big">Sua Energia chegou a zero</p><p>A aventura termina aqui. Role novos atributos e tente outro caminho.</p><button class="btn primary" data-act="restart">Jogar de novo</button></div>`;
+    }
+    page+=`<div class="authorbar row"><button class="btn small" data-act="restart" id="btn-restart">Recomeçar do zero</button><span id="savestate" class="savestate"></span></div>`;
+  }
+  app.innerHTML=`<div class="play"><div class="page">${page}</div>${sheetHTML()}</div>`;
+}
+
+function renderEditor(){
+  app.innerHTML=`<div class="editor">
+    <div class="ed-main">
+      <div class="row">
+        <button class="btn primary" data-act="playnow">Jogar esta história</button>
+        <button class="btn" data-act="copy">Copiar texto</button>
+        <button class="btn" data-act="open">Abrir arquivo .txt</button>
+        <button class="btn" data-act="load" data-which="aventura">Carregar O Castelo de Vargrav</button>
+        <button class="btn" data-act="load" data-which="exemplo">Carregar exemplo curto</button>
+      </div>
+      <label for="src" class="eyebrow">Texto da história</label>
+      <textarea id="src" spellcheck="false"></textarea>
+      <div class="status" id="status">O texto fica salvo neste navegador. Para guardar uma cópia, use Copiar texto e cole num arquivo.</div>
+    </div>
+    <div class="ed-side">
+      <section class="box"><h3>Verificação</h3><div id="check"></div></section>
+      <section class="box ref"><h3>Como escrever</h3>
+        <h4>Cabeçalho (antes da seção 1)</h4>
+        <dl>
+          <dt>Título: Nome do livro</dt><dd>O texto solto antes da primeira seção vira a introdução.</dd>
+          <dt>Habilidade: 1d6+6
+Energia: 2d6+12
+Sorte: 1d6+6
+Fé: 1d6+3</dt><dd>Como rolar cada atributo. A linha de Fé é opcional e ativa esse atributo. Habilidade, Energia e Sorte não passam do valor inicial; a Fé pode passar.</dd>
+          <dt>Equipamento: Espada, Escudo, Lanterna
+Provisões: 10
+Ouro: 0</dt><dd>O que o herói leva ao começar.</dd>
+        </dl>
+        <h4>Nas seções</h4>
+        <dl>
+          <dt>## 12</dt><dd>Começa a seção 12. Tudo abaixo é o texto dela, até a próxima.</dd>
+          <dt>-> 30 Abrir a porta</dt><dd>Escolha que leva à seção 30.</dd>
+          <dt>-> 45 [Chave de Prata] Usar a chave
+-> 46 [!Tocha] Seguir no escuro
+-> 47 [fé 7+] Erguer o crucifixo
+-> 48 [Estaca] [Crucifixo] Destruir o vampiro</dt><dd>Escolha condicionada: ter um item, pista ou aflição; não ter; ou ter um atributo no mínimo naquele valor. Vários colchetes exigem todos ao mesmo tempo.</dd>
+          <dt>ganha: Corda
+perde: Tocha</dt><dd>Adiciona ou tira um item.</dd>
+          <dt>arma: Espada Mágica | +2</dt><dd>Arma com bônus no ataque. Só conta a melhor arma que você carrega.</dd>
+          <dt>anota: Segredo da porta</dt><dd>Registra uma pista ou acontecimento. Não ocupa a mochila, mas pode ser exigido nas escolhas.</dd>
+          <dt>aflição: Maldição da lua
+cura: Maldição da lua</dt><dd>Anota ou remove uma aflição da ficha.</dd>
+          <dt>energia: -2
+sorte: +1
+fé: +1
+ouro: +10
+provisões: -1</dt><dd>Muda o atributo ao entrar na seção (respeitando o valor inicial).</dd>
+          <dt>habilidade inicial: +1</dt><dd>Aumenta o valor inicial e o atual, para quando a história permitir passar do limite.</dd>
+          <dt>combate: Lobo | 7 | 6
+combate: Ogro | 9 | 10 -> 80</dt><dd>Nome | Habilidade | Energia. Linhas separadas são lutas uma depois da outra. Com <code>-> 80</code>, vencer leva à seção 80; sem isso, as escolhas aparecem depois da vitória.</dd>
+          <dt>combate: Bandido | 7 | 6
+combate junto: Bandido | 6 | 5</dt><dd>Criaturas que atacam ao mesmo tempo. Você escolhe o alvo; as outras também rolam contra você, e você só se defende delas.</dd>
+          <dt>fuga -> 15</dt><dd>Permite fugir do combate (custa 2 de Energia).</dd>
+          <dt>teste de sorte: 40 | 50
+teste de habilidade: 40 | 50
+teste de fé: 40 | 50</dt><dd>Rola 2 dados contra o atributo. Passou vai para 40, falhou vai para 50.</dd>
+          <dt>fim: Você venceu!</dt><dd>Final da história, com mensagem.</dd>
+          <dt>*itálico*  **negrito**</dt><dd>Linha em branco separa parágrafos.</dd>
+        </dl>
+      </section>
+    </div>
+  </div>`;
+  $('#src').value=src;
+  renderCheck();
+}
+function renderCheck(){
+  const el=$('#check'); if(!el) return;
+  const probs=check(book), n=book.order.length;
+  const ends=book.order.filter(id=>book.secs[id].end).length;
+  const fights=book.order.reduce((a,id)=>a+book.secs[id].groups.reduce((x,g)=>x+g.foes.length,0),0);
+  el.innerHTML=`<div class="counts">${n} ${n===1?'seção':'seções'} · ${ends} ${ends===1?'final':'finais'} · ${fights} ${fights===1?'criatura':'criaturas'}</div>`+
+    (probs.length?`<ul class="problems">${probs.map(p=>`<li class="${p.err?'err':''}">${esc(p.msg)}</li>`).join('')}</ul>`:`<p class="check-ok" style="margin:0">Todos os números levam a seções que existem.</p>`);
+}
+function status(t){const el=$('#status');if(el)el.textContent=t;}
+
+/* ---------- Eventos ---------- */
+let resetArmed=0, timer=0;
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b||b.disabled) return;
+  const a=b.dataset.act;
+  if(a==='music'){const st=Music.toggle();b.setAttribute('aria-pressed',String(st));b.querySelector('span').textContent=st?'Desligar música':'Ligar música';if(!st&&!Music.on&&!(window.AudioContext||window.webkitAudioContext))b.querySelector('span').textContent='Sem áudio neste navegador';return;}
+  if(a==='view'){view=b.dataset.v;if(view==='play')book=parse(src);render();}
+  else if(a==='continue'){if(saved){S=saved.S;notesText=saved.notesText||'';saved=null;render();window.scrollTo({top:0});}}
+  else if(a==='roll'){rollChar();render();}
+  else if(a==='begin'){S.visited=[];enter(book.order[0]);}
+  else if(a==='go'){enter(b.dataset.to);}
+  else if(a==='attack'){attack();}
+  else if(a==='fluck'){luckInFight();}
+  else if(a==='flee'){flee();}
+  else if(a==='test'){runTest(+b.dataset.i);}
+  else if(a==='eat'){eat();}
+  else if(a==='drink'){drink();}
+  else if(a==='pocao'){if(S.char){S.char.pocao={tipo:b.dataset.p,doses:book.doses};render();}}
+  else if(a==='restart'){
+    const inGame=S.phase==='play'&&!S.dead&&!(book.secs[S.sec]&&book.secs[S.sec].end);
+    if(inGame&&b.id==='btn-restart'&&resetArmed!=='restart'){resetArmed='restart';b.textContent='Clique de novo para apagar o progresso';setTimeout(()=>{if(resetArmed==='restart')resetArmed=0;const x=$('#btn-restart');if(x)x.textContent='Recomeçar do zero';},5000);return;}
+    resetArmed=0;S=freshState();lastSnap='';saved=null;try{localStorage.removeItem(SAVE)}catch(e){}apagarNuvem();render();window.scrollTo({top:0});
+  }
+  else if(a==='jump'){const v=($('#pular').value||'').trim();if(!v)return;if(!S.char)rollChar();S.dead=false;enter(v);}
+  else if(a==='playnow'){book=parse(src);S=freshState();view='play';render();window.scrollTo({top:0});}
+  else if(a==='open'){$('#arquivo').click();}
+  else if(a==='copy'){
+    const ta=$('#src');
+    const fallback=()=>{ta.focus();ta.select();status('Texto selecionado. Use Ctrl+C (ou Copiar no celular).');};
+    try{navigator.clipboard.writeText(src).then(()=>status('Texto copiado. Cole num arquivo .txt para guardar.'),fallback);}catch(err){fallback();}
+  }
+  else if(a==='load'){
+    const w=b.dataset.which, txt=w==='aventura'?aventura:exemplo, label=w==='aventura'?'Carregar O Castelo de Vargrav':'Carregar exemplo curto';
+    if(src===txt){status('Esse texto já está no editor.');return;}
+    if(resetArmed===w){src=txt;store.set(KEY,src);book=parse(src);S=freshState();renderEditor();status(w==='aventura'?'O Castelo de Vargrav carregado.':'Exemplo curto carregado.');resetArmed=0;}
+    else{resetArmed=w;b.textContent='Clique de novo: isso substitui o texto atual';setTimeout(()=>{if(resetArmed===w)resetArmed=0;const x=document.querySelector(`[data-which="${w}"]`);if(x)x.textContent=label;},5000);}
+  }
+});
+document.addEventListener('change',e=>{if(e.target.id==='alvo'&&S.fight){S.fight.target=+e.target.value;S.fight.last=null;render();}});
+document.addEventListener('input',e=>{
+  if(e.target.id==='src'){src=e.target.value;clearTimeout(timer);timer=setTimeout(()=>{store.set(KEY,src);book=parse(src);renderCheck();status('Salvo neste navegador.');},350);}
+  if(e.target.id==='volume'){Music.volume(+e.target.value/100);store.set('livrojogo.volume',e.target.value);}
+  if(e.target.id==='anotacoes'){notesText=e.target.value;store.set(NKEY,notesText);}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='pular'){e.preventDefault();document.querySelector('[data-act="jump"]').click();}});
+$('#arquivo').addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{src=String(r.result);store.set(KEY,src);book=parse(src);S=freshState();view='edit';render();status(`Arquivo "${f.name}" aberto.`);};
+  r.readAsText(f,'utf-8'); e.target.value='';
+});
+
+book=parse(src);
+S=freshState();
+let saved=null;
+try{const j=JSON.parse(store.get(SAVE)||'null');if(validSave(j))saved=j;}catch(e){}
+{const v=store.get('livrojogo.volume');if(v!=null){$('#volume').value=v;Music.volume(+v/100);}}
+render();
+iniciarConta();
+})();
+</script>
+
+</body>
+</html>
