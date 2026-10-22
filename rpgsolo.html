@@ -146,7 +146,22 @@ const AVENTURAS = [
     dificuldade: "Difícil",
     atributos: "Habilidade, Energia, Sorte e Fé",
     chaveLocal: "vargrav.progresso",
-    capa: { ceu: ["#0d1a24", "#3a1820"], lua: "#e8dcc0", torre: "#070d0f" }
+    capa: { tipo: "castelo", ceu: ["#0d1a24", "#3a1820"], lua: "#e8dcc0", torre: "#070d0f" }
+  },
+  {
+    id: "farol-da-mare-negra",
+    titulo: "O Farol da Maré Negra",
+    autor: "Maicon Kuzer",
+    url: "/rpgsolo/farol-da-mare-negra.html",
+    genero: "Aventura no mar",
+    resumo: "Há nove noites, o farol do Rochedo do Corvo brilha com uma luz verde que atrai os barcos para os recifes. A frota de pesca de Porto Salgado volta antes do amanhecer. Atravesse a baía, enfrente o que mora na ilha e devolva a luz amarela ao farol antes que seja tarde.",
+    secoes: 400,
+    finais: 5,
+    duracao: "1 a 2 horas",
+    dificuldade: "Média",
+    atributos: "Habilidade, Energia e Sorte, com uma poção à escolha",
+    chaveLocal: "farol.progresso",
+    capa: { tipo: "farol", ceu: ["#06141c", "#123a3f"], lua: "#e9e4cf", torre: "#060c0e", luz: "#5fe39a" }
   }
 ];
 /* ===================================================================== */
@@ -211,6 +226,7 @@ function desenharCapas(){
     const r=cv.getBoundingClientRect(), dpr=Math.min(2,window.devicePixelRatio||1);
     const W=cv.width=Math.max(1,Math.round(r.width*dpr)), H=cv.height=Math.max(1,Math.round(r.height*dpr));
     const g=cv.getContext('2d'), c=a.capa;
+    if(c.tipo==='farol'){ capaFarol(g,W,H,dpr,c); return; }
     let seed=7; const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
     const sky=g.createLinearGradient(0,0,0,H); sky.addColorStop(0,c.ceu[0]); sky.addColorStop(1,c.ceu[1]); g.fillStyle=sky; g.fillRect(0,0,W,H);
     for(let i=0;i<70;i++){g.fillStyle=`rgba(241,237,226,${.15+rnd()*.5})`;g.fillRect(rnd()*W,rnd()*H*.6,dpr*(rnd()<.85?1:1.6),dpr*(rnd()<.85?1:1.6));}
@@ -233,6 +249,32 @@ function desenharCapas(){
     const fog=g.createLinearGradient(0,H*.7,0,H); fog.addColorStop(0,'rgba(169,186,181,0)'); fog.addColorStop(1,'rgba(169,186,181,.18)'); g.fillStyle=fog; g.fillRect(0,H*.7,W,H*.3);
     const vig=g.createLinearGradient(0,0,0,H*.35); vig.addColorStop(0,'rgba(0,0,0,.55)'); vig.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=vig; g.fillRect(0,0,W,H*.35);
   });
+}
+
+function capaFarol(g,W,H,dpr,c){
+  let seed=11; const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
+  const sky=g.createLinearGradient(0,0,0,H*.62); sky.addColorStop(0,c.ceu[0]); sky.addColorStop(1,c.ceu[1]); g.fillStyle=sky; g.fillRect(0,0,W,H);
+  for(let i=0;i<60;i++){g.fillStyle=`rgba(233,228,207,${.15+rnd()*.5})`;g.fillRect(rnd()*W,rnd()*H*.5,dpr,dpr);}
+  const mx=W*.22,my=H*.42,mr=W*.065; g.fillStyle=c.lua; g.beginPath(); g.arc(mx,my,mr,0,Math.PI*2); g.fill();
+  const sea=g.createLinearGradient(0,H*.6,0,H); sea.addColorStop(0,'#0b2a2e'); sea.addColorStop(1,'#03090b'); g.fillStyle=sea; g.fillRect(0,H*.6,W,H*.4);
+  g.strokeStyle='rgba(233,228,207,.18)'; g.lineWidth=dpr;
+  for(let i=0;i<14;i++){const y=H*(.63+rnd()*.33),x=rnd()*W; g.beginPath(); g.moveTo(x,y); g.lineTo(x+W*(.05+rnd()*.12),y); g.stroke();}
+  g.fillStyle='rgba(233,228,207,.35)'; g.fillRect(mx-mr*.15,H*.61,mr*.3,H*.25);
+  const u=W/100, tx=64*u, base=H*.6;
+  g.fillStyle=c.torre; g.beginPath(); g.moveTo(38*u,H*.66); g.lineTo(46*u,H*.58); g.lineTo(58*u,H*.55); g.lineTo(80*u,H*.56); g.lineTo(90*u,H*.64); g.lineTo(96*u,H*.66); g.closePath(); g.fill();
+  const tb=base-2*u, top=H*.40, wb=8*u, wt=5.5*u;
+  const bx=x=>x; g.fillStyle='#d9d3bf'; g.beginPath(); g.moveTo(tx-wb,tb); g.lineTo(tx-wt,top); g.lineTo(tx+wt,top); g.lineTo(tx+wb,tb); g.closePath(); g.fill();
+  g.fillStyle='#8f2f2a'; for(let k=0;k<3;k++){const y1=top+(tb-top)*(.18+k*.28), y2=y1+(tb-top)*.12; const w1=wt+(wb-wt)*((y1-top)/(tb-top)), w2=wt+(wb-wt)*((y2-top)/(tb-top)); g.beginPath(); g.moveTo(tx-w1,y1); g.lineTo(tx+w1,y1); g.lineTo(tx+w2,y2); g.lineTo(tx-w2,y2); g.closePath(); g.fill();}
+  g.fillStyle='rgba(0,0,0,.35)'; g.beginPath(); g.moveTo(tx+1*u,top); g.lineTo(tx+wt,top); g.lineTo(tx+wb,tb); g.lineTo(tx+2*u,tb); g.closePath(); g.fill();
+  g.fillStyle=c.torre; g.fillRect(tx-wt-1.5*u,top-1.2*u,2*(wt+1.5*u),1.4*u);
+  const lampY=top-5*u;
+  const beam=g.createLinearGradient(tx,lampY,0,lampY); beam.addColorStop(0,'rgba(95,227,154,.55)'); beam.addColorStop(1,'rgba(95,227,154,0)');
+  g.fillStyle=beam; g.beginPath(); g.moveTo(tx,lampY); g.lineTo(0,lampY-H*.12); g.lineTo(0,lampY+H*.10); g.closePath(); g.fill();
+  const halo=g.createRadialGradient(tx,lampY,0,tx,lampY,W*.18); halo.addColorStop(0,'rgba(95,227,154,.65)'); halo.addColorStop(1,'rgba(95,227,154,0)'); g.fillStyle=halo; g.fillRect(0,0,W,H);
+  g.fillStyle=c.luz; g.fillRect(tx-4*u,lampY-2.5*u,8*u,5*u);
+  g.fillStyle=c.torre; g.beginPath(); g.moveTo(tx-5*u,lampY-2.5*u); g.lineTo(tx,lampY-7*u); g.lineTo(tx+5*u,lampY-2.5*u); g.closePath(); g.fill();
+  g.strokeStyle='rgba(95,227,154,.25)'; for(let i=0;i<6;i++){const y=H*(.66+i*.05); g.beginPath(); g.moveTo(tx-12*u-i*3*u,y); g.lineTo(tx-2*u,y); g.stroke();}
+  const vig=g.createLinearGradient(0,0,0,H*.35); vig.addColorStop(0,'rgba(0,0,0,.55)'); vig.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=vig; g.fillRect(0,0,W,H*.35);
 }
 
 async function conta(){
