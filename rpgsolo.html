@@ -158,10 +158,25 @@ const AVENTURAS = [
     secoes: 400,
     finais: 5,
     duracao: "1 a 2 horas",
-    dificuldade: "Média",
+    dificuldade: "Difícil",
     atributos: "Habilidade, Energia e Sorte, com uma poção à escolha",
     chaveLocal: "farol.progresso",
     capa: { tipo: "farol", ceu: ["#06141c", "#123a3f"], lua: "#e9e4cf", torre: "#060c0e", luz: "#5fe39a" }
+  },
+  {
+    id: "minas-da-garganta-rubra",
+    titulo: "As Minas da Garganta Rubra",
+    autor: "Maicon Kuzer",
+    url: "/rpgsolo/minas-da-garganta-rubra.html",
+    genero: "Aventura subterrânea",
+    resumo: "Os mineiros de Pedra Funda abriram passagem para túneis que nenhum homem cavou, e desde então descem dormindo de volta para a mina, com cogumelos crescendo atrás das orelhas. Desça pelos cinco níveis da Garganta Rubra, atravesse a cidade antiga e destrua o coração do jardim antes da floração do amanhecer.",
+    secoes: 400,
+    finais: 4,
+    duracao: "1 a 2 horas",
+    dificuldade: "Média",
+    atributos: "Habilidade, Energia e Sorte, com uma poção de duas doses",
+    chaveLocal: "minas.progresso",
+    capa: { tipo: "mina", rocha: ["#2a0f0c", "#5a1d14"], brilho: "#f2e7c9", fungo: "#efe9da" }
   }
 ];
 /* ===================================================================== */
@@ -227,6 +242,7 @@ function desenharCapas(){
     const W=cv.width=Math.max(1,Math.round(r.width*dpr)), H=cv.height=Math.max(1,Math.round(r.height*dpr));
     const g=cv.getContext('2d'), c=a.capa;
     if(c.tipo==='farol'){ capaFarol(g,W,H,dpr,c); return; }
+    if(c.tipo==='mina'){ capaMina(g,W,H,dpr,c); return; }
     let seed=7; const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
     const sky=g.createLinearGradient(0,0,0,H); sky.addColorStop(0,c.ceu[0]); sky.addColorStop(1,c.ceu[1]); g.fillStyle=sky; g.fillRect(0,0,W,H);
     for(let i=0;i<70;i++){g.fillStyle=`rgba(241,237,226,${.15+rnd()*.5})`;g.fillRect(rnd()*W,rnd()*H*.6,dpr*(rnd()<.85?1:1.6),dpr*(rnd()<.85?1:1.6));}
@@ -249,6 +265,34 @@ function desenharCapas(){
     const fog=g.createLinearGradient(0,H*.7,0,H); fog.addColorStop(0,'rgba(169,186,181,0)'); fog.addColorStop(1,'rgba(169,186,181,.18)'); g.fillStyle=fog; g.fillRect(0,H*.7,W,H*.3);
     const vig=g.createLinearGradient(0,0,0,H*.35); vig.addColorStop(0,'rgba(0,0,0,.55)'); vig.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=vig; g.fillRect(0,0,W,H*.35);
   });
+}
+
+function capaMina(g,W,H,dpr,c){
+  let seed=23; const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
+  const bg=g.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#0c0605'); bg.addColorStop(.45,c.rocha[0]); bg.addColorStop(1,'#120706'); g.fillStyle=bg; g.fillRect(0,0,W,H);
+  const u=W/100, cx=W/2, top=H*.34, bot=H*.92;
+  // arco da mina
+  g.fillStyle='#050302'; g.beginPath(); g.moveTo(cx-30*u,bot); g.lineTo(cx-30*u,top+18*u); g.quadraticCurveTo(cx,top-14*u,cx+30*u,top+18*u); g.lineTo(cx+30*u,bot); g.closePath(); g.fill();
+  // brilho do jardim no fundo
+  const glow=g.createRadialGradient(cx,H*.74,0,cx,H*.74,W*.32); glow.addColorStop(0,'rgba(242,231,201,.85)'); glow.addColorStop(.35,'rgba(242,231,201,.25)'); glow.addColorStop(1,'rgba(242,231,201,0)');
+  g.fillStyle=glow; g.beginPath(); g.moveTo(cx-30*u,bot); g.lineTo(cx-30*u,top+18*u); g.quadraticCurveTo(cx,top-14*u,cx+30*u,top+18*u); g.lineTo(cx+30*u,bot); g.closePath(); g.fill();
+  // vigas
+  g.fillStyle='#3b2416'; g.fillRect(cx-34*u,top+16*u,6*u,bot-top); g.fillRect(cx+28*u,top+16*u,6*u,bot-top); g.fillRect(cx-36*u,top+12*u,72*u,6*u);
+  g.fillStyle='rgba(0,0,0,.35)'; g.fillRect(cx-31*u,top+16*u,2*u,bot-top); g.fillRect(cx+31*u,top+16*u,2*u,bot-top);
+  // trilhos em perspectiva
+  g.strokeStyle='rgba(120,110,100,.7)'; g.lineWidth=1.5*dpr;
+  g.beginPath(); g.moveTo(cx-20*u,H); g.lineTo(cx-3*u,H*.74); g.moveTo(cx+20*u,H); g.lineTo(cx+3*u,H*.74); g.stroke();
+  for(let i=0;i<6;i++){const t=i/6, y=H*.74+(H-H*.74)*t*t, w=3*u+17*u*t*t; g.beginPath(); g.moveTo(cx-w,y); g.lineTo(cx+w,y); g.stroke();}
+  // cogumelos nas bordas
+  const cog=(x,y,r)=>{g.fillStyle='#d9d1bd'; g.fillRect(x-r*.18,y-r*.9,r*.36,r*.9); g.fillStyle=c.fungo; g.beginPath(); g.ellipse(x,y-r*.9,r*.7,r*.42,0,Math.PI,0); g.fill(); g.fillStyle='rgba(242,231,201,.35)'; g.beginPath(); g.arc(x,y-r*.95,r*1.1,0,Math.PI*2); g.fill();};
+  [[cx-21*u,H*.86,5*u],[cx-15*u,H*.84,3*u],[cx+20*u,H*.865,5.5*u],[cx+13*u,H*.84,2.6*u],[cx-6*u,H*.79,2.2*u],[cx+6*u,H*.78,1.8*u]].forEach(a=>cog(...a));
+  // esporos
+  for(let i=0;i<80;i++){g.fillStyle=`rgba(242,231,201,${.2+rnd()*.6})`; const x=cx-28*u+rnd()*56*u, y=top+rnd()*(bot-top); g.beginPath(); g.arc(x,y,dpr*(.6+rnd()*1.2),0,Math.PI*2); g.fill();}
+  // lamparina pendurada
+  g.strokeStyle='#5a4a3a'; g.beginPath(); g.moveTo(cx+18*u,top+18*u); g.lineTo(cx+18*u,top+26*u); g.stroke();
+  const lamp=g.createRadialGradient(cx+18*u,top+28*u,0,cx+18*u,top+28*u,9*u); lamp.addColorStop(0,'rgba(255,190,90,.9)'); lamp.addColorStop(1,'rgba(255,190,90,0)'); g.fillStyle=lamp; g.fillRect(0,0,W,H);
+  g.fillStyle='#ffcf7a'; g.fillRect(cx+16.5*u,top+26*u,3*u,4*u);
+  const vig=g.createLinearGradient(0,0,0,H*.35); vig.addColorStop(0,'rgba(0,0,0,.6)'); vig.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=vig; g.fillRect(0,0,W,H*.35);
 }
 
 function capaFarol(g,W,H,dpr,c){

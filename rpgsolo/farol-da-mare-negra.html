@@ -2603,7 +2603,7 @@ const RX={
   req:new RegExp('^'+W+'\\s+(\\d+)\\s*\\+$','i')
 };
 function parse(text){
-  const b={title:'Sem título',autor:'',intro:[],secs:{},order:[],errors:[],formula:{hab:[1,6],ene:[2,12],sor:[1,6]},equip:[],prov:10,ouro:0,pocoes:[]};
+  const b={title:'Sem título',autor:'',intro:[],secs:{},order:[],errors:[],formula:{hab:[1,6],ene:[2,12],sor:[1,6]},equip:[],prov:10,ouro:0,pocoes:[],doses:1,eatRestricted:false};
   let cur=null;
   text.split(/\r?\n/).forEach((raw,i)=>{
     const t=raw.trim(), ln=i+1; let m;
@@ -2611,6 +2611,8 @@ function parse(text){
       if(m=t.match(/^t[íÍiI]tulo\s*:\s*(.+)$/i)){b.title=m[1];return;}
       if(m=t.match(/^autor\s*:\s*(.+)$/i)){b.autor=m[1].trim();return;}
       if(m=t.match(RX.formula)){b.formula[sk(m[1])]=[+m[2],+(m[3]||0)];return;}
+      if(m=t.match(/^doses\s+de\s+po[çÇcC][ãÃaA]o\s*:\s*(\d+)\s*$/i)){b.doses=Math.max(1,+m[1]);return;}
+      if(/^comer\s*:/i.test(t)){b.eatRestricted=true;return;}
       if(m=t.match(/^po[çÇcC][õÕoO]es\s*:\s*(.+)$/i)){b.pocoes=m[1].split(/[,;]/).map(s=>s.trim()).filter(Boolean);return;}
       if(m=t.match(/^equipamento\s*:\s*(.+)$/i)){b.equip=m[1].split(/[,;]/).map(s=>s.trim()).filter(Boolean);return;}
       if(m=t.match(/^provis[õÕoO]es\s*:\s*(\d+)\s*$/i)){b.prov=+m[1];return;}
@@ -2618,7 +2620,7 @@ function parse(text){
     }
     if(m=t.match(/^#+\s*(\d+)\s*$/)){
       if(b.secs[m[1]]) b.errors.push(`Seção ${m[1]} aparece duas vezes (linha ${ln}).`);
-      cur={id:m[1],lines:[],choices:[],effects:[],groups:[],tests:[],flee:null,end:null};
+      cur={id:m[1],canEat:false,lines:[],choices:[],effects:[],groups:[],tests:[],flee:null,end:null};
       b.secs[m[1]]=cur;b.order.push(m[1]);return;
     }
     if(!cur){b.intro.push(raw);return;}
@@ -2630,6 +2632,7 @@ function parse(text){
       if(m[5]) g.to=m[5]; return;
     }
     if(/^combate/i.test(t)&&/:/.test(t)){b.errors.push(`Linha ${ln}: combate fora do formato "Nome | HAB | ENE".`);return;}
+    if(/^pode\s+comer\s*$/i.test(t)){cur.canEat=true;return;}
     if(m=t.match(/^fuga\s*->\s*(\d+)\s*$/i)){cur.flee=m[1];return;}
     if(m=t.match(RX.test)){cur.tests.push({kind:sk(m[1]),ok:m[2],fail:m[3]});return;}
     if(m=t.match(/^(ganha|perde)\s*:\s*(.+)$/i)){cur.effects.push({type:m[1].toLowerCase(),item:m[2].trim()});return;}
@@ -2782,7 +2785,8 @@ function drink(){
   else if(k==='fortuna'){ c.sorMax+=1; c.sor=c.sorMax; }
   c.pocao.doses--; S.notes=[...(S.notes||[]),{cls:'good',t:pocaoInfo(c.pocao.tipo).nome+' bebida'}]; render();
 }
-function eat(){if(S.char.prov>0&&S.char.ene<S.char.eneMax){S.char.prov--;S.char.ene+=4;clamp(S.char);render();}}
+const canEatHere=()=>!book.eatRestricted||(S.phase==='play'&&book.secs[S.sec]&&book.secs[S.sec].canEat);
+function eat(){if(canEatHere()&&S.char.prov>0&&S.char.ene<S.char.eneMax){S.char.prov--;S.char.ene+=4;clamp(S.char);render();}}
 
 /* ---------- Desenho ---------- */
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -2864,8 +2868,8 @@ function sheetHTML(){
     ${STATS.map(statRow).join('')}
     <div class="stat"><span class="k">Ouro</span><span class="val">${c.ouro}</span></div>
     <div class="stat"><span class="k">Provisões</span><span class="val">${c.prov}</span></div>
-    ${c.pocao?`<div class="stat"><span class="k">${esc(pocaoInfo(c.pocao.tipo).nome)}</span><span class="val">${c.pocao.doses}<small> dose</small></span></div>`:''}
-    <div class="row" style="margin-top:8px"><button class="btn small" data-act="eat" ${c.prov<1||c.ene>=c.eneMax||inFight||S.dead?'disabled':''}>Comer provisão (+4 Energia)</button>${c.pocao?`<button class="btn small" data-act="drink" ${c.pocao.doses<1||inFight||S.dead||S.phase!=='play'?'disabled':''}>Beber poção</button>`:''}</div>
+    ${c.pocao?`<div class="stat"><span class="k">${esc(pocaoInfo(c.pocao.tipo).nome)}</span><span class="val">${c.pocao.doses}<small> ${c.pocao.doses===1?'dose':'doses'}</small></span></div>`:''}
+    <div class="row" style="margin-top:8px"><button class="btn small" data-act="eat" ${c.prov<1||c.ene>=c.eneMax||inFight||S.dead||!canEatHere()?'disabled':''} title="${book.eatRestricted?'Só nos pontos de descanso indicados no texto':''}">Comer provisão (+4 Energia)</button>${c.pocao?`<button class="btn small" data-act="drink" ${c.pocao.doses<1||inFight||S.dead||S.phase!=='play'?'disabled':''}>Beber poção</button>`:''}</div>
     ${w?`<h4>Arma em uso</h4><div>${esc(w)} <span class="items b">(${c.weapons[w]>=0?'+':'−'}${Math.abs(c.weapons[w])} no ataque)</span></div>`:''}
     <h4>Equipamento e tesouros</h4>
     ${c.items.length?`<ul class="items">${c.items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`:'<p class="empty">Nada na mochila.</p>'}
@@ -2917,7 +2921,7 @@ function renderPlay(){
       ${r?`<div class="rollgrid">${ks.map(k=>`<div class="rollcell"><div class="eyebrow">${NAME[k]}</div><div class="v">${S.char[k]}</div><div class="how">${dice(r[k])}${book.formula[k][1]?' + '+book.formula[k][1]:''}</div></div>`).join('')}</div>`:''}
       ${saved?`<div class="panel"><h3>Aventura em andamento</h3><p style="margin:0 0 12px">Você parou na seção ${esc(saved.S.sec)}, com Energia ${saved.S.char.ene}.</p><button class="btn primary" data-act="continue">Continuar de onde parei</button></div>`:''}
       <p id="savestate" class="savestate"></p>
-      ${r&&book.pocoes.length?`<div class="panel"><h3>Escolha uma poção</h3><p style="margin:0 0 12px">Você pode levar uma garrafa, com uma dose. Ela pode ser bebida a qualquer momento, menos durante um combate.</p><div class="choices" style="margin:0">${book.pocoes.map(pp=>`<button class="choice" data-act="pocao" data-p="${esc(pp)}" aria-pressed="${S.char.pocao&&S.char.pocao.tipo===pp}" style="${S.char.pocao&&S.char.pocao.tipo===pp?'border-color:var(--accent);background:var(--accent-soft)':''}"><span class="n">${S.char.pocao&&S.char.pocao.tipo===pp?'✓':'·'}</span><span>${esc(pocaoInfo(pp).nome)}<span class="req">${esc(pocaoInfo(pp).txt)}</span></span></button>`).join('')}</div></div>`:''}
+      ${r&&book.pocoes.length?`<div class="panel"><h3>Escolha uma poção</h3><p style="margin:0 0 12px">Você pode levar uma garrafa, com ${book.doses===1?'uma dose':book.doses+' doses'}. Ela pode ser bebida a qualquer momento, menos durante um combate.</p><div class="choices" style="margin:0">${book.pocoes.map(pp=>`<button class="choice" data-act="pocao" data-p="${esc(pp)}" aria-pressed="${S.char.pocao&&S.char.pocao.tipo===pp}" style="${S.char.pocao&&S.char.pocao.tipo===pp?'border-color:var(--accent);background:var(--accent-soft)':''}"><span class="n">${S.char.pocao&&S.char.pocao.tipo===pp?'✓':'·'}</span><span>${esc(pocaoInfo(pp).nome)}<span class="req">${esc(pocaoInfo(pp).txt)}</span></span></button>`).join('')}</div></div>`:''}
       <div class="row">${r?`<button class="btn primary" data-act="begin" ${book.pocoes.length&&!S.char.pocao?'disabled':''}>Começar na seção ${esc(book.order[0])}</button><button class="btn" data-act="roll">Rolar de novo</button>`:`<button class="btn primary" data-act="roll">Rolar os atributos</button>`}</div>`;
   } else {
     const s=book.secs[S.sec];
@@ -2925,6 +2929,7 @@ function renderPlay(){
     if(!s){page+=`<p>A seção ${esc(S.sec)} não existe no texto. Confira os números em <b>Escrever</b>.</p>`;}
     else{
       page+=`<div class="text">${prose(s.lines)}</div>`;
+      if(book.eatRestricted&&s.canEat&&!S.dead) S.notes=[...S.notes.filter(n=>n.t!=='Você pode comer aqui'),{cls:'good',t:'Você pode comer aqui'}];
       if(S.notes.length) page+=`<div class="notes">${S.notes.map(n=>`<span class="chip ${n.cls}">${esc(n.t)}</span>`).join('')}</div>`;
       const f=S.fight, blocking=f&&(!f.done);
       if(f) page+=fightHTML(s);
@@ -3040,7 +3045,7 @@ document.addEventListener('click',e=>{
   else if(a==='test'){runTest(+b.dataset.i);}
   else if(a==='eat'){eat();}
   else if(a==='drink'){drink();}
-  else if(a==='pocao'){if(S.char){S.char.pocao={tipo:b.dataset.p,doses:1};render();}}
+  else if(a==='pocao'){if(S.char){S.char.pocao={tipo:b.dataset.p,doses:book.doses};render();}}
   else if(a==='restart'){
     const inGame=S.phase==='play'&&!S.dead&&!(book.secs[S.sec]&&book.secs[S.sec].end);
     if(inGame&&b.id==='btn-restart'&&resetArmed!=='restart'){resetArmed='restart';b.textContent='Clique de novo para apagar o progresso';setTimeout(()=>{if(resetArmed==='restart')resetArmed=0;const x=$('#btn-restart');if(x)x.textContent='Recomeçar do zero';},5000);return;}
