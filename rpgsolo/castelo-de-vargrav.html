@@ -9,6 +9,10 @@
 <meta property="og:image" content="https://deckedados.com.br/og-image.jpg">
 <meta property="og:url" content="https://deckedados.com.br/rpgsolo/castelo-de-vargrav.html">
 <link rel="icon" href="/logo-icon.png">
+<meta name="author" content="Maicon Kuzer">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Game","name":"O Castelo de Vargrav","genre":"Livro-jogo de terror gótico","author":{"@type":"Person","name":"Maicon Kuzer"},"publisher":{"@type":"Organization","name":"Deck e Dados","url":"https://deckedados.com.br/"},"url":"https://deckedados.com.br/rpgsolo/castelo-de-vargrav.html","inLanguage":"pt-BR","isAccessibleForFree":true}
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <title>RPG Solo — O Castelo de Vargrav | Deck e Dados</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -55,6 +59,8 @@ button,input,textarea,select{font:inherit;color:inherit}
 .secnum{font-family:var(--display);font-weight:800;font-size:4.2rem;line-height:1;text-align:center;color:var(--accent);margin:4px 0 22px;font-variant-numeric:lining-nums}
 .secnum::after{content:"";display:block;width:56px;height:1px;background:var(--rule);margin:18px auto 0}
 .text p{margin:0 0 1em}
+.byline{margin:-10px 0 18px;font-family:var(--mono);font-size:.8rem;letter-spacing:.06em;color:var(--ink-2)}
+.byline b{color:var(--accent);font-weight:500}
 .book-title{font-family:var(--display);font-weight:800;font-size:clamp(2rem,5vw,2.9rem);line-height:1.05;margin:0 0 18px;text-wrap:balance}
 .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
 .notes{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 18px}
@@ -170,7 +176,7 @@ code{font-family:var(--mono);font-size:.85em}
     <div class="site-links"><span class="conta" id="conta">Verificando login…</span><a href="/rpgsolo.html">Todas as aventuras</a><a href="/">Voltar ao site</a></div>
   </nav>
   <header class="top">
-    <h1 class="brand"><a class="kicker" href="/rpgsolo.html">RPG Solo</a>O Castelo de Vargrav<small>Um livro-jogo de terror gótico · 400 seções</small></h1>
+    <h1 class="brand"><a class="kicker" href="/rpgsolo.html">RPG Solo</a>O Castelo de Vargrav<small>Um livro-jogo de terror gótico · 400 seções · escrito por Maicon Kuzer</small></h1>
     <div class="controls">
       <div class="audio">
         <button class="btn small" id="musica" data-act="music" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 3v11.1A3.5 3.5 0 1 0 11 17V8h8v6.1A3.5 3.5 0 1 0 21 17V3z"/></svg><span>Ligar música</span></button>
@@ -185,6 +191,7 @@ code{font-family:var(--mono);font-size:.85em}
 
 <script type="text/plain" id="aventura">
 Título: O Castelo de Vargrav
+Autor: Maicon Kuzer
 Habilidade: 1d6+6
 Energia: 2d6+12
 Sorte: 1d6+6
@@ -2503,12 +2510,13 @@ const RX={
   req:new RegExp('^'+W+'\\s+(\\d+)\\s*\\+$','i')
 };
 function parse(text){
-  const b={title:'Sem título',intro:[],secs:{},order:[],errors:[],formula:{hab:[1,6],ene:[2,12],sor:[1,6]},equip:[],prov:10,ouro:0};
+  const b={title:'Sem título',autor:'',intro:[],secs:{},order:[],errors:[],formula:{hab:[1,6],ene:[2,12],sor:[1,6]},equip:[],prov:10,ouro:0};
   let cur=null;
   text.split(/\r?\n/).forEach((raw,i)=>{
     const t=raw.trim(), ln=i+1; let m;
     if(!cur){
       if(m=t.match(/^t[íÍiI]tulo\s*:\s*(.+)$/i)){b.title=m[1];return;}
+      if(m=t.match(/^autor\s*:\s*(.+)$/i)){b.autor=m[1].trim();return;}
       if(m=t.match(RX.formula)){b.formula[sk(m[1])]=[+m[2],+(m[3]||0)];return;}
       if(m=t.match(/^equipamento\s*:\s*(.+)$/i)){b.equip=m[1].split(/[,;]/).map(s=>s.trim()).filter(Boolean);return;}
       if(m=t.match(/^provis[õÕoO]es\s*:\s*(\d+)\s*$/i)){b.prov=+m[1];return;}
@@ -2792,7 +2800,7 @@ function renderPlay(){
     page=`<p class="eyebrow">Nada para jogar</p><p>A história ainda não tem seções. Volte para <b>Escrever</b> e crie a primeira com <code>## 1</code>.</p>`;
   } else if(S.phase==='start'){
     const r=S.roll, ks=STATS.filter(k=>book.formula[k]);
-    page=`<p class="eyebrow">Novo jogo</p><h2 class="book-title">${esc(book.title)}</h2>
+    page=`<p class="eyebrow">Novo jogo</p><h2 class="book-title">${esc(book.title)}</h2>${book.autor?`<p class="byline">Escrito por <b>${esc(book.autor)}</b></p>`:''}
       <div class="text">${prose(book.intro)}</div>
       <div class="rules"><p>${ks.map(k=>`<b>${NAME[k]}</b> = ${formulaText(k)}`).join(' · ')}</p>
       <p>Você começa com ${book.prov} provisões${book.ouro?` e ${book.ouro} de ouro`:''}${book.equip.length?`, levando ${book.equip.map(esc).join(', ')}`:''}.</p></div>

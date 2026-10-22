@@ -64,7 +64,9 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(2.4rem,6vw,3.6rem)
 
 .info{min-width:0}
 .genre{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 6px}
-.info h3{font-family:var(--display);font-weight:800;font-size:2rem;line-height:1.05;margin:0 0 12px}
+.info h3{font-family:var(--display);font-weight:800;font-size:2rem;line-height:1.05;margin:0 0 6px}
+.byline{margin:0 0 14px;font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;color:var(--ink-2)}
+.byline b{color:var(--gold);font-weight:500}
 .info p{margin:0 0 16px;max-width:60ch}
 .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin:0 0 18px}
 .fact{padding:10px 12px 10px 0}
@@ -134,6 +136,7 @@ const AVENTURAS = [
   {
     id: "castelo-de-vargrav",
     titulo: "O Castelo de Vargrav",
+    autor: "Maicon Kuzer",
     url: "/rpgsolo/castelo-de-vargrav.html",
     genero: "Terror gótico",
     resumo: "O inverno chegou cedo ao vale de Kessel, e a curandeira do vilarejo de Dravna foi levada pela carruagem sem cocheiro. Suba até o castelo da Baronesa Isolde Vargrav, que governa o vale há trezentos anos, e traga Mirela de volta antes da lua cheia.",
@@ -178,11 +181,12 @@ function render(){
       <a class="cover" href="${esc(a.url)}" aria-label="Jogar ${esc(a.titulo)}">
         <canvas data-capa="${esc(a.id)}"></canvas>
         <span class="ct"><small>RPG Solo</small><strong>${esc(a.titulo)}</strong></span>
-        <span class="cb">${a.secoes} seções</span>
+        <span class="cb">${a.autor?esc(a.autor):a.secoes+' seções'}</span>
       </a>
       <div class="info">
         <p class="genre">${esc(a.genero)}</p>
         <h3>${esc(a.titulo)}</h3>
+        ${a.autor?`<p class="byline">Escrito por <b>${esc(a.autor)}</b></p>`:''}
         <p>${esc(a.resumo)}</p>
         <dl class="facts">
           <div class="fact"><dt>Seções</dt><dd>${a.secoes}</dd></div>
