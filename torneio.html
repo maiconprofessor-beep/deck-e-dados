@@ -184,6 +184,7 @@ tr.drop td:last-child{text-decoration:none}
             <label>2º<input type="number" id="pC2" min="0" max="20" value="3"></label>
             <label>3º<input type="number" id="pC3" min="0" max="20" value="2"></label>
             <label>4º<input type="number" id="pC4" min="0" max="20" value="1"></label>
+            <label>Perderam juntos<input type="number" id="pCJ" min="0" max="20" value="2"></label>
           </div>
           <p class="dica" id="dicaPont"></p>
         </div>
@@ -295,7 +296,7 @@ function atualizarCadastro(){
   $("ptsVit").hidden = pont !== "vit"; $("ptsCol").hidden = pont !== "col";
   $("dicaPont").textContent = pont === "vit"
     ? "Uma pessoa vence a mesa e as outras perdem. Se o tempo acabar sem vencedor, todos da mesa ganham os pontos de empate. 5 / 1 / 0 é a pontuação mais usada em Commander competitivo; ajuste se quiser."
-    : "Você marca a colocação de cada jogador na mesa (o primeiro eliminado fica em último). Em mesa de 5, o 5º lugar faz 0.";
+    : "Você marca a colocação de cada jogador na mesa (o primeiro eliminado fica em último). Se o vencedor eliminar todos de uma vez, marque “Os outros perderam juntos”: cada um deles recebe os pontos de “Perderam juntos”. Em mesa de 5, o 5º lugar faz 0.";
   let cont = n === 1 ? "1 jogador" : `${n} jogadores`;
   if(modo === "commander" && n >= 3){
     const t = tamanhosMesas(n), q4 = t.filter(x => x === 4).length, q3 = t.filter(x => x === 3).length, q5 = t.filter(x => x === 5).length;
@@ -323,7 +324,7 @@ $("btComecar").onclick = () => {
   $("erroCad").textContent = "";
   T = { modo, nome: $("nomeTorneio").value.trim(), total: r, minutos: m, fim: false,
         jogadores: nomes.map((n,i) => ({id:i+1, nome:n, drop:false})), rodadas: [] };
-  if(modo === "commander") T.cmd = { tipo: pont, vit: num("pVit",5), emp: num("pEmp",1), col: [num("pC1",4), num("pC2",3), num("pC3",2), num("pC4",1)] };
+  if(modo === "commander") T.cmd = { tipo: pont, vit: num("pVit",5), emp: num("pEmp",1), col: [num("pC1",4), num("pC2",3), num("pC3",2), num("pC4",1)], junto: num("pCJ",2) };
   novaRodada(); salvar(); render();
 };
 
@@ -361,6 +362,7 @@ function estatSuico(){
 /* ================= CÁLCULOS: COMMANDER ================= */
 function mesaCompleta(M){
   if(T.cmd.tipo === "vit") return M.venc !== null && M.venc !== undefined;
+  if(M.junto) return M.venc !== null && M.venc !== undefined && M.venc !== "emp";
   const pos = M.jog.map(id => M.col[id]).filter(Boolean);
   return pos.length === M.jog.length && new Set(pos).size === pos.length;
 }
@@ -377,6 +379,10 @@ function estatCmd(){
           s.max += C.vit;
           if(M.venc === "emp"){ s.pts += C.emp; s.e++; }
           else if(M.venc === id){ s.pts += C.vit; s.v++; }
+        } else if(M.junto){
+          s.max += C.col[0];
+          if(M.venc === id){ s.pts += C.col[0]; s.v++; s.pos.push(1); }
+          else { s.pts += (C.junto === undefined ? 2 : C.junto); s.pos.push((M.jog.length + 2) / 2); }
         } else {
           const p = M.col[id]; s.max += C.col[0]; s.pts += C.col[p-1] || 0; s.pos.push(p);
           if(p === 1) s.v++;
@@ -471,7 +477,7 @@ function render(){
     $("eyebrow").textContent = "organizador de torneio"; atualizarCadastro(); return; }
   $("titulo").firstChild.textContent = T.nome || (CMD() ? "Torneio de Commander" : "Torneio Suíço");
   $("eyebrow").textContent = CMD() ? "organizador de torneio · commander" : "organizador de torneio · sistema suíço";
-  $("subtitulo").textContent = `${T.jogadores.length} jogadores · ${T.total} rodadas` + (CMD() ? ` · ${T.cmd.tipo === "vit" ? `vitória ${T.cmd.vit}, empate ${T.cmd.emp}` : `colocação ${T.cmd.col.join("/")}`}` : " suíças");
+  $("subtitulo").textContent = `${T.jogadores.length} jogadores · ${T.total} rodadas` + (CMD() ? ` · ${T.cmd.tipo === "vit" ? `vitória ${T.cmd.vit}, empate ${T.cmd.emp}` : `colocação ${T.cmd.col.join("/")}, juntos ${T.cmd.junto === undefined ? 2 : T.cmd.junto}`}` : " suíças");
   $("telaCadastro").hidden = true;
   $("telaTorneio").hidden = T.fim; $("telaFinal").hidden = !T.fim;
   if(T.fim) renderFinal(); else { renderRodada(); renderClass(); }
@@ -482,7 +488,7 @@ function renderRodada(){
   const S = estatisticas();
   $("rodadaTit").textContent = `Rodada ${n} de ${T.total}`;
   $("instrRodada").textContent = CMD()
-    ? (T.cmd.tipo === "vit" ? "Clique em quem venceu cada mesa, ou em “Empate” se o tempo acabou sem vencedor. Assento 1 começa jogando." : "Marque a colocação de cada jogador na mesa (1º ao último). Assento 1 começa jogando.")
+    ? (T.cmd.tipo === "vit" ? "Clique em quem venceu cada mesa, ou em “Empate” se o tempo acabou sem vencedor. Assento 1 começa jogando." : "Marque a colocação de cada jogador na mesa (1º ao último). Se o vencedor eliminou todos de uma vez, clique em “Os outros perderam juntos” e marque só quem venceu. Assento 1 começa jogando.")
     : "Marque o placar em games de cada mesa (2-0, 2-1 ou empate).";
   let h = "";
   if(CMD()){
@@ -492,11 +498,12 @@ function renderRodada(){
       M.jog.forEach((id, k) => {
         const j = J(id);
         let ctl;
-        if(T.cmd.tipo === "vit") ctl = `<div class="res vence noprint"><button type="button" data-m="${i}" data-v="${id}" class="${M.venc===id?"sel":""}">Venceu</button></div>`;
+        if(T.cmd.tipo === "vit" || M.junto) ctl = `<div class="res vence noprint"><button type="button" data-m="${i}" data-v="${id}" class="${M.venc===id?"sel":""}">Venceu</button></div>`;
         else ctl = `<div class="res noprint">${M.jog.map((_,p) => `<button type="button" data-m="${i}" data-j="${id}" data-p="${p+1}" class="${M.col[id]===p+1?"sel":""}">${p+1}º</button>`).join("")}</div>`;
         h += `<div class="assento"><span class="seat">Assento ${k+1}</span><span class="nm">${esc(j.nome)} <span class="pts">(${S[id].pts})</span></span>${ctl}</div>`;
       });
       if(T.cmd.tipo === "vit") h += `<div class="res vence empate noprint"><button type="button" data-m="${i}" data-v="emp" class="${M.venc==="emp"?"sel":""}">Empate (ninguém venceu)</button></div>`;
+      else h += `<div class="res vence empate noprint"><button type="button" data-m="${i}" data-junto="1" class="${M.junto?"sel":""}" title="O vencedor eliminou todos ao mesmo tempo">Os outros perderam juntos</button></div>`;
       h += `</div>`;
     });
   } else {
@@ -516,7 +523,8 @@ function renderRodada(){
   $("mesas").innerHTML = h;
   $("mesas").querySelectorAll("button[data-m]").forEach(b => b.onclick = () => {
     const M = R.mesas[+b.dataset.m];
-    if(b.dataset.v){ const v = b.dataset.v === "emp" ? "emp" : +b.dataset.v; M.venc = M.venc === v ? null : v; }
+    if(b.dataset.junto){ M.junto = !M.junto; M.venc = null; M.col = {}; }
+    else if(b.dataset.v){ const v = b.dataset.v === "emp" ? "emp" : +b.dataset.v; M.venc = M.venc === v ? null : v; }
     else if(b.dataset.j){
       const id = +b.dataset.j, p = +b.dataset.p;
       Object.keys(M.col).forEach(k => { if(M.col[k] === p && +k !== id) delete M.col[k]; });
@@ -565,6 +573,7 @@ function textoMesa(M, i){
       if(M.venc === "emp") return `Mesa ${i+1}: empate entre ${nomes.map(esc).join(", ")}`;
       return `Mesa ${i+1}: <b>${esc(J(M.venc).nome)}</b> venceu (${M.jog.filter(id => id !== M.venc).map(id => esc(J(id).nome)).join(", ")})`;
     }
+    if(M.junto) return `Mesa ${i+1}: <b>${esc(J(M.venc).nome)}</b> venceu e eliminou todos de uma vez (${M.jog.filter(id => id !== M.venc).map(id => esc(J(id).nome)).join(", ")})`;
     return `Mesa ${i+1}: ` + M.jog.slice().sort((a,b) => M.col[a] - M.col[b]).map(id => `${M.col[id]}º ${M.col[id]===1?"<b>":""}${esc(J(id).nome)}${M.col[id]===1?"</b>":""}`).join(" · ");
   }
   const a = J(M.a).nome, b = J(M.b).nome;
