@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Torneio Suíço | Deck e Dados</title>
-<meta name="description" content="Organize torneios de card games no sistema suíço: emparelhamento automático, resultados por mesa, desempates OMW%, GW% e OGW% e classificação final. Grátis, no navegador.">
-<meta property="og:title" content="Torneio Suíço | Deck e Dados">
-<meta property="og:description" content="Emparelhamento, resultados e classificação de torneios de card games no sistema suíço.">
+<title>Torneio | Deck e Dados</title>
+<meta name="description" content="Organize torneios de card games: sistema suíço 1 contra 1 ou Commander em mesas de 4, com emparelhamento automático, resultados por mesa, desempates e classificação final. Grátis, no navegador.">
+<meta property="og:title" content="Torneio | Deck e Dados">
+<meta property="og:description" content="Suíço 1 contra 1 ou Commander em mesas de 4: emparelhamento, resultados e classificação.">
 <meta property="og:image" content="https://deckedados.com.br/og-image.jpg">
 <meta property="og:url" content="https://deckedados.com.br/torneio.html">
 <link rel="icon" href="/logo-icon.png">
@@ -113,6 +113,28 @@ tr.drop td:last-child{text-decoration:none}
   .mesa{border-color:#999;background:none}
 }
 </style>
+<style>
+.grid2>.card+.card,.layout>.card{margin-top:0}
+.modos{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.modo{border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;background:rgba(0,0,0,.18);text-align:left}
+.modo b{display:block;font-size:.98rem}
+.modo span{font-size:.82rem;color:var(--muted)}
+.modo.sel{border-color:var(--accent);background:var(--accent-soft)}
+.mini{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.mini label{font-size:.8rem;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.mini input{width:64px}
+.seg2{display:flex;gap:6px;flex-wrap:wrap}
+.seg2 button{border:1px solid var(--line);background:rgba(0,0,0,.18);border-radius:9px;padding:6px 10px;cursor:pointer;font-size:.86rem}
+.seg2 button.sel{border-color:var(--accent);background:var(--accent);color:#1a1405;font-weight:700}
+.pod .assento{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 0;border-top:1px dashed var(--line)}
+.pod .assento:first-of-type{border-top:0}
+.pod .seat{font-family:var(--mono);font-size:.72rem;color:var(--muted);white-space:nowrap}
+.pod .nm{font-weight:600;overflow-wrap:anywhere}
+.pod .nm .pts{font-weight:400}
+.pod .res button{min-width:0;flex:0 0 auto}
+.pod .empate{margin-top:8px}
+.pod .vence button.sel{background:var(--accent);border-color:var(--accent);color:#1a1405;font-weight:700}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -121,8 +143,8 @@ tr.drop td:last-child{text-decoration:none}
     <div class="site-links"><a href="/">Início</a><a href="/rpgsolo.html">RPG Solo</a><b>Torneio</b></div>
   </nav>
   <header>
-    <div><p class="eyebrow noprint">organizador de torneio · sistema suíço</p>
-    <h1 id="titulo">Torneio Suíço<small id="subtitulo">Emparelhamento, resultados e classificação</small></h1></div>
+    <div><p class="eyebrow noprint" id="eyebrow">organizador de torneio</p>
+    <h1 id="titulo">Torneio<small id="subtitulo">Suíço 1 contra 1 ou Commander em mesas de 4</small></h1></div>
     <span class="sp"></span>
     <div class="linha noprint">
       <button class="btn peq" id="btExportar" type="button">Salvar backup</button>
@@ -142,18 +164,41 @@ tr.drop td:last-child{text-decoration:none}
       </div>
       <div class="card">
         <h2>Torneio</h2>
-        <label class="c" for="nomeTorneio">Nome do evento</label>
-        <input type="text" id="nomeTorneio" maxlength="80" placeholder="Ex.: Torneio de Pauper da loja">
-        <label class="c" for="qtdRodadas" style="margin-top:12px">Rodadas suíças</label>
+        <div class="modos" role="radiogroup" aria-label="Formato">
+          <button class="modo" type="button" data-modo="suico" role="radio"><b>Suíço</b><span>1 contra 1, melhor de 3</span></button>
+          <button class="modo" type="button" data-modo="commander" role="radio"><b>Commander</b><span>Mesas de 4 jogadores</span></button>
+        </div>
+        <div id="opCommander" hidden>
+          <label class="c">Pontuação</label>
+          <div class="seg2" id="segPont">
+            <button type="button" data-p="vit">Vitória e empate</button>
+            <button type="button" data-p="col">Por colocação</button>
+          </div>
+          <div class="mini" id="ptsVit">
+            <label>Vitória<input type="number" id="pVit" min="0" max="20" value="5"></label>
+            <label>Empate<input type="number" id="pEmp" min="0" max="20" value="1"></label>
+            <label>Derrota<input type="number" value="0" disabled></label>
+          </div>
+          <div class="mini" id="ptsCol" hidden>
+            <label>1º lugar<input type="number" id="pC1" min="0" max="20" value="4"></label>
+            <label>2º<input type="number" id="pC2" min="0" max="20" value="3"></label>
+            <label>3º<input type="number" id="pC3" min="0" max="20" value="2"></label>
+            <label>4º<input type="number" id="pC4" min="0" max="20" value="1"></label>
+          </div>
+          <p class="dica" id="dicaPont"></p>
+        </div>
+        <label class="c" for="nomeTorneio" style="margin-top:12px">Nome do evento</label>
+        <input type="text" id="nomeTorneio" maxlength="80" placeholder="Ex.: Torneio da loja">
+        <label class="c" for="qtdRodadas" style="margin-top:12px">Rodadas</label>
         <input type="number" id="qtdRodadas" min="1" max="15" value="3">
         <p class="dica" id="sugestao"></p>
         <label class="c" for="minutos" style="margin-top:12px">Tempo de rodada (minutos)</label>
-        <input type="number" id="minutos" min="5" max="180" value="50">
+        <input type="number" id="minutos" min="5" max="240" value="50">
         <p class="erro" id="erroCad"></p>
         <div class="linha" style="margin-top:14px">
           <button class="btn pri" id="btComecar" type="button">Começar torneio</button>
         </div>
-        <p class="dica">Vitória = 3 pontos, empate = 1, derrota = 0. Desempates no padrão do Magic: OMW%, GW% e OGW%, com piso de 33%. Serve para qualquer card game em melhor de 3.</p>
+        <p class="dica" id="regras"></p>
         <p class="dica">O torneio fica salvo neste navegador. Use “Salvar backup” para levar para outro computador.</p>
       </div>
     </div>
@@ -171,7 +216,7 @@ tr.drop td:last-child{text-decoration:none}
             <button class="btn peq" id="btTimer" type="button">Iniciar</button>
             <button class="btn peq" id="btZerar" type="button">Zerar</button>
           </div>
-          <p class="dica noprint" style="margin-bottom:10px">Marque o placar em games de cada mesa (2-0, 2-1 ou empate).</p>
+          <p class="dica noprint" style="margin-bottom:10px" id="instrRodada"></p>
           <div id="mesas"></div>
           <p class="erro noprint" id="erroRodada"></p>
           <div class="linha noprint" style="margin-top:6px">
@@ -197,7 +242,7 @@ tr.drop td:last-child{text-decoration:none}
       <h2>🏆 Resultado final<span class="sp"></span><button class="btn peq noprint" id="btImprimirFinal" type="button">Imprimir</button></h2>
       <div class="podio" id="podio"></div>
       <div class="tabwrap"><table id="tabFinal"></table></div>
-      <p class="dica">Pts = pontos de partida · V-D-E = vitórias, derrotas e empates · OMW% = aproveitamento médio dos adversários · GW% = aproveitamento em games · OGW% = aproveitamento médio dos adversários em games.</p>
+      <p class="dica" id="legenda"></p>
     </div>
     <div class="card hist">
       <h2>Rodadas</h2>
@@ -214,17 +259,27 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">"
 const CHAVE = "dd-torneio-suico";
 const embaralhar = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
 const pct = x => (x*100).toFixed(2).replace(".", ",") + "%";
+const num = (id, d) => { const v = parseInt($(id).value, 10); return isNaN(v) ? d : Math.max(0, v); };
 
-let T = null;            // estado do torneio
+let T = null;
 function salvar(){ try{ localStorage.setItem(CHAVE, JSON.stringify(T)); }catch(e){} }
-function carregar(){ try{ const s = localStorage.getItem(CHAVE); return s ? JSON.parse(s) : null; }catch(e){ return null; } }
+function carregar(){ try{ const s = localStorage.getItem(CHAVE); const t = s ? JSON.parse(s) : null; if(t && !t.modo) t.modo = "suico"; return t; }catch(e){ return null; } }
+const CMD = () => T && T.modo === "commander";
+
+/* ================= CADASTRO ================= */
+let modo = "suico", pont = "vit", rodadasEditadas = false, minutosEditados = false;
 
 function rodadasSugeridas(n){
+  if(modo === "commander"){ if(n <= 12) return 3; if(n <= 24) return 4; if(n <= 48) return 5; return 6; }
   if(n <= 2) return 1; if(n <= 4) return 2; if(n <= 8) return 3; if(n <= 16) return 4; if(n <= 32) return 5;
   if(n <= 64) return 6; if(n <= 128) return 7; if(n <= 226) return 8; return 9;
 }
-
-/* ================= CADASTRO ================= */
+function tamanhosMesas(n){
+  if(n < 3) return null;
+  if(n === 5) return [5];
+  const p3 = (4 - n % 4) % 4;
+  return Array((n - 3*p3) / 4).fill(4).concat(Array(p3).fill(3));
+}
 function nomesDigitados(){
   const vistos = new Set(), lista = [];
   $("listaNomes").value.split("\n").map(s => s.trim()).filter(Boolean).forEach(n => {
@@ -232,32 +287,53 @@ function nomesDigitados(){
   });
   return lista;
 }
-let rodadasEditadas = false;
 function atualizarCadastro(){
   const n = nomesDigitados().length, s = rodadasSugeridas(n);
-  $("contagem").textContent = n === 1 ? "1 jogador" : `${n} jogadores`;
+  document.querySelectorAll(".modo").forEach(b => { const on = b.dataset.modo === modo; b.classList.toggle("sel", on); b.setAttribute("aria-checked", on); });
+  $("opCommander").hidden = modo !== "commander";
+  document.querySelectorAll("#segPont button").forEach(b => b.classList.toggle("sel", b.dataset.p === pont));
+  $("ptsVit").hidden = pont !== "vit"; $("ptsCol").hidden = pont !== "col";
+  $("dicaPont").textContent = pont === "vit"
+    ? "Uma pessoa vence a mesa e as outras perdem. Se o tempo acabar sem vencedor, todos da mesa ganham os pontos de empate. 5 / 1 / 0 é a pontuação mais usada em Commander competitivo; ajuste se quiser."
+    : "Você marca a colocação de cada jogador na mesa (o primeiro eliminado fica em último). Em mesa de 5, o 5º lugar faz 0.";
+  let cont = n === 1 ? "1 jogador" : `${n} jogadores`;
+  if(modo === "commander" && n >= 3){
+    const t = tamanhosMesas(n), q4 = t.filter(x => x === 4).length, q3 = t.filter(x => x === 3).length, q5 = t.filter(x => x === 5).length;
+    cont += " · " + [q4 ? `${q4} mesa${q4>1?"s":""} de 4` : "", q3 ? `${q3} mesa${q3>1?"s":""} de 3` : "", q5 ? "1 mesa de 5" : ""].filter(Boolean).join(" e ");
+  }
+  $("contagem").textContent = cont;
   $("sugestao").textContent = n >= 2 ? `Recomendado para ${n} jogadores: ${s} rodada${s>1?"s":""}.` : "";
   if(!rodadasEditadas && n >= 2) $("qtdRodadas").value = s;
+  if(!minutosEditados) $("minutos").value = modo === "commander" ? 80 : 50;
+  $("regras").textContent = modo === "commander"
+    ? "Commander: mesas de 4 montadas por pontuação, evitando repetir adversários; quando o número de jogadores não fecha em 4, sobram mesas de 3. Ordem dos assentos sorteada. Desempate: aproveitamento médio dos adversários, depois número de vitórias."
+    : "Vitória = 3 pontos, empate = 1, derrota = 0. Desempates no padrão do Magic: OMW%, GW% e OGW%, com piso de 33%. Serve para qualquer card game em melhor de 3.";
 }
+document.querySelectorAll(".modo").forEach(b => b.onclick = () => { modo = b.dataset.modo; atualizarCadastro(); });
+document.querySelectorAll("#segPont button").forEach(b => b.onclick = () => { pont = b.dataset.p; atualizarCadastro(); });
 $("listaNomes").addEventListener("input", atualizarCadastro);
 $("qtdRodadas").addEventListener("input", () => rodadasEditadas = true);
+$("minutos").addEventListener("input", () => minutosEditados = true);
 
 $("btComecar").onclick = () => {
   const nomes = nomesDigitados(), r = parseInt($("qtdRodadas").value, 10), m = parseInt($("minutos").value, 10) || 50;
-  if(nomes.length < 2){ $("erroCad").textContent = "Cadastre pelo menos 2 jogadores."; return; }
+  const minimo = modo === "commander" ? 3 : 2;
+  if(nomes.length < minimo){ $("erroCad").textContent = `Cadastre pelo menos ${minimo} jogadores.`; return; }
   if(!(r >= 1 && r <= 15)){ $("erroCad").textContent = "Escolha entre 1 e 15 rodadas."; return; }
   $("erroCad").textContent = "";
-  T = { nome: $("nomeTorneio").value.trim(), total: r, minutos: m, fim: false,
+  T = { modo, nome: $("nomeTorneio").value.trim(), total: r, minutos: m, fim: false,
         jogadores: nomes.map((n,i) => ({id:i+1, nome:n, drop:false})), rodadas: [] };
+  if(modo === "commander") T.cmd = { tipo: pont, vit: num("pVit",5), emp: num("pEmp",1), col: [num("pC1",4), num("pC2",3), num("pC3",2), num("pC4",1)] };
   novaRodada(); salvar(); render();
 };
 
-/* ================= CÁLCULOS ================= */
-function estatisticas(apenasFechadas = true){
+/* ================= CÁLCULOS: SUÍÇO ================= */
+const PISO = 1/3, EPS = 1e-9;
+function estatSuico(){
   const S = {};
   T.jogadores.forEach(j => S[j.id] = {id:j.id, v:0, d:0, e:0, mp:0, rod:0, gv:0, ge:0, gt:0, ops:[], bye:false});
   T.rodadas.forEach(R => {
-    if(apenasFechadas && !R.fechada) return;
+    if(!R.fechada) return;
     if(R.bye){ const s = S[R.bye]; s.v++; s.mp += 3; s.rod++; s.gv += 2; s.gt += 2; s.bye = true; }
     R.mesas.forEach(M => {
       if(M.ga === null) return;
@@ -270,7 +346,6 @@ function estatisticas(apenasFechadas = true){
       else { a.e++; b.e++; a.mp += 1; b.mp += 1; }
     });
   });
-  const PISO = 1/3;
   Object.values(S).forEach(s => {
     s.mw = s.rod ? Math.max(PISO, s.mp / (3*s.rod)) : 0;
     s.gw = s.gt ? Math.max(PISO, (3*s.gv + s.ge) / (3*s.gt)) : 0;
@@ -278,25 +353,61 @@ function estatisticas(apenasFechadas = true){
   Object.values(S).forEach(s => {
     s.omw = s.ops.length ? s.ops.reduce((t,o) => t + Math.max(PISO, S[o].mw), 0) / s.ops.length : 0;
     s.ogw = s.ops.length ? s.ops.reduce((t,o) => t + Math.max(PISO, S[o].gw), 0) / s.ops.length : 0;
+    s.pts = s.mp;
   });
   return S;
 }
-const EPS = 1e-9;
+
+/* ================= CÁLCULOS: COMMANDER ================= */
+function mesaCompleta(M){
+  if(T.cmd.tipo === "vit") return M.venc !== null && M.venc !== undefined;
+  const pos = M.jog.map(id => M.col[id]).filter(Boolean);
+  return pos.length === M.jog.length && new Set(pos).size === pos.length;
+}
+function estatCmd(){
+  const S = {}, C = T.cmd;
+  T.jogadores.forEach(j => S[j.id] = {id:j.id, pts:0, jogos:0, v:0, e:0, max:0, ops:[], pos:[]});
+  T.rodadas.forEach(R => {
+    if(!R.fechada) return;
+    R.mesas.forEach(M => {
+      M.jog.forEach(id => {
+        const s = S[id]; s.jogos++;
+        M.jog.forEach(o => { if(o !== id) s.ops.push(o); });
+        if(C.tipo === "vit"){
+          s.max += C.vit;
+          if(M.venc === "emp"){ s.pts += C.emp; s.e++; }
+          else if(M.venc === id){ s.pts += C.vit; s.v++; }
+        } else {
+          const p = M.col[id]; s.max += C.col[0]; s.pts += C.col[p-1] || 0; s.pos.push(p);
+          if(p === 1) s.v++;
+        }
+      });
+    });
+  });
+  Object.values(S).forEach(s => s.ap = s.max ? s.pts / s.max : 0);
+  Object.values(S).forEach(s => s.omw = s.ops.length ? s.ops.reduce((t,o) => t + S[o].ap, 0) / s.ops.length : 0);
+  return S;
+}
+
+const estatisticas = () => CMD() ? estatCmd() : estatSuico();
+const cmp = (a, b) => (b - a > EPS ? 1 : a - b > EPS ? -1 : 0);
 function classificacao(S){
   return T.jogadores.slice().sort((x,y) => {
     const a = S[x.id], b = S[y.id];
-    return (b.mp - a.mp) || (b.omw - a.omw > EPS ? 1 : a.omw - b.omw > EPS ? -1 : 0)
-        || (b.gw - a.gw > EPS ? 1 : a.gw - b.gw > EPS ? -1 : 0)
-        || (b.ogw - a.ogw > EPS ? 1 : a.ogw - b.ogw > EPS ? -1 : 0)
-        || x.nome.localeCompare(y.nome, "pt-BR");
+    if(CMD()) return (b.pts - a.pts) || cmp(a.omw, b.omw) || (b.v - a.v) || x.nome.localeCompare(y.nome, "pt-BR");
+    return (b.mp - a.mp) || cmp(a.omw, b.omw) || cmp(a.gw, b.gw) || cmp(a.ogw, b.ogw) || x.nome.localeCompare(y.nome, "pt-BR");
   });
 }
 
 /* ================= EMPARELHAMENTO ================= */
-function jaJogaram(){
-  const set = new Set();
-  T.rodadas.forEach(R => R.mesas.forEach(M => { set.add(M.a+"-"+M.b); set.add(M.b+"-"+M.a); }));
-  return set;
+function confrontos(){
+  const m = {};
+  const add = (a,b) => { m[a+"-"+b] = (m[a+"-"+b]||0) + 1; m[b+"-"+a] = (m[b+"-"+a]||0) + 1; };
+  T.rodadas.forEach(R => R.mesas.forEach(M => {
+    if(M.jog){ for(let i=0;i<M.jog.length;i++) for(let k=i+1;k<M.jog.length;k++) add(M.jog[i], M.jog[k]); }
+    else add(M.a, M.b);
+  }));
+  return m;
 }
 function parear(lista, evitar){
   let passos = 0;
@@ -306,40 +417,61 @@ function parear(lista, evitar){
     const p = l[0];
     for(let i=1;i<l.length;i++){
       const q = l[i];
-      if(evitar && evitar.has(p.id+"-"+q.id)) continue;
-      const resto = l.slice(1,i).concat(l.slice(i+1));
-      const r = bt(resto);
+      if(evitar && evitar[p.id+"-"+q.id]) continue;
+      const r = bt(l.slice(1,i).concat(l.slice(i+1)));
       if(r) return [[p,q]].concat(r);
     }
     return null;
   }
   return bt(lista);
 }
-function novaRodada(){
-  const S = estatisticas(true);
+function novaRodadaSuico(){
+  const S = estatSuico();
   const ativos = T.jogadores.filter(j => !j.drop);
-  // por pontos, sorteando a ordem dentro de cada faixa de pontos
   let lista = embaralhar(ativos).sort((x,y) => S[y.id].mp - S[x.id].mp);
   let bye = null;
   if(lista.length % 2){
-    const ordem = classificacao(S).filter(j => !j.drop).reverse();       // do pior para o melhor
+    const ordem = classificacao(S).filter(j => !j.drop).reverse();
     const alvo = T.rodadas.length === 0 ? lista[lista.length-1] : (ordem.find(j => !S[j.id].bye) || ordem[0]);
     bye = alvo.id; lista = lista.filter(j => j.id !== bye);
   }
-  const pares = parear(lista, jaJogaram()) || parear(lista, null);
+  const pares = parear(lista, confrontos()) || parear(lista, null);
   T.rodadas.push({ fechada:false, bye, mesas: pares.map(([p,q]) => ({a:p.id, b:q.id, ga:null, gb:null, ge:0})) });
-  zerarTimer();
 }
+function novaRodadaCmd(){
+  const S = estatCmd(), jaJogou = confrontos();
+  let resto = embaralhar(T.jogadores.filter(j => !j.drop)).sort((x,y) => S[y.id].pts - S[x.id].pts);
+  const tam = tamanhosMesas(resto.length) || [resto.length];
+  const mesas = [];
+  tam.forEach(t => {
+    const mesa = [resto.shift()];
+    while(mesa.length < t){
+      let melhor = 0, custo = Infinity;
+      for(let i=0;i<Math.min(resto.length, 8);i++){
+        const c = mesa.reduce((s,p) => s + (jaJogou[p.id+"-"+resto[i].id] || 0), 0);
+        if(c < custo){ custo = c; melhor = i; }
+      }
+      mesa.push(resto.splice(melhor,1)[0]);
+    }
+    mesas.push({ jog: embaralhar(mesa.map(p => p.id)), venc:null, col:{} });
+  });
+  T.rodadas.push({ fechada:false, bye:null, mesas });
+}
+function novaRodada(){ CMD() ? novaRodadaCmd() : novaRodadaSuico(); zerarTimer(); }
 
 /* ================= RENDER ================= */
 const J = id => T.jogadores.find(j => j.id === id);
 const RES = [ ["2-0",2,0,0], ["2-1",2,1,0], ["Empate",1,1,0], ["2-1",1,2,0], ["2-0",0,2,0] ];
+const curto = n => n.length > 14 ? n.slice(0,13) + "…" : n;
+const completa = M => CMD() ? mesaCompleta(M) : M.ga !== null;
 
 function render(){
   if(!T){ $("telaCadastro").hidden = false; $("telaTorneio").hidden = true; $("telaFinal").hidden = true;
-    $("titulo").firstChild.textContent = "Torneio Suíço"; atualizarCadastro(); return; }
-  $("titulo").firstChild.textContent = T.nome || "Torneio Suíço";
-  $("subtitulo").textContent = `${T.jogadores.length} jogadores · ${T.total} rodadas suíças`;
+    $("titulo").firstChild.textContent = "Torneio"; $("subtitulo").textContent = "Suíço 1 contra 1 ou Commander em mesas de 4";
+    $("eyebrow").textContent = "organizador de torneio"; atualizarCadastro(); return; }
+  $("titulo").firstChild.textContent = T.nome || (CMD() ? "Torneio de Commander" : "Torneio Suíço");
+  $("eyebrow").textContent = CMD() ? "organizador de torneio · commander" : "organizador de torneio · sistema suíço";
+  $("subtitulo").textContent = `${T.jogadores.length} jogadores · ${T.total} rodadas` + (CMD() ? ` · ${T.cmd.tipo === "vit" ? `vitória ${T.cmd.vit}, empate ${T.cmd.emp}` : `colocação ${T.cmd.col.join("/")}`}` : " suíças");
   $("telaCadastro").hidden = true;
   $("telaTorneio").hidden = T.fim; $("telaFinal").hidden = !T.fim;
   if(T.fim) renderFinal(); else { renderRodada(); renderClass(); }
@@ -347,85 +479,132 @@ function render(){
 
 function renderRodada(){
   const R = T.rodadas[T.rodadas.length-1], n = T.rodadas.length;
-  const S = estatisticas(true);
+  const S = estatisticas();
   $("rodadaTit").textContent = `Rodada ${n} de ${T.total}`;
+  $("instrRodada").textContent = CMD()
+    ? (T.cmd.tipo === "vit" ? "Clique em quem venceu cada mesa, ou em “Empate” se o tempo acabou sem vencedor. Assento 1 começa jogando." : "Marque a colocação de cada jogador na mesa (1º ao último). Assento 1 começa jogando.")
+    : "Marque o placar em games de cada mesa (2-0, 2-1 ou empate).";
   let h = "";
-  R.mesas.forEach((M, i) => {
-    const a = J(M.a), b = J(M.b), feita = M.ga !== null;
-    h += `<div class="mesa${feita?" feita":""}"><div class="top"><span class="n">Mesa ${i+1}</span>
-      <div class="vs"><span>${esc(a.nome)} <span class="pts">(${S[a.id].mp})</span></span><i>vs</i><span><span class="pts">(${S[b.id].mp})</span> ${esc(b.nome)}</span></div></div>
-      <div class="res noprint">${RES.map((r,k) => {
-        const sel = M.ga === r[1] && M.gb === r[2] && (M.ge||0) === r[3];
-        const lab = k < 2 ? `${esc(curto(a.nome))} ${r[0]}` : k > 2 ? `${esc(curto(b.nome))} ${r[0]}` : "Empate 1-1";
-        return `<button type="button" data-m="${i}" data-r="${k}" class="${sel?"sel":""}">${lab}</button>`; }).join("")}
-        <button type="button" data-m="${i}" data-r="x" class="${feita && M.ga===0 && M.gb===0 ? "sel" : ""}" title="Empate sem games (acordo ou tempo)">Empate 0-0</button>
-      </div></div>`;
-  });
-  if(R.bye){ h += `<div class="bye"><b>${esc(J(R.bye).nome)}</b> recebe bye (folga): conta como vitória por 2-0.</div>`; }
+  if(CMD()){
+    R.mesas.forEach((M, i) => {
+      const ok = mesaCompleta(M);
+      h += `<div class="mesa pod${ok?" feita":""}"><div class="top"><span class="n">Mesa ${i+1}</span><span class="pts">${M.jog.length} jogadores</span></div>`;
+      M.jog.forEach((id, k) => {
+        const j = J(id);
+        let ctl;
+        if(T.cmd.tipo === "vit") ctl = `<div class="res vence noprint"><button type="button" data-m="${i}" data-v="${id}" class="${M.venc===id?"sel":""}">Venceu</button></div>`;
+        else ctl = `<div class="res noprint">${M.jog.map((_,p) => `<button type="button" data-m="${i}" data-j="${id}" data-p="${p+1}" class="${M.col[id]===p+1?"sel":""}">${p+1}º</button>`).join("")}</div>`;
+        h += `<div class="assento"><span class="seat">Assento ${k+1}</span><span class="nm">${esc(j.nome)} <span class="pts">(${S[id].pts})</span></span>${ctl}</div>`;
+      });
+      if(T.cmd.tipo === "vit") h += `<div class="res vence empate noprint"><button type="button" data-m="${i}" data-v="emp" class="${M.venc==="emp"?"sel":""}">Empate (ninguém venceu)</button></div>`;
+      h += `</div>`;
+    });
+  } else {
+    R.mesas.forEach((M, i) => {
+      const a = J(M.a), b = J(M.b), feita = M.ga !== null;
+      h += `<div class="mesa${feita?" feita":""}"><div class="top"><span class="n">Mesa ${i+1}</span>
+        <div class="vs"><span>${esc(a.nome)} <span class="pts">(${S[a.id].mp})</span></span><i>vs</i><span><span class="pts">(${S[b.id].mp})</span> ${esc(b.nome)}</span></div></div>
+        <div class="res noprint">${RES.map((r,k) => {
+          const sel = M.ga === r[1] && M.gb === r[2] && (M.ge||0) === r[3];
+          const lab = k < 2 ? `${esc(curto(a.nome))} ${r[0]}` : k > 2 ? `${esc(curto(b.nome))} ${r[0]}` : "Empate 1-1";
+          return `<button type="button" data-m="${i}" data-r="${k}" class="${sel?"sel":""}">${lab}</button>`; }).join("")}
+          <button type="button" data-m="${i}" data-r="x" class="${feita && M.ga===0 && M.gb===0 ? "sel" : ""}" title="Empate sem games (acordo ou tempo)">Empate 0-0</button>
+        </div></div>`;
+    });
+    if(R.bye) h += `<div class="bye"><b>${esc(J(R.bye).nome)}</b> recebe bye (folga): conta como vitória por 2-0.</div>`;
+  }
   $("mesas").innerHTML = h;
   $("mesas").querySelectorAll("button[data-m]").forEach(b => b.onclick = () => {
     const M = R.mesas[+b.dataset.m];
-    if(b.dataset.r === "x"){ M.ga = 0; M.gb = 0; M.ge = 0; }
+    if(b.dataset.v){ const v = b.dataset.v === "emp" ? "emp" : +b.dataset.v; M.venc = M.venc === v ? null : v; }
+    else if(b.dataset.j){
+      const id = +b.dataset.j, p = +b.dataset.p;
+      Object.keys(M.col).forEach(k => { if(M.col[k] === p && +k !== id) delete M.col[k]; });
+      if(M.col[id] === p) delete M.col[id]; else M.col[id] = p;
+    }
+    else if(b.dataset.r === "x"){ M.ga = 0; M.gb = 0; M.ge = 0; }
     else { const r = RES[+b.dataset.r]; M.ga = r[1]; M.gb = r[2]; M.ge = r[3]; }
     $("erroRodada").textContent = ""; salvar(); renderRodada();
   });
-  const falta = R.mesas.filter(M => M.ga === null).length;
-  $("btFechar").textContent = n >= T.total ? "Fechar rodada e ver resultado final" : "Fechar rodada e emparelhar a próxima";
+  const falta = R.mesas.filter(M => !completa(M)).length;
+  $("btFechar").textContent = n >= T.total ? "Fechar rodada e ver resultado final" : "Fechar rodada e montar a próxima";
   $("btFechar").disabled = falta > 0;
-  if(falta) $("erroRodada").textContent = `Faltam ${falta} resultado${falta>1?"s":""}.`;
+  $("erroRodada").textContent = falta ? `Faltam ${falta} mesa${falta>1?"s":""} sem resultado.` : "";
 }
-const curto = n => n.length > 14 ? n.slice(0,13) + "…" : n;
 
-function linhasClass(S, comAcoes){
+function tabela(S, comAcoes){
   const ordem = classificacao(S);
+  const acao = j => comAcoes ? `<td class="noprint"><button class="btn peq" data-drop="${j.id}" type="button">${j.drop?"Voltar":"Desistir"}</button></td>` : "";
+  if(CMD()){
+    const extra = T.cmd.tipo === "vit" ? "<th class=\"n\">V-E-J</th>" : "<th class=\"n\">Vitórias</th><th class=\"n\">Média col.</th>";
+    return `<thead><tr><th>#</th><th>Jogador</th><th class="n">Pts</th>${extra}<th class="n">Aprov.</th><th class="n">Adv.</th>${comAcoes?'<th class="noprint"></th>':""}</tr></thead><tbody>`
+      + ordem.map((j,i) => { const s = S[j.id];
+        const cols = T.cmd.tipo === "vit" ? `<td class="n">${s.v}-${s.e}-${s.jogos}</td>`
+          : `<td class="n">${s.v}</td><td class="n">${s.pos.length ? (s.pos.reduce((a,b)=>a+b,0)/s.pos.length).toFixed(1).replace(".",",") : "–"}</td>`;
+        return `<tr class="${j.drop?"drop":""}"><td class="pos">${i+1}</td><td>${esc(j.nome)}</td><td class="n"><b>${s.pts}</b></td>${cols}<td class="n">${pct(s.ap)}</td><td class="n">${pct(s.omw)}</td>${acao(j)}</tr>`; }).join("") + "</tbody>";
+  }
   return `<thead><tr><th>#</th><th>Jogador</th><th class="n">Pts</th><th class="n">V-D-E</th><th class="n">OMW%</th><th class="n">GW%</th><th class="n">OGW%</th>${comAcoes?'<th class="noprint"></th>':""}</tr></thead><tbody>`
     + ordem.map((j,i) => { const s = S[j.id];
       return `<tr class="${j.drop?"drop":""}"><td class="pos">${i+1}</td><td>${esc(j.nome)}${s.bye?' <span class="pts" title="Recebeu bye">(bye)</span>':""}</td>
-        <td class="n"><b>${s.mp}</b></td><td class="n">${s.v}-${s.d}-${s.e}</td><td class="n">${pct(s.omw)}</td><td class="n">${pct(s.gw)}</td><td class="n">${pct(s.ogw)}</td>
-        ${comAcoes?`<td class="noprint"><button class="btn peq" data-drop="${j.id}" type="button">${j.drop?"Voltar":"Desistir"}</button></td>`:""}</tr>`; }).join("")
+        <td class="n"><b>${s.mp}</b></td><td class="n">${s.v}-${s.d}-${s.e}</td><td class="n">${pct(s.omw)}</td><td class="n">${pct(s.gw)}</td><td class="n">${pct(s.ogw)}</td>${acao(j)}</tr>`; }).join("")
     + "</tbody>";
 }
 function renderClass(){
   const fechadas = T.rodadas.filter(R => R.fechada).length;
   $("classTit").textContent = fechadas ? `Classificação após ${fechadas} rodada${fechadas>1?"s":""}` : "Classificação (ainda sem rodadas fechadas)";
-  $("tabClass").innerHTML = linhasClass(estatisticas(true), true);
+  $("tabClass").innerHTML = tabela(estatisticas(), true);
   $("tabClass").querySelectorAll("button[data-drop]").forEach(b => b.onclick = () => {
     const j = J(+b.dataset.drop); j.drop = !j.drop; salvar(); renderClass();
   });
 }
 
+function textoMesa(M, i){
+  if(CMD()){
+    const nomes = M.jog.map(id => J(id).nome);
+    if(T.cmd.tipo === "vit"){
+      if(M.venc === "emp") return `Mesa ${i+1}: empate entre ${nomes.map(esc).join(", ")}`;
+      return `Mesa ${i+1}: <b>${esc(J(M.venc).nome)}</b> venceu (${M.jog.filter(id => id !== M.venc).map(id => esc(J(id).nome)).join(", ")})`;
+    }
+    return `Mesa ${i+1}: ` + M.jog.slice().sort((a,b) => M.col[a] - M.col[b]).map(id => `${M.col[id]}º ${M.col[id]===1?"<b>":""}${esc(J(id).nome)}${M.col[id]===1?"</b>":""}`).join(" · ");
+  }
+  const a = J(M.a).nome, b = J(M.b).nome;
+  return `Mesa ${i+1}: ` + (M.ga > M.gb ? `<b>${esc(a)}</b> venceu ${esc(b)} por ${M.ga}-${M.gb}` : M.gb > M.ga ? `<b>${esc(b)}</b> venceu ${esc(a)} por ${M.gb}-${M.ga}` : `${esc(a)} e ${esc(b)} empataram (${M.ga}-${M.gb})`);
+}
 function renderFinal(){
-  const S = estatisticas(true), ordem = classificacao(S);
+  const S = estatisticas(), ordem = classificacao(S);
   const med = ["🥇","🥈","🥉"], cls = ["p1","p2","p3"];
   const top = ordem.slice(0,3);
-  const card = (j,i) => j ? `<div class="pd ${cls[i]}"><div class="m">${med[i]}</div><div class="nm">${esc(j.nome)}</div><div class="s">${S[j.id].mp} pts · ${S[j.id].v}-${S[j.id].d}-${S[j.id].e}</div></div>` : "<div></div>";
+  const resumo = s => CMD() ? `${s.pts} pts · ${s.v} vitória${s.v===1?"":"s"} em ${s.jogos} mesa${s.jogos===1?"":"s"}` : `${s.mp} pts · ${s.v}-${s.d}-${s.e}`;
+  const card = (j,i) => j ? `<div class="pd ${cls[i]}"><div class="m">${med[i]}</div><div class="nm">${esc(j.nome)}</div><div class="s">${resumo(S[j.id])}</div></div>` : "<div></div>";
   $("podio").innerHTML = card(top[1],1) + card(top[0],0) + card(top[2],2);
-  $("tabFinal").innerHTML = linhasClass(S, false);
-  $("historico").innerHTML = T.rodadas.filter(R => R.fechada).map((R,k) => `<h3>Rodada ${k+1}</h3>` + R.mesas.map((M,i) => {
-      const a = J(M.a).nome, b = J(M.b).nome;
-      const txt = M.ga > M.gb ? `<b>${esc(a)}</b> venceu ${esc(b)} por ${M.ga}-${M.gb}` : M.gb > M.ga ? `<b>${esc(b)}</b> venceu ${esc(a)} por ${M.gb}-${M.ga}` : `${esc(a)} e ${esc(b)} empataram (${M.ga}-${M.gb})`;
-      return `<div>Mesa ${i+1}: ${txt}</div>`; }).join("") + (R.bye ? `<div>${esc(J(R.bye).nome)}: bye</div>` : "")).join("");
+  $("tabFinal").innerHTML = tabela(S, false);
+  $("legenda").textContent = CMD()
+    ? "Pts = pontos · " + (T.cmd.tipo === "vit" ? "V-E-J = vitórias, empates e jogos · " : "Média col. = colocação média nas mesas · ") + "Aprov. = pontos feitos ÷ pontos possíveis · Adv. = aproveitamento médio dos adversários (1º desempate); depois, número de vitórias."
+    : "Pts = pontos de partida · V-D-E = vitórias, derrotas e empates · OMW% = aproveitamento médio dos adversários · GW% = aproveitamento em games · OGW% = aproveitamento médio dos adversários em games.";
+  $("historico").innerHTML = T.rodadas.filter(R => R.fechada).map((R,k) => `<h3>Rodada ${k+1}</h3>`
+    + R.mesas.map((M,i) => `<div>${textoMesa(M,i)}</div>`).join("") + (R.bye ? `<div>${esc(J(R.bye).nome)}: bye</div>` : "")).join("");
 }
 
 /* ================= BOTÕES DA RODADA ================= */
 $("btFechar").onclick = () => {
   const R = T.rodadas[T.rodadas.length-1];
-  if(R.mesas.some(M => M.ga === null)) return;
+  if(R.mesas.some(M => !completa(M))) return;
   R.fechada = true;
-  if(T.rodadas.length >= T.total){ T.fim = true; }
-  else if(T.jogadores.filter(j => !j.drop).length < 2){ T.fim = true; }
+  if(T.rodadas.length >= T.total) T.fim = true;
+  else if(T.jogadores.filter(j => !j.drop).length < (CMD() ? 3 : 2)) T.fim = true;
   else novaRodada();
   salvar(); render(); window.scrollTo(0,0);
 };
 let confirmVoltar = 0;
+function pedeConfirma(btn, txt, orig){ confirmVoltar = Date.now(); btn.textContent = txt; setTimeout(() => btn.textContent = orig, 3000); }
 $("btVoltar").onclick = () => {
   const R = T.rodadas[T.rodadas.length-1];
-  const temResultado = R.mesas.some(M => M.ga !== null);
+  const temResultado = R.mesas.some(M => CMD() ? (M.venc !== null || Object.keys(M.col).length) : M.ga !== null);
   if(T.rodadas.length > 1){
-    if(Date.now() - confirmVoltar > 3000){ confirmVoltar = Date.now(); $("btVoltar").textContent = "Clique de novo para voltar à rodada anterior"; setTimeout(() => $("btVoltar").textContent = "Desfazer emparelhamento", 3000); return; }
+    if(Date.now() - confirmVoltar > 3000) return pedeConfirma($("btVoltar"), "Clique de novo para voltar à rodada anterior", "Desfazer emparelhamento");
     T.rodadas.pop(); T.rodadas[T.rodadas.length-1].fechada = false;
   } else {
-    if(temResultado && Date.now() - confirmVoltar > 3000){ confirmVoltar = Date.now(); $("btVoltar").textContent = "Clique de novo para sortear de novo"; setTimeout(() => $("btVoltar").textContent = "Desfazer emparelhamento", 3000); return; }
+    if(temResultado && Date.now() - confirmVoltar > 3000) return pedeConfirma($("btVoltar"), "Clique de novo para sortear de novo", "Desfazer emparelhamento");
     T.rodadas.pop(); novaRodada();
   }
   confirmVoltar = 0; $("btVoltar").textContent = "Desfazer emparelhamento";
@@ -436,7 +615,7 @@ let confirmEnc = 0;
 $("btEncerrar").onclick = () => {
   if(Date.now() - confirmEnc > 3000){ confirmEnc = Date.now(); $("btEncerrar").textContent = "Clique de novo para encerrar"; setTimeout(() => $("btEncerrar").textContent = "Encerrar agora", 3000); return; }
   const R = T.rodadas[T.rodadas.length-1];
-  if(R.mesas.every(M => M.ga !== null)) R.fechada = true; else T.rodadas.pop();
+  if(R.mesas.every(completa)) R.fechada = true; else T.rodadas.pop();
   T.fim = true; salvar(); render();
 };
 $("btImprimirMesas").onclick = () => window.print();
@@ -446,9 +625,9 @@ $("btImprimirFinal").onclick = () => window.print();
 let confirmNovo = 0;
 $("btNovo").onclick = () => {
   if(T && Date.now() - confirmNovo > 3000){ confirmNovo = Date.now(); $("btNovo").textContent = "Clique de novo: apaga o torneio atual"; setTimeout(() => $("btNovo").textContent = "Novo torneio", 3000); return; }
-  if(T){ $("listaNomes").value = T.jogadores.map(j => j.nome).join("\n"); $("nomeTorneio").value = T.nome; }
+  if(T){ $("listaNomes").value = T.jogadores.map(j => j.nome).join("\n"); $("nomeTorneio").value = T.nome; modo = T.modo || "suico"; if(T.cmd) pont = T.cmd.tipo; }
   T = null; try{ localStorage.removeItem(CHAVE); }catch(e){}
-  $("btNovo").textContent = "Novo torneio"; rodadasEditadas = false; pararTimer(); render();
+  $("btNovo").textContent = "Novo torneio"; rodadasEditadas = false; minutosEditados = false; pararTimer(); render();
 };
 $("btExportar").onclick = () => {
   if(!T) return;
@@ -460,7 +639,7 @@ $("btExportar").onclick = () => {
 $("arqImport").onchange = e => {
   const f = e.target.files[0]; if(!f) return;
   const rd = new FileReader();
-  rd.onload = () => { try{ const d = JSON.parse(rd.result); if(!d.jogadores || !d.rodadas) throw 0; T = d; salvar(); render(); }catch(err){ $("erroCad").textContent = "Arquivo de backup inválido."; render(); } };
+  rd.onload = () => { try{ const d = JSON.parse(rd.result); if(!d.jogadores || !d.rodadas) throw 0; if(!d.modo) d.modo = "suico"; T = d; salvar(); zerarTimer(); render(); }catch(err){ $("erroCad").textContent = "Arquivo de backup inválido."; render(); } };
   rd.readAsText(f); e.target.value = "";
 };
 
@@ -468,14 +647,14 @@ $("arqImport").onchange = e => {
 let restante = 0, tick = null;
 function mostrarTempo(){
   const s = Math.max(0, restante), m = Math.floor(s/60), ss = s % 60;
-  $("tempo").textContent = (restante < 0 ? "-" : "") + String(m).padStart(2,"0") + ":" + String(ss).padStart(2,"0");
+  $("tempo").textContent = String(m).padStart(2,"0") + ":" + String(ss).padStart(2,"0");
   $("tempo").classList.toggle("fim", restante <= 0 && tick !== null);
 }
 function zerarTimer(){ pararTimer(); restante = ((T && T.minutos) || 50) * 60; mostrarTempo(); $("btTimer").textContent = "Iniciar"; }
 function pararTimer(){ if(tick){ clearInterval(tick); tick = null; } }
 $("btTimer").onclick = () => {
   if(tick){ pararTimer(); $("btTimer").textContent = "Continuar"; mostrarTempo(); return; }
-  tick = setInterval(() => { restante--; mostrarTempo(); if(restante <= 0){ $("btTimer").textContent = "Pausar"; } }, 1000);
+  tick = setInterval(() => { restante--; mostrarTempo(); }, 1000);
   $("btTimer").textContent = "Pausar";
 };
 $("btZerar").onclick = zerarTimer;
@@ -484,7 +663,7 @@ $("btZerar").onclick = zerarTimer;
 T = carregar();
 zerarTimer();
 render();
-window.__torneio = { get T(){ return T; }, estatisticas, classificacao };
+window.__torneio = { get T(){ return T; }, estatisticas, classificacao, tamanhosMesas };
 })();
 </script>
 </body>
