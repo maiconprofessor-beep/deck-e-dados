@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Torneio Suíço | Deck e Dados</title>
+<meta name="description" content="Organize torneios de card games no sistema suíço: emparelhamento automático, resultados por mesa, desempates OMW%, GW% e OGW% e classificação final. Grátis, no navegador.">
+<meta property="og:title" content="Torneio Suíço | Deck e Dados">
+<meta property="og:description" content="Emparelhamento, resultados e classificação de torneios de card games no sistema suíço.">
+<meta property="og:image" content="https://deckedados.com.br/og-image.jpg">
+<meta property="og:url" content="https://deckedados.com.br/torneio.html">
+<link rel="icon" href="/logo-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#132c2a; --card:rgba(27,58,55,0.72); --ink:#f1ede2; --muted:#a9bab5; --line:rgba(241,237,226,0.14);
+  --accent:#c9a24b; --accent-soft:rgba(201,162,75,0.14); --gold:#c9a24b; --ok:#7cc59e; --ok-soft:rgba(124,197,158,0.12); --bad:#e07a6a; --bad-soft:rgba(224,122,106,0.12);
+  --shadow:none; --display:"Alegreya SC", Georgia, serif; --mono:"IBM Plex Mono","Courier New",monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  background-image:radial-gradient(circle at 15% 0%,rgba(201,162,75,0.08),transparent 45%),radial-gradient(circle at 90% 10%,rgba(179,58,58,0.08),transparent 40%);min-height:100vh}
+.site-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:14px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.site-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:1.05rem}
+.site-brand img{width:32px;height:32px;border-radius:50%;object-fit:cover}
+.site-links{display:flex;gap:14px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.site-links a{color:inherit;text-decoration:none}.site-links a:hover{color:var(--ink)}
+.site-links b{color:var(--ink);font-weight:600}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin:0 0 6px}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+header h1{font-family:var(--display);font-weight:800;font-size:clamp(1.8rem,4.5vw,2.6rem);line-height:1.05;margin:0}
+header h1 small{display:block;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:.9rem;color:var(--muted);font-weight:500;margin-top:6px}
+header .sp{flex:1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
+.card + .card{margin-top:14px}
+.card h2{font-family:var(--display);font-weight:700;font-size:1.2rem;margin:0 0 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h2 .sp{flex:1}
+label.c{display:block;font-weight:600;margin:0 0 6px}
+input[type=text],input[type=number],textarea{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:rgba(0,0,0,.22)}
+textarea{min-height:220px;resize:vertical}
+input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+.grid2{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+.btn{border:1px solid var(--line);background:rgba(0,0,0,.18);border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:600}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#1a1405}
+.btn.peq{padding:4px 10px;font-size:.85rem;font-weight:500}
+.btn.perigo{color:var(--bad)}
+.dica{color:var(--muted);font-size:.88rem;margin:6px 0 0}
+.linha{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px;align-items:start}
+/* mesas */
+.mesa{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.mesa.feita{border-color:var(--ok);background:var(--ok-soft)}
+.mesa .top{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.mesa .n{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;min-width:58px}
+.mesa .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;flex:1}
+.mesa .vs span{font-weight:600;overflow-wrap:anywhere}
+.mesa .vs span:last-child{text-align:right}
+.mesa .vs i{font-style:normal;color:var(--muted);font-size:.8rem}
+.mesa .pts{font-weight:400;color:var(--muted);font-size:.8rem}
+.res{display:flex;gap:4px;flex-wrap:wrap}
+.res button{flex:1 1 auto;border:1px solid var(--line);background:rgba(0,0,0,.18);border-radius:8px;padding:5px 8px;cursor:pointer;font-size:.82rem;min-width:62px}
+.res button:hover:not(:disabled){border-color:var(--accent)}
+.res button.sel{background:var(--accent);border-color:var(--accent);color:#1a1405;font-weight:700}
+.res button:disabled{cursor:default}
+.bye{border:1px dashed var(--line);border-radius:12px;padding:10px 12px;color:var(--muted);margin-bottom:10px}
+/* tabela */
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}
+th{font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+#tabClass{font-size:.84rem}
+#tabClass th,#tabClass td{padding:7px 4px}
+tr.drop td{color:var(--muted);text-decoration:line-through}
+tr.drop td:last-child{text-decoration:none}
+.pos{font-weight:800;width:32px}
+.tabwrap{overflow-x:auto}
+/* timer */
+.timer{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.timer .t{font:500 1.9rem/1 var(--mono);color:var(--gold);font-variant-numeric:tabular-nums;min-width:110px}
+.timer .t.fim{color:var(--bad);animation:pisca 1s infinite}
+@keyframes pisca{50%{opacity:.3}}
+.timer input{width:70px}
+/* podio */
+.podio{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:12px;align-items:end;margin:8px 0 18px}
+.pd{border:1px solid var(--line);border-radius:14px;padding:14px 10px;text-align:center;background:rgba(0,0,0,.18)}
+.pd .m{font-size:2rem;line-height:1}
+.pd .nm{font-weight:800;font-size:1.05rem;margin:6px 0 2px;overflow-wrap:anywhere}
+.pd .s{color:var(--muted);font-size:.85rem}
+.pd.p1{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 35%,transparent);padding:22px 10px}
+.pd.p1 .m{font-size:2.6rem}
+.hist h3{font-size:.9rem;margin:14px 0 6px}
+.hist div{font-size:.88rem;padding:3px 0;border-bottom:1px dashed var(--line)}
+.aviso{background:var(--accent-soft);border-radius:10px;padding:8px 12px;font-size:.9rem;margin-bottom:12px}
+.erro{color:var(--bad);font-size:.9rem;margin-top:6px}
+@media (max-width:860px){ .layout,.grid2{grid-template-columns:1fr} .podio{grid-template-columns:1fr} .pd.p1{order:-1} }
+@media print{
+  body{background:#fff;color:#000;background-image:none}
+  .site-nav{display:none}
+  :root{--ink:#000;--muted:#444;--line:#bbb;--card:#fff}
+  .noprint{display:none!important}
+  .card{box-shadow:none;border-color:#bbb;break-inside:avoid}
+  .layout{grid-template-columns:1fr}
+  .res{display:none}
+  .mesa{border-color:#999;background:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="site-nav noprint">
+    <a class="site-brand" href="/"><img src="/logo-icon.png" alt=""> Deck e Dados</a>
+    <div class="site-links"><a href="/">Início</a><a href="/rpgsolo.html">RPG Solo</a><b>Torneio</b></div>
+  </nav>
+  <header>
+    <div><p class="eyebrow noprint">organizador de torneio · sistema suíço</p>
+    <h1 id="titulo">Torneio Suíço<small id="subtitulo">Emparelhamento, resultados e classificação</small></h1></div>
+    <span class="sp"></span>
+    <div class="linha noprint">
+      <button class="btn peq" id="btExportar" type="button">Salvar backup</button>
+      <label class="btn peq" style="cursor:pointer">Abrir backup<input type="file" id="arqImport" accept=".json,application/json" hidden></label>
+      <button class="btn peq perigo" id="btNovo" type="button">Novo torneio</button>
+    </div>
+  </header>
+
+  <!-- CADASTRO -->
+  <section id="telaCadastro">
+    <div class="grid2">
+      <div class="card">
+        <h2>Jogadores</h2>
+        <label class="c" for="listaNomes">Um nome por linha</label>
+        <textarea id="listaNomes" placeholder="Ana&#10;Bruno&#10;Carla&#10;Diego"></textarea>
+        <p class="dica" id="contagem">0 jogadores</p>
+      </div>
+      <div class="card">
+        <h2>Torneio</h2>
+        <label class="c" for="nomeTorneio">Nome do evento</label>
+        <input type="text" id="nomeTorneio" maxlength="80" placeholder="Ex.: Torneio de Pauper da loja">
+        <label class="c" for="qtdRodadas" style="margin-top:12px">Rodadas suíças</label>
+        <input type="number" id="qtdRodadas" min="1" max="15" value="3">
+        <p class="dica" id="sugestao"></p>
+        <label class="c" for="minutos" style="margin-top:12px">Tempo de rodada (minutos)</label>
+        <input type="number" id="minutos" min="5" max="180" value="50">
+        <p class="erro" id="erroCad"></p>
+        <div class="linha" style="margin-top:14px">
+          <button class="btn pri" id="btComecar" type="button">Começar torneio</button>
+        </div>
+        <p class="dica">Vitória = 3 pontos, empate = 1, derrota = 0. Desempates no padrão do Magic: OMW%, GW% e OGW%, com piso de 33%. Serve para qualquer card game em melhor de 3.</p>
+        <p class="dica">O torneio fica salvo neste navegador. Use “Salvar backup” para levar para outro computador.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TORNEIO -->
+  <section id="telaTorneio" hidden>
+    <div class="layout">
+      <div>
+        <div class="card">
+          <h2><span id="rodadaTit">Rodada 1</span><span class="sp"></span>
+            <button class="btn peq noprint" id="btImprimirMesas" type="button">Imprimir mesas</button></h2>
+          <div class="timer noprint">
+            <span class="t" id="tempo">50:00</span>
+            <button class="btn peq" id="btTimer" type="button">Iniciar</button>
+            <button class="btn peq" id="btZerar" type="button">Zerar</button>
+          </div>
+          <p class="dica noprint" style="margin-bottom:10px">Marque o placar em games de cada mesa (2-0, 2-1 ou empate).</p>
+          <div id="mesas"></div>
+          <p class="erro noprint" id="erroRodada"></p>
+          <div class="linha noprint" style="margin-top:6px">
+            <button class="btn pri" id="btFechar" type="button">Fechar rodada</button>
+            <button class="btn" id="btVoltar" type="button">Desfazer emparelhamento</button>
+            <span class="sp" style="flex:1"></span>
+            <button class="btn peq" id="btMaisRodada" type="button">+1 rodada</button>
+            <button class="btn peq" id="btEncerrar" type="button">Encerrar agora</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2><span id="classTit">Classificação</span></h2>
+        <div class="tabwrap"><table id="tabClass"></table></div>
+        <p class="dica">“Desistir” tira o jogador das próximas rodadas; os resultados dele continuam contando para os desempates dos adversários.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL -->
+  <section id="telaFinal" hidden>
+    <div class="card">
+      <h2>🏆 Resultado final<span class="sp"></span><button class="btn peq noprint" id="btImprimirFinal" type="button">Imprimir</button></h2>
+      <div class="podio" id="podio"></div>
+      <div class="tabwrap"><table id="tabFinal"></table></div>
+      <p class="dica">Pts = pontos de partida · V-D-E = vitórias, derrotas e empates · OMW% = aproveitamento médio dos adversários · GW% = aproveitamento em games · OGW% = aproveitamento médio dos adversários em games.</p>
+    </div>
+    <div class="card hist">
+      <h2>Rodadas</h2>
+      <div id="historico"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const CHAVE = "dd-torneio-suico";
+const embaralhar = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const pct = x => (x*100).toFixed(2).replace(".", ",") + "%";
+
+let T = null;            // estado do torneio
+function salvar(){ try{ localStorage.setItem(CHAVE, JSON.stringify(T)); }catch(e){} }
+function carregar(){ try{ const s = localStorage.getItem(CHAVE); return s ? JSON.parse(s) : null; }catch(e){ return null; } }
+
+function rodadasSugeridas(n){
+  if(n <= 2) return 1; if(n <= 4) return 2; if(n <= 8) return 3; if(n <= 16) return 4; if(n <= 32) return 5;
+  if(n <= 64) return 6; if(n <= 128) return 7; if(n <= 226) return 8; return 9;
+}
+
+/* ================= CADASTRO ================= */
+function nomesDigitados(){
+  const vistos = new Set(), lista = [];
+  $("listaNomes").value.split("\n").map(s => s.trim()).filter(Boolean).forEach(n => {
+    const k = n.toLowerCase(); if(!vistos.has(k)){ vistos.add(k); lista.push(n.slice(0,40)); }
+  });
+  return lista;
+}
+let rodadasEditadas = false;
+function atualizarCadastro(){
+  const n = nomesDigitados().length, s = rodadasSugeridas(n);
+  $("contagem").textContent = n === 1 ? "1 jogador" : `${n} jogadores`;
+  $("sugestao").textContent = n >= 2 ? `Recomendado para ${n} jogadores: ${s} rodada${s>1?"s":""}.` : "";
+  if(!rodadasEditadas && n >= 2) $("qtdRodadas").value = s;
+}
+$("listaNomes").addEventListener("input", atualizarCadastro);
+$("qtdRodadas").addEventListener("input", () => rodadasEditadas = true);
+
+$("btComecar").onclick = () => {
+  const nomes = nomesDigitados(), r = parseInt($("qtdRodadas").value, 10), m = parseInt($("minutos").value, 10) || 50;
+  if(nomes.length < 2){ $("erroCad").textContent = "Cadastre pelo menos 2 jogadores."; return; }
+  if(!(r >= 1 && r <= 15)){ $("erroCad").textContent = "Escolha entre 1 e 15 rodadas."; return; }
+  $("erroCad").textContent = "";
+  T = { nome: $("nomeTorneio").value.trim(), total: r, minutos: m, fim: false,
+        jogadores: nomes.map((n,i) => ({id:i+1, nome:n, drop:false})), rodadas: [] };
+  novaRodada(); salvar(); render();
+};
+
+/* ================= CÁLCULOS ================= */
+function estatisticas(apenasFechadas = true){
+  const S = {};
+  T.jogadores.forEach(j => S[j.id] = {id:j.id, v:0, d:0, e:0, mp:0, rod:0, gv:0, ge:0, gt:0, ops:[], bye:false});
+  T.rodadas.forEach(R => {
+    if(apenasFechadas && !R.fechada) return;
+    if(R.bye){ const s = S[R.bye]; s.v++; s.mp += 3; s.rod++; s.gv += 2; s.gt += 2; s.bye = true; }
+    R.mesas.forEach(M => {
+      if(M.ga === null) return;
+      const a = S[M.a], b = S[M.b], ge = M.ge || 0;
+      a.rod++; b.rod++; a.ops.push(M.b); b.ops.push(M.a);
+      a.gv += M.ga; b.gv += M.gb; a.ge += ge; b.ge += ge;
+      a.gt += M.ga + M.gb + ge; b.gt += M.ga + M.gb + ge;
+      if(M.ga > M.gb){ a.v++; b.d++; a.mp += 3; }
+      else if(M.gb > M.ga){ b.v++; a.d++; b.mp += 3; }
+      else { a.e++; b.e++; a.mp += 1; b.mp += 1; }
+    });
+  });
+  const PISO = 1/3;
+  Object.values(S).forEach(s => {
+    s.mw = s.rod ? Math.max(PISO, s.mp / (3*s.rod)) : 0;
+    s.gw = s.gt ? Math.max(PISO, (3*s.gv + s.ge) / (3*s.gt)) : 0;
+  });
+  Object.values(S).forEach(s => {
+    s.omw = s.ops.length ? s.ops.reduce((t,o) => t + Math.max(PISO, S[o].mw), 0) / s.ops.length : 0;
+    s.ogw = s.ops.length ? s.ops.reduce((t,o) => t + Math.max(PISO, S[o].gw), 0) / s.ops.length : 0;
+  });
+  return S;
+}
+const EPS = 1e-9;
+function classificacao(S){
+  return T.jogadores.slice().sort((x,y) => {
+    const a = S[x.id], b = S[y.id];
+    return (b.mp - a.mp) || (b.omw - a.omw > EPS ? 1 : a.omw - b.omw > EPS ? -1 : 0)
+        || (b.gw - a.gw > EPS ? 1 : a.gw - b.gw > EPS ? -1 : 0)
+        || (b.ogw - a.ogw > EPS ? 1 : a.ogw - b.ogw > EPS ? -1 : 0)
+        || x.nome.localeCompare(y.nome, "pt-BR");
+  });
+}
+
+/* ================= EMPARELHAMENTO ================= */
+function jaJogaram(){
+  const set = new Set();
+  T.rodadas.forEach(R => R.mesas.forEach(M => { set.add(M.a+"-"+M.b); set.add(M.b+"-"+M.a); }));
+  return set;
+}
+function parear(lista, evitar){
+  let passos = 0;
+  function bt(l){
+    if(++passos > 300000) return null;
+    if(!l.length) return [];
+    const p = l[0];
+    for(let i=1;i<l.length;i++){
+      const q = l[i];
+      if(evitar && evitar.has(p.id+"-"+q.id)) continue;
+      const resto = l.slice(1,i).concat(l.slice(i+1));
+      const r = bt(resto);
+      if(r) return [[p,q]].concat(r);
+    }
+    return null;
+  }
+  return bt(lista);
+}
+function novaRodada(){
+  const S = estatisticas(true);
+  const ativos = T.jogadores.filter(j => !j.drop);
+  // por pontos, sorteando a ordem dentro de cada faixa de pontos
+  let lista = embaralhar(ativos).sort((x,y) => S[y.id].mp - S[x.id].mp);
+  let bye = null;
+  if(lista.length % 2){
+    const ordem = classificacao(S).filter(j => !j.drop).reverse();       // do pior para o melhor
+    const alvo = T.rodadas.length === 0 ? lista[lista.length-1] : (ordem.find(j => !S[j.id].bye) || ordem[0]);
+    bye = alvo.id; lista = lista.filter(j => j.id !== bye);
+  }
+  const pares = parear(lista, jaJogaram()) || parear(lista, null);
+  T.rodadas.push({ fechada:false, bye, mesas: pares.map(([p,q]) => ({a:p.id, b:q.id, ga:null, gb:null, ge:0})) });
+  zerarTimer();
+}
+
+/* ================= RENDER ================= */
+const J = id => T.jogadores.find(j => j.id === id);
+const RES = [ ["2-0",2,0,0], ["2-1",2,1,0], ["Empate",1,1,0], ["2-1",1,2,0], ["2-0",0,2,0] ];
+
+function render(){
+  if(!T){ $("telaCadastro").hidden = false; $("telaTorneio").hidden = true; $("telaFinal").hidden = true;
+    $("titulo").firstChild.textContent = "Torneio Suíço"; atualizarCadastro(); return; }
+  $("titulo").firstChild.textContent = T.nome || "Torneio Suíço";
+  $("subtitulo").textContent = `${T.jogadores.length} jogadores · ${T.total} rodadas suíças`;
+  $("telaCadastro").hidden = true;
+  $("telaTorneio").hidden = T.fim; $("telaFinal").hidden = !T.fim;
+  if(T.fim) renderFinal(); else { renderRodada(); renderClass(); }
+}
+
+function renderRodada(){
+  const R = T.rodadas[T.rodadas.length-1], n = T.rodadas.length;
+  const S = estatisticas(true);
+  $("rodadaTit").textContent = `Rodada ${n} de ${T.total}`;
+  let h = "";
+  R.mesas.forEach((M, i) => {
+    const a = J(M.a), b = J(M.b), feita = M.ga !== null;
+    h += `<div class="mesa${feita?" feita":""}"><div class="top"><span class="n">Mesa ${i+1}</span>
+      <div class="vs"><span>${esc(a.nome)} <span class="pts">(${S[a.id].mp})</span></span><i>vs</i><span><span class="pts">(${S[b.id].mp})</span> ${esc(b.nome)}</span></div></div>
+      <div class="res noprint">${RES.map((r,k) => {
+        const sel = M.ga === r[1] && M.gb === r[2] && (M.ge||0) === r[3];
+        const lab = k < 2 ? `${esc(curto(a.nome))} ${r[0]}` : k > 2 ? `${esc(curto(b.nome))} ${r[0]}` : "Empate 1-1";
+        return `<button type="button" data-m="${i}" data-r="${k}" class="${sel?"sel":""}">${lab}</button>`; }).join("")}
+        <button type="button" data-m="${i}" data-r="x" class="${feita && M.ga===0 && M.gb===0 ? "sel" : ""}" title="Empate sem games (acordo ou tempo)">Empate 0-0</button>
+      </div></div>`;
+  });
+  if(R.bye){ h += `<div class="bye"><b>${esc(J(R.bye).nome)}</b> recebe bye (folga): conta como vitória por 2-0.</div>`; }
+  $("mesas").innerHTML = h;
+  $("mesas").querySelectorAll("button[data-m]").forEach(b => b.onclick = () => {
+    const M = R.mesas[+b.dataset.m];
+    if(b.dataset.r === "x"){ M.ga = 0; M.gb = 0; M.ge = 0; }
+    else { const r = RES[+b.dataset.r]; M.ga = r[1]; M.gb = r[2]; M.ge = r[3]; }
+    $("erroRodada").textContent = ""; salvar(); renderRodada();
+  });
+  const falta = R.mesas.filter(M => M.ga === null).length;
+  $("btFechar").textContent = n >= T.total ? "Fechar rodada e ver resultado final" : "Fechar rodada e emparelhar a próxima";
+  $("btFechar").disabled = falta > 0;
+  if(falta) $("erroRodada").textContent = `Faltam ${falta} resultado${falta>1?"s":""}.`;
+}
+const curto = n => n.length > 14 ? n.slice(0,13) + "…" : n;
+
+function linhasClass(S, comAcoes){
+  const ordem = classificacao(S);
+  return `<thead><tr><th>#</th><th>Jogador</th><th class="n">Pts</th><th class="n">V-D-E</th><th class="n">OMW%</th><th class="n">GW%</th><th class="n">OGW%</th>${comAcoes?'<th class="noprint"></th>':""}</tr></thead><tbody>`
+    + ordem.map((j,i) => { const s = S[j.id];
+      return `<tr class="${j.drop?"drop":""}"><td class="pos">${i+1}</td><td>${esc(j.nome)}${s.bye?' <span class="pts" title="Recebeu bye">(bye)</span>':""}</td>
+        <td class="n"><b>${s.mp}</b></td><td class="n">${s.v}-${s.d}-${s.e}</td><td class="n">${pct(s.omw)}</td><td class="n">${pct(s.gw)}</td><td class="n">${pct(s.ogw)}</td>
+        ${comAcoes?`<td class="noprint"><button class="btn peq" data-drop="${j.id}" type="button">${j.drop?"Voltar":"Desistir"}</button></td>`:""}</tr>`; }).join("")
+    + "</tbody>";
+}
+function renderClass(){
+  const fechadas = T.rodadas.filter(R => R.fechada).length;
+  $("classTit").textContent = fechadas ? `Classificação após ${fechadas} rodada${fechadas>1?"s":""}` : "Classificação (ainda sem rodadas fechadas)";
+  $("tabClass").innerHTML = linhasClass(estatisticas(true), true);
+  $("tabClass").querySelectorAll("button[data-drop]").forEach(b => b.onclick = () => {
+    const j = J(+b.dataset.drop); j.drop = !j.drop; salvar(); renderClass();
+  });
+}
+
+function renderFinal(){
+  const S = estatisticas(true), ordem = classificacao(S);
+  const med = ["🥇","🥈","🥉"], cls = ["p1","p2","p3"];
+  const top = ordem.slice(0,3);
+  const card = (j,i) => j ? `<div class="pd ${cls[i]}"><div class="m">${med[i]}</div><div class="nm">${esc(j.nome)}</div><div class="s">${S[j.id].mp} pts · ${S[j.id].v}-${S[j.id].d}-${S[j.id].e}</div></div>` : "<div></div>";
+  $("podio").innerHTML = card(top[1],1) + card(top[0],0) + card(top[2],2);
+  $("tabFinal").innerHTML = linhasClass(S, false);
+  $("historico").innerHTML = T.rodadas.filter(R => R.fechada).map((R,k) => `<h3>Rodada ${k+1}</h3>` + R.mesas.map((M,i) => {
+      const a = J(M.a).nome, b = J(M.b).nome;
+      const txt = M.ga > M.gb ? `<b>${esc(a)}</b> venceu ${esc(b)} por ${M.ga}-${M.gb}` : M.gb > M.ga ? `<b>${esc(b)}</b> venceu ${esc(a)} por ${M.gb}-${M.ga}` : `${esc(a)} e ${esc(b)} empataram (${M.ga}-${M.gb})`;
+      return `<div>Mesa ${i+1}: ${txt}</div>`; }).join("") + (R.bye ? `<div>${esc(J(R.bye).nome)}: bye</div>` : "")).join("");
+}
+
+/* ================= BOTÕES DA RODADA ================= */
+$("btFechar").onclick = () => {
+  const R = T.rodadas[T.rodadas.length-1];
+  if(R.mesas.some(M => M.ga === null)) return;
+  R.fechada = true;
+  if(T.rodadas.length >= T.total){ T.fim = true; }
+  else if(T.jogadores.filter(j => !j.drop).length < 2){ T.fim = true; }
+  else novaRodada();
+  salvar(); render(); window.scrollTo(0,0);
+};
+let confirmVoltar = 0;
+$("btVoltar").onclick = () => {
+  const R = T.rodadas[T.rodadas.length-1];
+  const temResultado = R.mesas.some(M => M.ga !== null);
+  if(T.rodadas.length > 1){
+    if(Date.now() - confirmVoltar > 3000){ confirmVoltar = Date.now(); $("btVoltar").textContent = "Clique de novo para voltar à rodada anterior"; setTimeout(() => $("btVoltar").textContent = "Desfazer emparelhamento", 3000); return; }
+    T.rodadas.pop(); T.rodadas[T.rodadas.length-1].fechada = false;
+  } else {
+    if(temResultado && Date.now() - confirmVoltar > 3000){ confirmVoltar = Date.now(); $("btVoltar").textContent = "Clique de novo para sortear de novo"; setTimeout(() => $("btVoltar").textContent = "Desfazer emparelhamento", 3000); return; }
+    T.rodadas.pop(); novaRodada();
+  }
+  confirmVoltar = 0; $("btVoltar").textContent = "Desfazer emparelhamento";
+  salvar(); render();
+};
+$("btMaisRodada").onclick = () => { T.total++; salvar(); render(); };
+let confirmEnc = 0;
+$("btEncerrar").onclick = () => {
+  if(Date.now() - confirmEnc > 3000){ confirmEnc = Date.now(); $("btEncerrar").textContent = "Clique de novo para encerrar"; setTimeout(() => $("btEncerrar").textContent = "Encerrar agora", 3000); return; }
+  const R = T.rodadas[T.rodadas.length-1];
+  if(R.mesas.every(M => M.ga !== null)) R.fechada = true; else T.rodadas.pop();
+  T.fim = true; salvar(); render();
+};
+$("btImprimirMesas").onclick = () => window.print();
+$("btImprimirFinal").onclick = () => window.print();
+
+/* ================= NOVO / BACKUP ================= */
+let confirmNovo = 0;
+$("btNovo").onclick = () => {
+  if(T && Date.now() - confirmNovo > 3000){ confirmNovo = Date.now(); $("btNovo").textContent = "Clique de novo: apaga o torneio atual"; setTimeout(() => $("btNovo").textContent = "Novo torneio", 3000); return; }
+  if(T){ $("listaNomes").value = T.jogadores.map(j => j.nome).join("\n"); $("nomeTorneio").value = T.nome; }
+  T = null; try{ localStorage.removeItem(CHAVE); }catch(e){}
+  $("btNovo").textContent = "Novo torneio"; rodadasEditadas = false; pararTimer(); render();
+};
+$("btExportar").onclick = () => {
+  if(!T) return;
+  const blob = new Blob([JSON.stringify(T, null, 1)], {type:"application/json"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = (T.nome || "torneio").replace(/[^\wÀ-ú -]/g,"").trim().replace(/\s+/g,"-") + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+};
+$("arqImport").onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => { try{ const d = JSON.parse(rd.result); if(!d.jogadores || !d.rodadas) throw 0; T = d; salvar(); render(); }catch(err){ $("erroCad").textContent = "Arquivo de backup inválido."; render(); } };
+  rd.readAsText(f); e.target.value = "";
+};
+
+/* ================= CRONÔMETRO ================= */
+let restante = 0, tick = null;
+function mostrarTempo(){
+  const s = Math.max(0, restante), m = Math.floor(s/60), ss = s % 60;
+  $("tempo").textContent = (restante < 0 ? "-" : "") + String(m).padStart(2,"0") + ":" + String(ss).padStart(2,"0");
+  $("tempo").classList.toggle("fim", restante <= 0 && tick !== null);
+}
+function zerarTimer(){ pararTimer(); restante = ((T && T.minutos) || 50) * 60; mostrarTempo(); $("btTimer").textContent = "Iniciar"; }
+function pararTimer(){ if(tick){ clearInterval(tick); tick = null; } }
+$("btTimer").onclick = () => {
+  if(tick){ pararTimer(); $("btTimer").textContent = "Continuar"; mostrarTempo(); return; }
+  tick = setInterval(() => { restante--; mostrarTempo(); if(restante <= 0){ $("btTimer").textContent = "Pausar"; } }, 1000);
+  $("btTimer").textContent = "Pausar";
+};
+$("btZerar").onclick = zerarTimer;
+
+/* ================= INÍCIO ================= */
+T = carregar();
+zerarTimer();
+render();
+window.__torneio = { get T(){ return T; }, estatisticas, classificacao };
+})();
+</script>
+</body>
+</html>
