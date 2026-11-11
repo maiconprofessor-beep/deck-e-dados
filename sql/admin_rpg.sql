@@ -1,5 +1,6 @@
 -- Administração do Deck e Dados: o admin vê e modera todas as mesas de RPG e o RPG Solo.
--- Rode DEPOIS de mesa_rpg.sql e rpgsolo_saves.sql. Pode rodar mais de uma vez.
+-- Rode DEPOIS de mesa_rpg.sql. Pode rodar mais de uma vez.
+-- No fim deve aparecer "Success. No rows returned". Se aparecer erro, nada é gravado: corrija e rode de novo.
 -- Supabase: SQL Editor > New query > cole tudo > Run.
 
 -- 1) Quem é admin (profiles.role = 'admin')
@@ -50,8 +51,13 @@ drop policy if exists "posts: admin apaga" on public.rpg_posts;
 create policy "posts: admin apaga" on public.rpg_posts for delete using (public.deck_e_admin());
 
 -- 4) RPG Solo: admin vê o progresso de todos
-drop policy if exists "rpgsolo: admin ve" on public.rpgsolo_saves;
-create policy "rpgsolo: admin ve" on public.rpgsolo_saves for select using (public.deck_e_admin());
+--    (se a tabela do RPG Solo ainda não existir, este passo é pulado sem erro)
+do $$ begin
+  if to_regclass('public.rpgsolo_saves') is not null then
+    drop policy if exists "rpgsolo: admin ve" on public.rpgsolo_saves;
+    create policy "rpgsolo: admin ve" on public.rpgsolo_saves for select using (public.deck_e_admin());
+  end if;
+end $$;
 
 -- 5) Lista de todas as mesas para o painel do admin
 create or replace function public.rpg_admin_mesas()
