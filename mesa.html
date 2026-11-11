@@ -193,6 +193,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:none}
 .pers label{display:flex;gap:6px;align-items:center}
 .fchk{list-style:none;padding:10px 12px;margin:4px 0 10px;border:1px dashed var(--rule);border-radius:8px;font-family:var(--ui);font-size:.85rem;display:flex;flex-direction:column;gap:4px}
 .fchk li{color:var(--gold)}.fchk li.ok{color:var(--ok)}.fchk small{color:var(--ink-2)}
+.ftop{position:sticky;top:-20px;z-index:2;background:var(--felt-2,#16302e);padding:8px 0;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid var(--rule)}
+.ftop .fsteps{margin:0;flex-basis:100%}
+.fsec{border:1px solid var(--rule);border-radius:10px;padding:12px 14px 4px;margin:12px 0;scroll-margin-top:110px}
+.fsech{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.fsech h3{margin:0;font-family:var(--display);font-size:1.1rem;color:var(--gold)}
+.fsech h3 span{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;border:1px solid var(--gold);font-size:.8rem;margin-right:4px}
 .fnav{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px}
 footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--rule);font-family:var(--ui);font-size:.82rem;color:var(--ink-2);display:flex;gap:14px;flex-wrap:wrap}
 
@@ -709,12 +715,12 @@ function pendencias(o){ const T=SYS[o.sys||sysDaMesa()]; if(!T) return 0; let n=
 function resumoFicha(x){ if(!x.ficha) return ''; const o=lerFicha(x), T=SYS[o.sys||sysDaMesa()]; try{ return T&&T.resumo?T.resumo(o.c):''; }catch(e){ return ''; } }
 function ficha(uid,passo){
   const x=membro(uid); if(!x) return; const pode=uid===me.id||souMestre(); const dis=pode?'':'disabled';
-  const o=lerFicha(x); let sys=(o.sys&&SYS[o.sys])?o.sys:sysDaMesa(); let c=o.c; let at=Math.max(0,passo||0);
+  const o=lerFicha(x); let sys=(o.sys&&SYS[o.sys])?o.sys:sysDaMesa(); let c=o.c;
   const ov=dialog(`<h2 style="margin-bottom:6px">${esc(x.personagem||nomeJog(uid))}</h2><div id="fBody"></div>`, pode?salvar:null, 'Salvar ficha');
   ov.querySelector('.dlg').style.width='min(820px,100%)';
   const optsOf=f=>typeof f.sel==='function'?f.sel(c):f.sel;
   function campo(f){
-    if(f.rolar){ if(!pode||(f.rolar.quando&&!f.rolar.quando(c))) return ''; return `<div class="gen"><button type="button" class="btn ghost small" data-rolar>🎲 Rolar na mesa (todos veem os dados)</button><span class="muted" id="genMsg" style="font-family:var(--ui);font-size:.8rem"></span></div>`; }
+    if(f.rolar){ if(!pode||(f.rolar.quando&&!f.rolar.quando(c))) return ''; return `<div class="gen"><button type="button" class="btn ghost small" data-rolar="${SYS[sys].passos.findIndex(p=>p.campos.includes(f))}">🎲 Rolar na mesa (todos veem os dados)</button><span class="muted" id="genMsg" style="font-family:var(--ui);font-size:.8rem"></span></div>`; }
     if(f.attrs) return `<div class="fsub">${esc(f.l)}</div><div class="attrs">${f.lista.map(([k,l])=>`<label class="attr"><span>${esc(l)}</span><input data-g="${f.attrs}" data-gk="${esc(k)}" type="number" value="${esc((c[f.attrs]||{})[k]??'')}" ${dis}></label>`).join('')}</div>`;
     if(f.dots){ const g=c[f.dots]||{}; const row=([k,l])=>`<label class="dotrow"><span>${esc(l)}</span><input data-g="${f.dots}" data-gk="${esc(k)}" type="number" min="${f.min??1}" max="${f.max}" value="${esc(g[k]??'')}" ${dis}><em data-dot>${'●'.repeat(Math.max(0,Math.min(f.max,n0(g[k])||0)))}${'○'.repeat(Math.max(0,f.max-Math.min(f.max,n0(g[k])||0)))}</em></label>`;
       return f.grupos?`<div class="dotgrid">${f.grupos.map(([t,a,b])=>`<div><div class="fsub">${esc(t)}</div>${f.lista.slice(a,b).map(row).join('')}</div>`).join('')}</div>`:`<div class="dotgrid"><div>${f.lista.map(row).join('')}</div></div>`; }
@@ -725,34 +731,40 @@ function ficha(uid,passo){
     if(f.calc){ const e=f.calc(c), ok=f.txt?String(v).trim()===String(e):eqN(v,e); return `<label class="f">${esc(f.l)}<span class="calcrow"><input data-k="${f.k}" ${f.txt?'':'type="number"'} value="${esc(v)}" ${dis}><b data-cm="${f.k}" class="${v===''||e===null?'':ok?'okm':'warn'}" title="${esc(f.dica)}">${v===''||e===null?'':ok?'✔':'⚠'}</b></span><small class="dica">${esc(f.dica)}</small></label>`; }
     return `<label class="f">${esc(f.l)}<input data-k="${f.k}" ${f.n?'type="number"':'maxlength="80"'} value="${esc(v)}" ${dis}></label>`;
   }
+  const ajuda=new Set(); let todasAjudas=!x.ficha&&pode;
   function desenhar(){
-    const T=SYS[sys]; at=Math.min(at,T.passos.length-1); const P=T.passos[at];
+    const T=SYS[sys]; const dlg=ov.querySelector('.dlg'); const top=dlg?dlg.scrollTop:0;
     ov.querySelector('#fBody').innerHTML=`
       <div class="fhead">${pode?`<select id="fSys" aria-label="Modelo de ficha">${Object.entries(SYS).map(([k,f])=>`<option value="${k}" ${k===sys?'selected':''}>${esc(f.nome)}${k===sysDaMesa()?' (sistema da mesa)':''}</option>`).join('')}</select>`:`<span class="muted" style="font-family:var(--ui);font-size:.85rem">${esc(T.nome)} · jogador: ${esc(nomeJog(uid))}</span>`}
-        ${at===0?`<label class="f" style="margin:0;flex:1;min-width:180px"><span class="sr">Nome</span><input id="fNome" maxlength="60" value="${esc(x.personagem)}" placeholder="Nome do personagem" ${dis}></label>`:''}</div>
-      <ol class="fsteps" id="fSteps"></ol>
-      <div class="fhelp"><b>Passo ${at+1}: ${esc(P.t)}</b><div>${P.help(c)}</div></div>
-      <div class="fgrid">${P.campos.map(campo).join('')}</div>
-      <div id="fChk"></div>
-      ${at===T.passos.length-1?`<div class="fgrid"><label class="f">PV atuais<input id="fPa" type="number" value="${x.pv_atual??''}" ${dis}></label></div>`:''}
-      <div class="fnav"><button type="button" class="btn ghost small" id="fPrev" ${at?'':'disabled'}>← Passo anterior</button><span class="muted" id="fProg" style="font-family:var(--ui);font-size:.8rem"></span><button type="button" class="btn ghost small" id="fNext" ${at<T.passos.length-1?'':'disabled'}>Próximo passo →</button></div>`;
+        <label class="f" style="margin:0;flex:1;min-width:180px"><span class="sr">Nome</span><input id="fNome" maxlength="60" value="${esc(x._nome??x.personagem)}" placeholder="Nome do personagem" ${dis}></label>
+        <label class="f" style="margin:0;width:110px">PV atuais<input id="fPa" type="number" value="${esc(x._pa??x.pv_atual??'')}" ${dis}></label></div>
+      <div class="ftop"><ol class="fsteps" id="fSteps"></ol>
+        ${pode?`<button type="button" class="btn ghost small" id="fAjudaTodas">${todasAjudas?'🙈 Esconder ajudas':'💡 Mostrar todas as ajudas'}</button>`:''}<span class="muted" id="fProg" style="font-family:var(--ui);font-size:.8rem"></span></div>
+      ${T.passos.map((P,i)=>`<section class="fsec" id="fSec${i}">
+        <div class="fsech"><h3><span>${i+1}</span> ${esc(P.t)}</h3>${pode?`<button type="button" class="btn ghost small" data-ajuda="${i}" aria-expanded="${todasAjudas||ajuda.has(i)}">💡 Ajuda</button>`:''}</div>
+        ${pode&&(todasAjudas||ajuda.has(i))?`<div class="fhelp">${P.help(c)}</div>`:''}
+        <div class="fgrid">${P.campos.map(campo).join('')}</div>
+        ${pode?`<div data-chk="${i}"></div>`:''}</section>`).join('')}`;
     const B=ov.querySelector('#fBody');
-    if(pode) B.querySelector('#fSys').onchange=e=>{ coletar(); if(Object.keys(c).length>1&&!confirm('Trocar o modelo apaga o que foi preenchido nesta ficha. Continuar?')){ e.target.value=sys; return; } sys=e.target.value; c={}; at=0; desenhar(); };
-    B.querySelector('#fPrev').onclick=()=>{ coletar(); at--; desenhar(); }; B.querySelector('#fNext').onclick=()=>{ coletar(); at++; desenhar(); };
+    if(pode){
+      B.querySelector('#fSys').onchange=e=>{ coletar(); if(Object.keys(c).length>1&&!confirm('Trocar o modelo apaga o que foi preenchido nesta ficha. Continuar?')){ e.target.value=sys; return; } sys=e.target.value; c={}; desenhar(); };
+      B.querySelector('#fAjudaTodas').onclick=()=>{ coletar(); todasAjudas=!todasAjudas; ajuda.clear(); desenhar(); };
+      B.querySelectorAll('[data-ajuda]').forEach(b=>b.onclick=()=>{ coletar(); const i=+b.dataset.ajuda; if(todasAjudas){ todasAjudas=false; T.passos.forEach((_,j)=>j!==i&&ajuda.add(j)); } else if(ajuda.has(i)) ajuda.delete(i); else ajuda.add(i); desenhar(); });
+    }
     B.querySelectorAll('select[data-k]').forEach(s=>s.onchange=()=>{ coletar(); desenhar(); });
     B.querySelectorAll('input,textarea').forEach(i=>{ if(i.id==='fNome'||i.id==='fPa') return; i.addEventListener('input',()=>{ coletar(); conferir(); }); });
-    conferir();
-    const rb=B.querySelector('[data-rolar]'); if(rb) rb.onclick=()=>rolarNaMesa(P.campos.find(f=>f.rolar).rolar,rb);
+    B.querySelectorAll('[data-rolar]').forEach(rb=>rb.onclick=()=>rolarNaMesa(T.passos[+rb.dataset.rolar].campos.find(f=>f.rolar).rolar,rb));
+    conferir(); if(dlg) dlg.scrollTop=top;
   }
   /* atualiza só a conferência (sem redesenhar os campos, para não perder o foco de quem está digitando) */
-  function conferir(){ const B=ov.querySelector('#fBody'), T=SYS[sys], P=T.passos[at];
-    const st=T.passos.map(p=>{ try{ return p.checks(c).every(ch=>ch[1]); }catch(e){ return false; } });
-    const chs=(()=>{ try{ return P.checks(c); }catch(e){ return []; } })();
-    B.querySelector('#fSteps').innerHTML=T.passos.map((p,i)=>`<li><button type="button" data-step="${i}" class="${i===at?'on':''} ${st[i]?'done':''}">${st[i]?'✔':i+1}. ${esc(p.t)}</button></li>`).join('');
-    B.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{ coletar(); at=+b.dataset.step; desenhar(); });
-    B.querySelector('#fChk').innerHTML=chs.length?`<ul class="fchk">${chs.map(([l,ok,d])=>`<li class="${ok?'ok':''}">${ok?'✔':'⚠'} ${esc(l)}${!ok&&d?` <small>· ${esc(d)}</small>`:''}</li>`).join('')}</ul>`:'';
-    B.querySelector('#fProg').textContent=`${st.filter(Boolean).length} de ${T.passos.length} passos conferidos`;
-    P.campos.forEach(f=>{ if(!f.calc) return; const m=B.querySelector(`[data-cm="${f.k}"]`); if(!m) return; const v=c[f.k]??'', e=f.calc(c), ok=f.txt?String(v).trim()===String(e):eqN(v,e); m.className=v===''||e===null?'':ok?'okm':'warn'; m.textContent=v===''||e===null?'':ok?'✔':'⚠'; });
+  function conferir(){ const B=ov.querySelector('#fBody'), T=SYS[sys];
+    const cks=T.passos.map(p=>{ try{ return p.checks(c); }catch(e){ return [['Complete os itens anteriores',false]]; } });
+    const st=cks.map(l=>l.every(ch=>ch[1]));
+    B.querySelector('#fSteps').innerHTML=T.passos.map((p,i)=>`<li><button type="button" data-step="${i}" class="${st[i]?'done':''}">${st[i]?'✔':i+1}. ${esc(p.t)}</button></li>`).join('');
+    B.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{ const sec=B.querySelector('#fSec'+b.dataset.step); if(sec) sec.scrollIntoView({behavior:'smooth',block:'start'}); });
+    B.querySelectorAll('[data-chk]').forEach(d=>{ const chs=cks[+d.dataset.chk]; d.innerHTML=chs.length?`<ul class="fchk">${chs.map(([l,ok,dd])=>`<li class="${ok?'ok':''}">${ok?'✔':'⚠'} ${esc(l)}${!ok&&dd?` <small>· ${esc(dd)}</small>`:''}</li>`).join('')}</ul>`:''; });
+    B.querySelector('#fProg').textContent=pode?`${st.filter(Boolean).length} de ${T.passos.length} partes conferidas`:'';
+    T.passos.forEach(P=>P.campos.forEach(f=>{ if(!f.calc) return; const m=B.querySelector(`[data-cm="${f.k}"]`); if(!m) return; const v=c[f.k]??'', e=f.calc(c), ok=f.txt?String(v).trim()===String(e):eqN(v,e); m.className=v===''||e===null?'':ok?'okm':'warn'; m.textContent=v===''||e===null?'':ok?'✔':'⚠'; }));
     B.querySelectorAll('[data-dot]').forEach(em=>{ const i=em.previousElementSibling, mx=+i.max, n=Math.max(0,Math.min(mx,n0(i.value)||0)); em.textContent='●'.repeat(n)+'○'.repeat(mx-n); });
   }
   function coletar(){ const B=ov.querySelector('#fBody'); if(!B) return;
@@ -771,7 +783,7 @@ function ficha(uid,passo){
       buscarNovos(false); desenhar();
     }catch(e){ msg.textContent=errMsg(e); btn.disabled=false; } }
   async function salvar(ovl){ coletar(); const T=SYS[sys]; const n=v=>v===''||v===undefined||v===null||isNaN(+v)?null:Math.trunc(+v);
-    const nome=(x._nome??x.personagem??'').trim(); if(!nome) throw new Error('Dê um nome ao personagem (passo 1).');
+    const nome=(x._nome??x.personagem??'').trim(); if(!nome) throw new Error('Dê um nome ao personagem (no topo da ficha).');
     const pvm=n(T.pv(c)); const pa=x._pa!==undefined?n(x._pa):x.pv_atual;
     const v={personagem:nome,ficha:JSON.stringify({_ficha:2,sys,c}),pv_max:pvm,pv_atual:pa===null&&pvm!==null?pvm:pa};
     if(v.ficha.length>6000) throw new Error('A ficha ficou grande demais. Encurte os textos.');
