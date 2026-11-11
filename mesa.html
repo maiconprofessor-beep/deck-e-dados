@@ -81,6 +81,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:none}
 .mhead h1{font-size:clamp(1.8rem,5vw,2.6rem);margin:4px 0 6px}
 .mhead .meta{font-family:var(--ui);font-size:.85rem;color:var(--ink-2);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .back{font-family:var(--ui);font-size:.85rem;color:var(--ink-2);text-decoration:none}
+.admstats{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px}
+.admstats div{border:1px solid var(--gold-dim);border-radius:8px;padding:8px 14px;font-family:var(--ui);font-size:.8rem;color:var(--ink-2);text-align:center;min-width:90px}
+.admstats b{display:block;font-family:var(--display);font-size:1.6rem;color:var(--gold);line-height:1.1}
+.admfil{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.admfil input{flex:1;min-width:200px}
+.admtab{overflow-x:auto;border:1px solid var(--gold-dim);border-radius:10px}
+.admtab table{width:100%;border-collapse:collapse;font-family:var(--ui);font-size:.88rem}
+.admtab th,.admtab td{padding:8px 12px;border-bottom:1px solid var(--rule);text-align:left;white-space:nowrap}
+.admtab th{color:var(--gold);font-weight:600}
 .banner{margin:14px 0 0;padding:12px 16px;border-radius:8px;font-family:var(--ui);font-size:.92rem;display:flex;gap:10px;align-items:center}
 .banner.turn{background:var(--gold);color:var(--felt);font-weight:700}
 .banner.info{border:1px dashed var(--rule);color:var(--ink-2)}
@@ -237,7 +246,7 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const fmt=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/(^|[^*])\*([^*\n]+?)\*/g,'$1<i>$2</i>').replace(/\n/g,'<br>');
 const params=new URLSearchParams(location.search);
 let sb=null, me=null, myName='';
-const S={ mesa:null, membros:[], prof:{}, posts:[], hasMore:false, prevLido:null, tab:null, chan:null, poll:null, unseen:0, firstLoad:true };
+const S={ admin:false, obs:false, mesa:null, membros:[], prof:{}, posts:[], hasMore:false, prevLido:null, tab:null, chan:null, poll:null, unseen:0, firstLoad:true };
 
 function toast(t){ const d=document.createElement('div'); d.className='toast'; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),3200); }
 function quando(iso){ const t=Date.parse(iso); if(!t) return ''; const s=(Date.now()-t)/1000;
@@ -268,8 +277,8 @@ async function start(){
   if(!sb){ $('#app').innerHTML='<p class="empty">Não foi possível conectar. Recarregue a página.</p>'; return; }
   const {data:{session}}=await sb.auth.getSession();
   me=session?session.user:null;
-  if(me){ try{ const {data}=await sb.from('profiles').select('id,name,avatar').eq('id',me.id).maybeSingle(); if(data){ S.prof[me.id]=data; myName=data.name||''; } }catch(e){} }
-  $('#conta').innerHTML=me?`Jogando como <b>${esc(myName||me.email||'você')}</b>`:'Sem conta · <a href="/">Entrar</a>';
+  if(me){ try{ const {data}=await sb.from('profiles').select('id,name,avatar,role').eq('id',me.id).maybeSingle(); if(data){ S.prof[me.id]=data; myName=data.name||''; S.admin=data.role==='admin'; } }catch(e){} }
+  $('#conta').innerHTML=me?`Jogando como <b>${esc(myName||me.email||'você')}</b>${S.admin?' · <span class="chip gold">admin</span>':''}`:'Sem conta · <a href="/">Entrar</a>';
   if(params.get('m')&&me) return abrirMesa(params.get('m'));
   lobby();
 }
@@ -297,6 +306,7 @@ async function lobby(){
         ${m.minha_vez?'<span class="vez">⏳ Sua vez de responder</span>':''}
       </a>`).join('')}</div>`:'<p class="muted">Você ainda não está em nenhuma mesa. Crie a sua ou entre com o código de um amigo.</p>'}
   </section>
+  ${S.admin?'<section id="admin"><h2>🛡️ Administração</h2><p class="muted" style="margin-top:-6px">Você vê todas as mesas (inclusive sussurros e rolagens secretas) e o progresso de todos no RPG Solo.</p><div id="admMesas"><p class="muted">Carregando…</p></div><div id="admSolo" style="margin-top:22px"></div></section>':''}
   <div class="grid2">
     <form class="card" id="fCriar">
       <h2>🎲 Criar uma mesa</h2>
@@ -327,6 +337,31 @@ async function lobby(){
     const {data,error}=await sb.rpc('rpg_entrar',{p_codigo:f.codigo.value.trim(),p_personagem:f.personagem.value.trim()});
     b.disabled=false; if(error) return $('#eEntrar').textContent=errMsg(error); location.href='?m='+data; };
   if(conv) setTimeout(()=>{ const i=$('#fEntrar [name=personagem]'); i&&i.focus(); },50);
+  if(S.admin) adminLobby();
+}
+
+/* ---------- administração ---------- */
+const AVENT={'castelo-de-vargrav':'O Castelo de Vargrav','farol-da-mare-negra':'O Farol da Maré Negra','minas-da-garganta-rubra':'As Minas da Garganta Rubra'};
+async function adminLobby(){
+  const box=$('#admMesas'), solo=$('#admSolo'); if(!box) return;
+  const [{data:mesas,error},{data:saves,error:e2}]=await Promise.all([sb.rpc('rpg_admin_mesas'),sb.rpc('rpg_admin_rpgsolo')]);
+  if(error){ box.innerHTML=`<p class="err">Não foi possível carregar as mesas: ${esc(errMsg(error))}. Rode o arquivo <code>sql/admin_rpg.sql</code> no Supabase.</p>`; return; }
+  const L=mesas||[]; let filtro='', st='';
+  const tot={ativa:0,pausada:0,encerrada:0}; L.forEach(m=>tot[m.status]=(tot[m.status]||0)+1);
+  const desenhar=()=>{ const q=filtro.toLowerCase(); const r=L.filter(m=>(!st||m.status===st)&&(!q||[m.nome,m.sistema,m.mestre_nome,m.codigo].some(x=>String(x||'').toLowerCase().includes(q))));
+    box.querySelector('#admLista').innerHTML=r.length?`<div class="mesas">${r.map(m=>`<a class="mcard" href="?m=${esc(m.id)}">
+      <span class="sys">${esc(m.sistema||'RPG')}</span><h3>${esc(m.nome)}</h3>
+      <div class="meta"><span>Mestre: <b>${esc(m.mestre_nome||'?')}</b></span>${m.status!=='ativa'?`<span class="chip ${m.status==='pausada'?'mute':'red'}">${esc(m.status)}</span>`:''}</div>
+      <div class="meta"><span>${m.jogadores} jogador${m.jogadores==1?'':'es'}</span><span>· ${m.posts} mensage${m.posts==1?'m':'ns'}</span><span>· ${quando(m.atividade_em)}</span><span>· código ${esc(m.codigo)}</span></div></a>`).join('')}</div>`:'<p class="muted">Nenhuma mesa encontrada.</p>'; };
+  box.innerHTML=`<div class="admstats"><div><b>${L.length}</b>mesas</div><div><b>${tot.ativa||0}</b>ativas</div><div><b>${tot.pausada||0}</b>pausadas</div><div><b>${tot.encerrada||0}</b>encerradas</div></div>
+    <div class="admfil"><input id="admQ" placeholder="Buscar por nome, sistema, mestre ou código"><select id="admSt"><option value="">Todas</option><option value="ativa">Ativas</option><option value="pausada">Pausadas</option><option value="encerrada">Encerradas</option></select></div><div id="admLista"></div>`;
+  $('#admQ').oninput=e=>{ filtro=e.target.value; desenhar(); }; $('#admSt').onchange=e=>{ st=e.target.value; desenhar(); }; desenhar();
+  if(location.hash==='#admin') setTimeout(()=>{ const a=$('#admin'); a&&a.scrollIntoView({block:'start'}); },50);
+  if(e2){ solo.innerHTML=''; return; }
+  const sv=saves||[];
+  solo.innerHTML=`<h3 style="font-family:var(--display);font-size:1.3rem;margin:0 0 8px">📕 RPG Solo: progresso dos jogadores</h3>${sv.length?`<div class="admtab"><table><thead><tr><th>Jogador</th><th>Aventura</th><th>Situação</th><th>Seção</th><th>Atualizado</th></tr></thead><tbody>${sv.map(r=>{ const j=r.estado||{}, x=j.S||{};
+      const sit=j.fim?'🏁 Terminou':x.dead?'💀 Morreu':x.phase==='play'?'▶ Jogando':'Criando personagem';
+      return `<tr><td>${esc(r.nome||'?')}</td><td>${esc(AVENT[r.aventura]||r.aventura)}</td><td>${sit}</td><td>${x.sec!=null?esc(x.sec):'—'}</td><td>${quando(r.atualizado_em)}</td></tr>`; }).join('')}</tbody></table></div>`:'<p class="muted">Ninguém salvou progresso no RPG Solo ainda.</p>'}`;
 }
 
 /* ---------- mesa ---------- */
@@ -342,7 +377,7 @@ async function carregarMesa(id){
 async function abrirMesa(id){
   await carregarMesa(id);
   if(!S.mesa){ $('#app').innerHTML=`<div class="card" style="margin-top:30px"><h2>Mesa não encontrada</h2><p class="muted">Você não participa desta mesa, ou ela foi apagada. Peça o código de convite ao mestre.</p><a class="btn" href="/mesa.html">Ver minhas mesas</a></div>`; return; }
-  const eu=membro(me.id); S.prevLido=eu?eu.ultimo_lido:null;
+  const eu=membro(me.id); S.prevLido=eu?eu.ultimo_lido:null; S.obs=!eu&&S.admin;
   S.tab=souMestre()?'narracao':'acao';
   const {data}=await sb.from('rpg_posts').select('*').eq('mesa_id',id).order('id',{ascending:false}).limit(PAGE);
   S.posts=(data||[]).reverse(); S.hasMore=(data||[]).length===PAGE;
@@ -354,12 +389,13 @@ function renderMesa(){
   const m=S.mesa, mestre=souMestre(), vez=(m.aguardando||[]).includes(me.id);
   $('#app').innerHTML=`
   <header class="mhead">
-    <div><a class="back" href="/mesa.html">← Minhas mesas</a>
+    <div><a class="back" href="/mesa.html${S.admin?'#admin':''}">← ${S.obs?'Administração':'Minhas mesas'}</a>
       <h1>${esc(m.nome)}</h1>
       <div class="meta"><span class="chip gold">${esc(m.sistema||'RPG')}</span>${m.status!=='ativa'?`<span class="chip ${m.status==='pausada'?'mute':'red'}">${esc(m.status)}</span>`:''}<span>Mestre: <b>${esc(nomeJog(m.mestre_id))}</b></span><span>· ${S.membros.length} na mesa</span></div>
     </div>
     ${m.descricao?`<p class="muted" style="max-width:52ch;margin:0;font-size:.95rem">${fmt(m.descricao)}</p>`:''}
   </header>
+  ${S.obs?'<div class="banner info">🛡️ Você está vendo esta mesa como administrador: tudo aparece, inclusive sussurros e rolagens secretas. Você pode moderar (apagar mensagens, mudar a situação, remover jogadores), mas não joga nela.</div>':''}
   ${vez&&m.status==='ativa'?'<div class="banner turn">⏳ O mestre está esperando a sua resposta.</div>':''}
   ${m.status==='pausada'?'<div class="banner info">⏸ A mesa está pausada pelo mestre. Dá para ler e conversar fora do jogo.</div>':''}
   ${m.status==='encerrada'?'<div class="banner info">🏁 Esta campanha foi encerrada. A história continua salva para ler.</div>':''}
@@ -378,7 +414,7 @@ function postHTML(p){
   const mine=p.autor_id===me.id, mestre=souMestre(), autorMestre=p.autor_id===S.mesa.mestre_id;
   const per=p.personagem||(membro(p.autor_id)||{}).personagem||nomeJog(p.autor_id);
   const t=`<span title="${esc(dataHora(p.criado_em))}">${quando(p.criado_em)}</span>${p.editado?' <span class="edited">(editado)</span>':''}`;
-  const tools=(p.tipo!=='sistema')&&((mine&&p.tipo!=='rolagem')||mestre)?`<span class="tools">${mine&&p.tipo!=='rolagem'?`<button data-edit="${p.id}" title="Editar">✎</button>`:''}<button data-del="${p.id}" title="Apagar">🗑</button></span>`:'';
+  const tools=(S.admin&&!mine&&!mestre)||((p.tipo!=='sistema')&&((mine&&p.tipo!=='rolagem')||mestre))?`<span class="tools">${mine&&p.tipo!=='rolagem'?`<button data-edit="${p.id}" title="Editar">✎</button>`:''}<button data-del="${p.id}" title="Apagar${S.admin&&!mine&&!mestre?' (admin)':''}">🗑</button></span>`:'';
   let w='';
   if(p.para_id){ w=p.tipo==='rolagem'?'🤫 Rolagem secreta (só o mestre vê)':p.autor_id===S.mesa.mestre_id?`🤫 Sussurro do mestre para ${esc(nomeJog(p.para_id))}`:`🤫 Sussurro de ${esc(per)} para o mestre`; w=`<div class="wlabel">${w}</div>`; }
   let h='';
@@ -416,6 +452,7 @@ const TABS_JOG=[['acao','🎭 Ação'],['fala','💬 Fala'],['rolar','🎲 Rolar
 const draftKey=()=>'mesa.rascunho.'+S.mesa.id;
 function renderComposer(){
   const c=$('#composer'); if(!c) return; const m=S.mesa, mestre=souMestre(), eu=membro(me.id)||{};
+  if(S.obs){ c.innerHTML='<div class="composer"><p class="closed">🛡️ Modo administrador: você está observando esta mesa.</p></div>'; return; }
   if(m.status==='encerrada'){ c.innerHTML='<div class="composer"><p class="closed">Campanha encerrada.</p></div>'; return; }
   const tabs=(mestre?TABS_MESTRE:TABS_JOG).filter(t=>m.status==='ativa'||t[0]==='ooc');
   if(!tabs.some(t=>t[0]===S.tab)) S.tab=tabs[0][0];
@@ -478,7 +515,7 @@ function apagarPost(id){
 
 /* ---------- painel lateral ---------- */
 function renderSide(){
-  const s=$('#side'); if(!s) return; const m=S.mesa, mestre=souMestre(), jog=S.membros.filter(x=>x.user_id!==m.mestre_id), ag=m.aguardando||[];
+  const s=$('#side'); if(!s) return; const m=S.mesa, mestre=souMestre()||S.obs, jog=S.membros.filter(x=>x.user_id!==m.mestre_id), ag=m.aguardando||[];
   const link=`${location.origin}${location.pathname}?convite=${m.codigo}`;
   s.innerHTML=`
   <section>
@@ -714,7 +751,7 @@ function lerFicha(x){ const t=(x&&x.ficha)||''; if(t.startsWith('{"_ficha"')){ t
 function pendencias(o){ const T=SYS[o.sys||sysDaMesa()]; if(!T) return 0; let n=0; T.passos.forEach(p=>{ try{ p.checks(o.c).forEach(ch=>{ if(!ch[1]) n++; }); }catch(e){} }); return n; }
 function resumoFicha(x){ if(!x.ficha) return ''; const o=lerFicha(x), T=SYS[o.sys||sysDaMesa()]; try{ return T&&T.resumo?T.resumo(o.c):''; }catch(e){ return ''; } }
 function ficha(uid,passo){
-  const x=membro(uid); if(!x) return; const pode=uid===me.id||souMestre(); const dis=pode?'':'disabled';
+  const x=membro(uid); if(!x) return; const pode=uid===me.id||souMestre()||S.obs; const dis=pode?'':'disabled';
   const o=lerFicha(x); let sys=(o.sys&&SYS[o.sys])?o.sys:sysDaMesa(); let c=o.c;
   const ov=dialog(`<h2 style="margin-bottom:6px">${esc(x.personagem||nomeJog(uid))}</h2><div id="fBody"></div>`, pode?salvar:null, 'Salvar ficha');
   ov.querySelector('.dlg').style.width='min(820px,100%)';
@@ -817,7 +854,7 @@ function atualizarMesa(){ clearTimeout(tAtual); tAtual=setTimeout(async()=>{ con
   const depois=JSON.stringify([S.mesa.aguardando,S.mesa.status,S.membros.map(m=>[m.personagem,m.pv_atual,m.pv_max])]);
   if(antes!==depois){ const ae=document.activeElement, emTexto=ae&&ae.id==='cTxt'; if(emTexto) renderSide(); else renderMesa(); } },800); }
 let tLido=0;
-function marcarLido(){ clearTimeout(tLido); tLido=setTimeout(()=>{ sb.from('rpg_membros').update({ultimo_lido:new Date().toISOString()}).eq('mesa_id',S.mesa.id).eq('user_id',me.id).then(()=>{}); },1500); }
+function marcarLido(){ if(S.obs) return; clearTimeout(tLido); tLido=setTimeout(()=>{ sb.from('rpg_membros').update({ultimo_lido:new Date().toISOString()}).eq('mesa_id',S.mesa.id).eq('user_id',me.id).then(()=>{}); },1500); }
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&S.mesa){ S.titleCount=0; document.title=`${S.mesa.nome} | Mesa de RPG`; buscarNovos(false); atualizarMesa(); marcarLido(); } });
 function conectarTempoReal(id){
   try{
