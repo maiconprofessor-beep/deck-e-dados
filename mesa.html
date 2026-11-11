@@ -163,20 +163,37 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:none}
 .dlg .row{display:flex;gap:10px}.dlg .row>*{flex:1}
 .dlg .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap}
 .toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);background:#0d1f1e;border:1px solid var(--gold-dim);color:var(--ink);font-family:var(--ui);font-size:.88rem;padding:10px 16px;border-radius:8px;z-index:60;max-width:90vw}
-.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0 12px}
-.fgrid input,.fgrid select{width:100%;min-width:0}
-.fh{font-family:var(--display);font-size:1.05rem;margin:10px 0 8px;color:var(--gold)}
-.attrs{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:8px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:0 12px}
+.fgrid input,.fgrid select,.fgrid textarea{width:100%;min-width:0}
+.fgrid .full,.fgrid .attrs,.fgrid .dotgrid,.fgrid .pers,.fgrid .fsub,.fgrid .gen{grid-column:1/-1}
+.fhead{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.fhead select{flex:1;min-width:200px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.fsteps{list-style:none;padding:0;margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px}
+.fsteps button{background:transparent;border:1px solid var(--rule);color:var(--ink-2);border-radius:16px;padding:4px 10px;font-family:var(--ui);font-size:.78rem;cursor:pointer}
+.fsteps button.done{border-color:var(--ok);color:var(--ok)}
+.fsteps button.on{background:var(--gold);color:var(--felt);border-color:var(--gold);font-weight:700}
+.fhelp{border-left:3px solid var(--gold);background:rgba(201,162,75,.08);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:14px;font-family:var(--ui);font-size:.88rem;line-height:1.55}
+.fhelp > b{display:block;font-family:var(--display);font-size:1.05rem;color:var(--gold);margin-bottom:4px}
+.fhelp small{color:var(--ink-2)}
+.fsub{font-family:var(--ui);font-size:.8rem;color:var(--ink-2);margin:4px 0 6px}
+.attrs{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:8px;margin-bottom:10px}
 .attr{display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid var(--gold-dim);border-radius:8px;padding:8px 6px;background:rgba(10,24,23,.5)}
 .attr span{font-family:var(--ui);font-size:.72rem;color:var(--ink-2);text-align:center}
-.attr input{width:64px;text-align:center;font-family:var(--display);font-size:1.3rem;font-weight:800;padding:4px}
-.attr em{font-style:normal;font-family:var(--mono);font-size:.8rem;color:var(--gold);min-height:1.1em}
-.gen{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-.calc{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
-.calc span{border:1px dashed var(--gold-dim);border-radius:8px;padding:6px 10px;display:flex;flex-direction:column;min-width:110px}
-.calc small{font-family:var(--ui);font-size:.7rem;color:var(--ink-2)} .calc b{font-family:var(--display);font-size:1.15rem;color:var(--ink)}
-.pers{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:4px 14px;font-family:var(--ui);font-size:.85rem;margin-bottom:12px}
-.pers label{display:flex;gap:6px;align-items:center}.pers small{color:var(--ink-2)}.pers b{margin-left:auto;font-family:var(--mono);color:var(--gold)}
+.attr input{width:70px!important;text-align:center;font-family:var(--display);font-size:1.25rem;font-weight:800;padding:4px}
+.dotgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:4px 18px;margin-bottom:10px}
+.dotrow{display:grid;grid-template-columns:minmax(0,1fr) 54px 74px;gap:6px;align-items:center;font-family:var(--ui);font-size:.85rem;margin:3px 0}
+.dotrow input{padding:3px 4px;text-align:center}
+.dotrow em{font-style:normal;color:var(--gold);letter-spacing:1px;font-size:.8rem}
+.gen{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.calcrow{display:flex;gap:6px;align-items:center}
+.calcrow b{width:22px;text-align:center}.calcrow b.okm{color:var(--ok)}.calcrow b.warn{color:var(--gold)}
+.dica{font-family:var(--ui);font-size:.72rem;color:var(--ink-2)}
+.pers{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:4px 14px;font-family:var(--ui);font-size:.85rem;margin-bottom:12px}
+.pers label{display:flex;gap:6px;align-items:center}
+.fchk{list-style:none;padding:10px 12px;margin:4px 0 10px;border:1px dashed var(--rule);border-radius:8px;font-family:var(--ui);font-size:.85rem;display:flex;flex-direction:column;gap:4px}
+.fchk li{color:var(--gold)}.fchk li.ok{color:var(--ok)}.fchk small{color:var(--ink-2)}
+.fnav{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px}
 footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--rule);font-family:var(--ui);font-size:.82rem;color:var(--ink-2);display:flex;gap:14px;flex-wrap:wrap}
 
 @media (max-width:900px){
@@ -474,7 +491,7 @@ function renderSide(){
   <section>
     <h3>🧙 Personagens</h3>
     <div class="pcs">${S.membros.map(x=>{ const pv=x.pv_max?Math.max(0,Math.min(100,Math.round((x.pv_atual??x.pv_max)/x.pv_max*100))):null;
-      return `<div class="pcl">${avatar(x.user_id,x.personagem)}<div><b>${esc(x.personagem||nomeJog(x.user_id))}</b><small>${x.user_id===m.mestre_id?'Mestre':esc(nomeJog(x.user_id))}${x.user_id!==m.mestre_id&&resumoFicha(x)?' · '+esc(resumoFicha(x)):''}${pv!==null?` · PV ${esc(x.pv_atual??x.pv_max)}/${esc(x.pv_max)}`:''}</small>${pv!==null?`<div class="hp"><i class="${pv<=25?'low':''}" style="width:${pv}%"></i></div>`:''}</div>
+      return `<div class="pcl">${avatar(x.user_id,x.personagem)}<div><b>${esc(x.personagem||nomeJog(x.user_id))}</b><small>${x.user_id===m.mestre_id?'Mestre':esc(nomeJog(x.user_id))}${x.user_id!==m.mestre_id&&resumoFicha(x)?' · '+esc(resumoFicha(x)):''}${x.user_id!==m.mestre_id&&(mestre||x.user_id===me.id)?(!x.ficha?' · <span style="color:var(--red)">sem ficha</span>':(pendencias(lerFicha(x))?` · <span style="color:var(--gold)">⚠ ${pendencias(lerFicha(x))} a conferir</span>`:' · <span style="color:var(--ok)">✔ ficha conferida</span>')):''}${pv!==null?` · PV ${esc(x.pv_atual??x.pv_max)}/${esc(x.pv_max)}`:''}</small>${pv!==null?`<div class="hp"><i class="${pv<=25?'low':''}" style="width:${pv}%"></i></div>`:''}</div>
         ${x.user_id!==m.mestre_id||x.user_id===me.id?`<button class="btn ghost small" data-ficha="${esc(x.user_id)}">${x.user_id===me.id||mestre?'Ficha ✎':'Ficha'}</button>`:''}</div>`; }).join('')}</div>
   </section>
   ${mestre?`<section>
@@ -516,137 +533,250 @@ function renderSide(){
       const {error}=await sb.from('rpg_membros').delete().eq('mesa_id',m.id).eq('user_id',me.id); if(error) throw error; location.href='/mesa.html'; },'Sair');
   }
 }
-/* ---------- fichas por sistema ---------- */
-const mod20=v=>{ const m=Math.floor((+v-10)/2); return isNaN(m)?'':(m>=0?'+':'')+m; };
-const n0=v=>Number.isFinite(+v)?+v:0;
-const ALIN=['Leal e Bom','Neutro e Bom','Caótico e Bom','Leal e Neutro','Neutro','Caótico e Neutro','Leal e Mau','Neutro e Mau','Caótico e Mau'];
-const DND_DV={'Bárbaro':12,'Guerreiro':10,'Paladino':10,'Patrulheiro':10,'Bardo':8,'Bruxo':8,'Clérigo':8,'Druida':8,'Ladino':8,'Monge':8,'Feiticeiro':6,'Mago':6};
-const DND_PER=[['Acrobacia','DES'],['Adestrar Animais','SAB'],['Arcanismo','INT'],['Atletismo','FOR'],['Atuação','CAR'],['Enganação','CAR'],['Furtividade','DES'],['História','INT'],['Intimidação','CAR'],['Intuição','SAB'],['Investigação','INT'],['Medicina','SAB'],['Natureza','INT'],['Percepção','SAB'],['Persuasão','CAR'],['Prestidigitação','DES'],['Religião','INT'],['Sobrevivência','SAB']];
+/* ---------- fichas por sistema: criação passo a passo, como no livro ---------- */
+const n0=v=>(v===''||v===null||v===undefined||isNaN(+v))?null:+v;
+const md=v=>n0(v)===null?null:Math.floor((+v-10)/2);
+const sg=v=>v===null?'—':(v>=0?'+':'')+v;
+const eqN=(a,b)=>n0(a)!==null&&b!==null&&+a===+b;
+const perm=(a,b)=>a.length===b.length&&[...a].sort((x,y)=>x-y).join()===[...b].sort((x,y)=>x-y).join();
 const SEIS=[['FOR','Força'],['DES','Destreza'],['CON','Constituição'],['INT','Inteligência'],['SAB','Sabedoria'],['CAR','Carisma']];
-const OP_BASE={Combatente:[20,2,12],Especialista:[16,3,16],Ocultista:[12,4,20]};
-const FICHAS={
-  dnd5e:{ nome:'D&D 5ª edição', match:/d&d|dnd|5e|dungeons/i,
-    passos:'1) Escolha raça, classe e antecedente. 2) Gere os atributos (role na mesa ou use o conjunto padrão) e some os bônus da sua raça. 3) Marque as perícias que a sua classe e o seu antecedente dão. 4) Use os PV sugeridos. Na dúvida, pergunte ao mestre no "Fora do jogo".',
-    ident:[{k:'raca',l:'Raça',sel:['Humano','Elfo','Anão','Halfling','Draconato','Gnomo','Meio-Elfo','Meio-Orc','Tiefling']},{k:'classe',l:'Classe',sel:Object.keys(DND_DV)},{k:'nivel',l:'Nível',n:[1,20],d:1},{k:'antecedente',l:'Antecedente'},{k:'alinhamento',l:'Alinhamento',sel:ALIN}],
-    attrs:{lista:SEIS,min:1,max:30,d:10,mod:mod20},
-    gerar:[{l:'🎲 Rolar na mesa: 4d6, tira o menor (todos veem)',rolar:'4d6',tira:1},{l:'Conjunto padrão: 15, 14, 13, 12, 10, 8',padrao:[15,14,13,12,10,8]}],
-    pericias:{lista:DND_PER,bonus:(c,attr,on)=>{ const p=2+Math.floor((Math.max(1,n0(c.nivel))-1)/4); const m=Math.floor((n0(c.at[attr]??10)-10)/2)+(on?p:0); return (m>=0?'+':'')+m; }},
-    calc:c=>{ const lv=Math.max(1,n0(c.nivel)||1), dv=DND_DV[c.classe]||8, con=Math.floor((n0(c.at.CON??10)-10)/2), des=Math.floor((n0(c.at.DES??10)-10)/2), sab=Math.floor((n0(c.at.SAB??10)-10)/2), prof=2+Math.floor((lv-1)/4);
-      const pv=Math.max(1,dv+con+(lv-1)*(dv/2+1+con)); const perc=10+sab+((c.per||[]).includes('Percepção')?prof:0);
-      return {pv, linhas:[['Bônus de proficiência','+'+prof],['Dado de vida','d'+dv],['PV sugeridos',pv],['Iniciativa',(des>=0?'+':'')+des],['CA sem armadura',10+des],['Percepção passiva',perc]]}; },
-    extra:[{k:'ca',l:'Classe de Armadura (CA)',n:[0,40]},{k:'desloc',l:'Deslocamento',d:'9 m'}],
-    textos:[{k:'equip',l:'Equipamento e dinheiro'},{k:'magias',l:'Magias, talentos e habilidades de classe'},{k:'hist',l:'Personalidade e história'}],
-    resumo:c=>[c.raca,c.classe,c.nivel?'nv '+c.nivel:''].filter(Boolean).join(' · ') },
-  t20:{ nome:'Tormenta20', match:/tormenta/i,
-    passos:'1) Escolha raça, classe, origem e divindade (se tiver). 2) Gere os atributos (role na mesa ou use o conjunto) e aplique os ajustes da raça. 3) PV, PM e perícias treinadas vêm da sua classe: confira no livro ou com o mestre. 4) Defesa = 10 + Destreza + armadura e escudo.',
-    ident:[{k:'raca',l:'Raça',sel:['Humano','Anão','Dahllan','Elfo','Goblin','Lefou','Minotauro','Qareen','Golem','Hynne','Kliren','Medusa','Osteon','Sereia/Tritão','Sílfide','Suraggel','Trog']},{k:'classe',l:'Classe',sel:['Arcanista','Bárbaro','Bardo','Bucaneiro','Caçador','Cavaleiro','Clérigo','Druida','Guerreiro','Inventor','Ladino','Lutador','Nobre','Paladino']},{k:'origem',l:'Origem'},{k:'divindade',l:'Divindade'},{k:'nivel',l:'Nível',n:[1,20],d:1}],
-    attrs:{lista:SEIS,min:1,max:30,d:10,mod:mod20},
-    gerar:[{l:'🎲 Rolar na mesa: 4d6, tira o menor (todos veem)',rolar:'4d6',tira:1},{l:'Conjunto: 15, 14, 13, 12, 10, 8',padrao:[15,14,13,12,10,8]}],
-    calc:c=>{ const des=Math.floor((n0(c.at.DES??10)-10)/2); return {linhas:[['Defesa sem armadura',10+des],['Modificador de Constituição',mod20(c.at.CON??10)]]}; },
-    extra:[{k:'pm',l:'Pontos de Mana (PM)',n:[0,999]},{k:'defesa',l:'Defesa',n:[0,99]}],
-    textos:[{k:'pericias',l:'Perícias treinadas'},{k:'poderes',l:'Poderes e magias'},{k:'equip',l:'Equipamento e dinheiro (T$)'},{k:'hist',l:'História'}],
-    resumo:c=>[c.raca,c.classe,c.nivel?'nv '+c.nivel:''].filter(Boolean).join(' · ') },
-  op:{ nome:'Ordem Paranormal', match:/ordem/i,
-    passos:'1) Escolha a classe e a origem. 2) Todos os atributos começam em 1 e você tem 4 pontos para distribuir (máximo 3 em cada). Pode baixar um atributo para 0 e ganhar 1 ponto a mais. 3) PV, PE e Sanidade são calculados sozinhos para NEX 5%.',
-    ident:[{k:'classe',l:'Classe',sel:Object.keys(OP_BASE)},{k:'origem',l:'Origem'},{k:'nex',l:'NEX',sel:['5%','10%','15%','20%','25%','30%','35%','40%','45%','50%','55%','60%','65%','70%','75%','80%','85%','90%','95%','99%']},{k:'trilha',l:'Trilha'}],
-    attrs:{lista:[['AGI','Agilidade'],['FOR','Força'],['INT','Intelecto'],['PRE','Presença'],['VIG','Vigor']],min:0,max:5,d:1},
-    calc:c=>{ const b=OP_BASE[c.classe]; const a=k=>n0(c.at[k]??1); const gasto=['AGI','FOR','INT','PRE','VIG'].reduce((s,k)=>s+a(k),0)-5; const zeros=['AGI','FOR','INT','PRE','VIG'].filter(k=>a(k)===0).length;
-      const lin=[['Pontos usados',`${gasto} de ${4+Math.min(1,zeros)}`],['Defesa',10+a('AGI')]];
-      if(b) lin.push(['PV (NEX 5%)',b[0]+a('VIG')],['PE (NEX 5%)',b[1]+a('PRE')],['Sanidade (NEX 5%)',b[2]]); else lin.push(['PV, PE e SAN','escolha a classe']);
-      return {pv:b?b[0]+a('VIG'):null, linhas:lin}; },
-    extra:[{k:'pe',l:'Pontos de Esforço (PE)',n:[0,999]},{k:'san',l:'Sanidade (SAN)',n:[0,999]}],
-    textos:[{k:'pericias',l:'Perícias treinadas'},{k:'rituais',l:'Rituais e habilidades'},{k:'equip',l:'Inventário'},{k:'hist',l:'História'}],
-    resumo:c=>[c.classe,c.origem,c.nex?'NEX '+c.nex:''].filter(Boolean).join(' · ') },
-  coc:{ nome:'Call of Cthulhu (7ª edição)', match:/cthulhu|chamado/i,
-    passos:'1) Escolha a ocupação. 2) Role as características na mesa: FOR, CON, DES, APA e POD com 3d6×5; TAM, INT e EDU com (2d6+6)×5. 3) PV, Sanidade, Pontos de Magia e Movimento saem sozinhos. 4) Distribua os pontos de perícia da ocupação com o mestre.',
-    ident:[{k:'ocupacao',l:'Ocupação'},{k:'idade',l:'Idade',n:[15,90]},{k:'residencia',l:'Residência'}],
-    attrs:{lista:[['FOR','Força'],['CON','Constituição'],['TAM','Tamanho'],['DES','Destreza'],['APA','Aparência'],['INT','Inteligência'],['POD','Poder'],['EDU','Educação'],['SOR','Sorte']],min:0,max:99,d:50,mod:v=>`${Math.floor(n0(v)/2)} / ${Math.floor(n0(v)/5)}`},
-    gerar:[{l:'🎲 Rolar na mesa (todos veem)',coc:true}],
-    calc:c=>{ const a=k=>n0(c.at[k]??50); const mov=(a('DES')<a('TAM')&&a('FOR')<a('TAM'))?7:(a('DES')>a('TAM')&&a('FOR')>a('TAM'))?9:8; const pv=Math.floor((a('CON')+a('TAM'))/10);
-      return {pv, linhas:[['Pontos de Vida',pv],['Sanidade inicial',a('POD')],['Pontos de Magia',Math.floor(a('POD')/5)],['Movimento',mov]]}; },
-    extra:[{k:'san',l:'Sanidade atual',n:[0,99]}],
-    textos:[{k:'pericias',l:'Perícias (nome e %)'},{k:'armas',l:'Armas'},{k:'equip',l:'Equipamento'},{k:'hist',l:'História, pessoas importantes, fobias'}],
-    resumo:c=>[c.ocupacao,c.idade?c.idade+' anos':''].filter(Boolean).join(' · ') },
-  vtm:{ nome:'Vampiro: A Máscara (5ª edição)', match:/vampir/i,
-    passos:'1) Escolha clã, conceito e tipo de predador. 2) Distribua os atributos: um em 4, três em 3, quatro em 2 e um em 1. 3) Vitalidade e Força de Vontade são calculadas sozinhas. 4) Escolha disciplinas e habilidades com o mestre.',
-    ident:[{k:'cla',l:'Clã',sel:['Brujah','Gangrel','Malkaviano','Nosferatu','Toreador','Tremere','Ventrue','Lasombra','Hecata','Ministério','Banu Haqim','Ravnos','Salubri','Tzimisce','Caitiff','Sangue-Fraco']},{k:'conceito',l:'Conceito'},{k:'predador',l:'Tipo de predador'},{k:'geracao',l:'Geração'}],
-    attrs:{lista:[['For','Força'],['Des','Destreza'],['Vig','Vigor'],['Car','Carisma'],['Man','Manipulação'],['Aut','Autocontrole'],['Int','Inteligência'],['Rac','Raciocínio'],['Det','Determinação']],min:1,max:5,d:1,mod:v=>'●'.repeat(Math.max(0,Math.min(5,n0(v))))+'○'.repeat(Math.max(0,5-Math.min(5,n0(v))))},
-    calc:c=>{ const a=k=>n0(c.at[k]??1); const vals=['For','Des','Vig','Car','Man','Aut','Int','Rac','Det'].map(a).sort((x,y)=>y-x).join(''); const ok=vals==='433322221';
-      return {pv:a('Vig')+3, linhas:[['Vitalidade',a('Vig')+3],['Força de Vontade',a('Aut')+a('Det')],['Distribuição 4-3-3-3-2-2-2-2-1',ok?'✔ certinha':'confira os pontos']]}; },
-    extra:[{k:'humanidade',l:'Humanidade',n:[0,10],d:7},{k:'fome',l:'Fome',n:[0,5],d:1}],
-    textos:[{k:'disciplinas',l:'Disciplinas'},{k:'habilidades',l:'Habilidades'},{k:'conviccoes',l:'Convicções e pedras de toque'},{k:'hist',l:'História'}],
-    resumo:c=>[c.cla,c.conceito].filter(Boolean).join(' · ') },
-  tdt:{ nome:'3D&T Alpha', match:/3d&t|3dt|3d & t/i,
-    passos:'1) Defina o conceito do personagem. 2) Distribua os pontos nas 5 características (personagem novato: 5 pontos, máximo 5 em cada). 3) PV e PM são calculados sozinhos (Resistência × 5). 4) Escolha vantagens e desvantagens com o mestre.',
-    ident:[{k:'conceito',l:'Conceito'},{k:'escala',l:'Pontuação',sel:['Novato (5 pontos)','Lutador (7 pontos)','Campeão (10 pontos)','Lenda (12 pontos)']}],
-    attrs:{lista:[['F','Força'],['H','Habilidade'],['R','Resistência'],['A','Armadura'],['PdF','Poder de Fogo']],min:0,max:5,d:0},
-    calc:c=>{ const r=n0(c.at.R??0); const tot=['F','H','R','A','PdF'].reduce((s,k)=>s+n0(c.at[k]??0),0); return {pv:Math.max(1,r*5), linhas:[['Pontos nas características',tot],['PV',Math.max(1,r*5)],['PM',Math.max(1,r*5)]]}; },
-    extra:[{k:'pm',l:'PM atuais',n:[0,99]}],
-    textos:[{k:'vantagens',l:'Vantagens'},{k:'desvantagens',l:'Desvantagens'},{k:'pericias',l:'Perícias e magias'},{k:'hist',l:'História'}],
-    resumo:c=>c.conceito||'' },
-  livre:{ nome:'Ficha livre', match:/$^/,
-    passos:'Esta mesa usa um sistema sem modelo pronto. Preencha do jeito que o mestre pedir: conceito, atributos, perícias e equipamento.',
-    ident:[{k:'conceito',l:'Conceito (quem é o personagem)'},{k:'nivel',l:'Nível ou experiência'}],
-    textos:[{k:'atributos',l:'Atributos'},{k:'pericias',l:'Perícias e habilidades'},{k:'equip',l:'Equipamento'},{k:'hist',l:'História'}],
-    resumo:c=>c.conceito||'' }
-};
-const sysDaMesa=()=>{ const s=(S.mesa&&S.mesa.sistema)||''; for(const [k,f] of Object.entries(FICHAS)) if(f.match.test(s)) return k; return 'livre'; };
-function lerFicha(x){ const t=(x&&x.ficha)||''; if(t.startsWith('{"_ficha"')){ try{ const o=JSON.parse(t); o.c=o.c||{}; o.c.at=o.c.at||{}; return o; }catch(e){} } return {_ficha:1, sys:null, c:{at:{}, hist:t}}; }
-function resumoFicha(x){ const o=lerFicha(x), T=FICHAS[o.sys||sysDaMesa()]; try{ return T&&T.resumo?T.resumo(o.c):''; }catch(e){ return ''; } }
-function ficha(uid){
+const ALIN=['Leal e Bom','Neutro e Bom','Caótico e Bom','Leal e Neutro','Neutro','Caótico e Neutro','Leal e Mau','Neutro e Mau','Caótico e Mau'];
+
+/* ===== D&D 5e (Livro do Jogador 2014) ===== */
+const DND_RACAS={'Humano':{FOR:1,DES:1,CON:1,INT:1,SAB:1,CAR:1},'Anão da Colina':{CON:2,SAB:1},'Anão da Montanha':{CON:2,FOR:2},'Alto Elfo':{DES:2,INT:1},'Elfo da Floresta':{DES:2,SAB:1},'Elfo Negro (Drow)':{DES:2,CAR:1},'Halfling Pés-Leves':{DES:2,CAR:1},'Halfling Robusto':{DES:2,CON:1},'Draconato':{FOR:2,CAR:1},'Gnomo da Floresta':{INT:2,DES:1},'Gnomo das Rochas':{INT:2,CON:1},'Meio-Elfo':'meioelfo','Meio-Orc':{FOR:2,CON:1},'Tiefling':{CAR:2,INT:1}};
+const DND_PER=[['Acrobacia','DES'],['Adestrar Animais','SAB'],['Arcanismo','INT'],['Atletismo','FOR'],['Atuação','CAR'],['Enganação','CAR'],['Furtividade','DES'],['História','INT'],['Intimidação','CAR'],['Intuição','SAB'],['Investigação','INT'],['Medicina','SAB'],['Natureza','INT'],['Percepção','SAB'],['Persuasão','CAR'],['Prestidigitação','DES'],['Religião','INT'],['Sobrevivência','SAB']];
+const TODAS=DND_PER.map(p=>p[0]);
+const DND_CLASSES={
+ 'Bárbaro':{dv:12,salv:['FOR','CON'],n:2,per:['Adestrar Animais','Atletismo','Intimidação','Natureza','Percepção','Sobrevivência']},
+ 'Bardo':{dv:8,salv:['DES','CAR'],n:3,per:TODAS},
+ 'Bruxo':{dv:8,salv:['SAB','CAR'],n:2,per:['Arcanismo','Enganação','História','Intimidação','Investigação','Natureza','Religião']},
+ 'Clérigo':{dv:8,salv:['SAB','CAR'],n:2,per:['História','Intuição','Medicina','Persuasão','Religião']},
+ 'Druida':{dv:8,salv:['INT','SAB'],n:2,per:['Arcanismo','Adestrar Animais','Intuição','Medicina','Natureza','Percepção','Religião','Sobrevivência']},
+ 'Feiticeiro':{dv:6,salv:['CON','CAR'],n:2,per:['Arcanismo','Enganação','Intuição','Intimidação','Persuasão','Religião']},
+ 'Guerreiro':{dv:10,salv:['FOR','CON'],n:2,per:['Acrobacia','Adestrar Animais','Atletismo','História','Intuição','Intimidação','Percepção','Sobrevivência']},
+ 'Ladino':{dv:8,salv:['DES','INT'],n:4,per:['Acrobacia','Atletismo','Atuação','Enganação','Furtividade','Intimidação','Intuição','Investigação','Percepção','Persuasão','Prestidigitação']},
+ 'Mago':{dv:6,salv:['INT','SAB'],n:2,per:['Arcanismo','História','Intuição','Investigação','Medicina','Religião']},
+ 'Monge':{dv:8,salv:['FOR','DES'],n:2,per:['Acrobacia','Atletismo','Furtividade','História','Intuição','Religião']},
+ 'Paladino':{dv:10,salv:['SAB','CAR'],n:2,per:['Atletismo','Intimidação','Intuição','Medicina','Persuasão','Religião']},
+ 'Patrulheiro':{dv:10,salv:['FOR','DES'],n:3,per:['Adestrar Animais','Atletismo','Furtividade','Intuição','Investigação','Natureza','Percepção','Sobrevivência']}};
+const DND_ANT={'Acólito':['Intuição','Religião'],'Artesão de Guilda':['Intuição','Persuasão'],'Artista':['Acrobacia','Atuação'],'Charlatão':['Enganação','Prestidigitação'],'Criminoso':['Enganação','Furtividade'],'Eremita':['Medicina','Religião'],'Forasteiro':['Atletismo','Sobrevivência'],'Herói do Povo':['Adestrar Animais','Sobrevivência'],'Marinheiro':['Atletismo','Percepção'],'Nobre':['História','Persuasão'],'Órfão':['Furtividade','Prestidigitação'],'Sábio':['Arcanismo','História'],'Soldado':['Atletismo','Intimidação']};
+const CUSTO={8:0,9:1,10:2,11:3,12:4,13:5,14:7,15:9};
+const dndFinal=(c,k)=>n0((c.fin||{})[k]);
+const dndProf=c=>2+Math.floor((Math.max(1,n0(c.nivel)||1)-1)/4);
+const dndPv=c=>{ const cl=DND_CLASSES[c.classe], con=md(dndFinal(c,'CON')); if(!cl||con===null) return null; const lv=Math.max(1,n0(c.nivel)||1); return cl.dv+con+(lv-1)*(cl.dv/2+1+con); };
+function dndBonusOk(c){ const r=DND_RACAS[c.raca]; if(!r) return null; const b=SEIS.map(([k])=>{ const x=n0((c.base||{})[k]), y=n0((c.fin||{})[k]); return x===null||y===null?null:y-x; }); if(b.includes(null)) return null;
+  if(r==='meioelfo'){ const car=b[5], out=b.slice(0,5); return car===2&&out.filter(v=>v===1).length===2&&out.filter(v=>v===0).length===3; }
+  return SEIS.every(([k],i)=>b[i]===(r[k]||0)); }
+const SYS={};
+SYS.dnd5e={ nome:'D&D 5ª edição', match:/d&d|dnd|5e|dungeons/i,
+ resumo:c=>[c.raca,c.classe,c.nivel?'nv '+c.nivel:''].filter(Boolean).join(' · '), pv:c=>c.pvmax,
+ passos:[
+  {t:'Raça',help:c=>`Escolha a raça (com a sub-raça). Ela dá <b>bônus nos atributos</b>, deslocamento, idiomas e traços.${DND_RACAS[c.raca]?`<br><b>${esc(c.raca)}:</b> ${DND_RACAS[c.raca]==='meioelfo'?'+2 em Carisma e +1 em outros dois atributos à sua escolha':Object.entries(DND_RACAS[c.raca]).map(([k,v])=>`+${v} ${k}`).join(', ')}.`:''}<br><small>Se a mesa usa as regras de 2024, os bônus de atributo vêm do antecedente: combine com o mestre.</small>`,
+   campos:[{k:'raca',l:'Raça e sub-raça',sel:Object.keys(DND_RACAS)},{k:'tracos',l:'Traços raciais (visão no escuro, idiomas, deslocamento…)',area:1}],
+   checks:c=>[['Raça escolhida',!!c.raca]]},
+  {t:'Classe',help:c=>{ const cl=DND_CLASSES[c.classe]; return `A classe define o <b>dado de vida</b>, as <b>salvaguardas</b>, as perícias que você pode escolher e o equipamento inicial.${cl?`<br><b>${esc(c.classe)}:</b> dado de vida d${cl.dv} · salvaguardas: ${cl.salv.join(' e ')} · escolha <b>${cl.n}</b> perícias${cl.per===TODAS?' de qualquer lista':` entre: ${cl.per.join(', ')}`}.`:''}`; },
+   campos:[{k:'classe',l:'Classe',sel:Object.keys(DND_CLASSES)},{k:'nivel',l:'Nível',n:1,d:1},{k:'subclasse',l:'Subclasse (se já tiver)'},{k:'salv',l:'Salvaguardas em que é proficiente',multi:()=>SEIS.map(s=>s[0])}],
+   checks:c=>{ const cl=DND_CLASSES[c.classe]; return [['Classe escolhida',!!cl],['Salvaguardas da classe',!!cl&&perm(c.salv||[],cl.salv),cl?`${c.classe}: ${cl.salv.join(' e ')}`:'']]; }},
+  {t:'Atributos',help:c=>`Escolha <b>um método</b> e gere 6 valores. Depois <b>distribua</b> os valores entre os atributos como quiser e, na segunda linha, some o bônus da raça.<br>• <b>Rolagem:</b> role 4d6 seis vezes e descarte o menor dado de cada uma.<br>• <b>Conjunto padrão:</b> 15, 14, 13, 12, 10 e 8.<br>• <b>Compra de pontos:</b> 27 pontos, valores de 8 a 15 (custos: 8=0, 9=1, 10=2, 11=3, 12=4, 13=5, 14=7, 15=9).${c.rolados&&c.rolados.length?`<br><b>Seus resultados na mesa:</b> ${c.rolados.join(', ')}.`:''}`,
+   campos:[{k:'metodo',l:'Método',sel:['Rolagem (4d6, tira o menor)','Conjunto padrão','Compra de pontos']},{rolar:{expr:'4d6',vezes:6,tira:1,alvo:'rolados',quando:c=>/Rolagem/.test(c.metodo||'')}},{attrs:'base',l:'Valor escolhido (antes da raça)',lista:SEIS},{attrs:'fin',l:'Valor final (com o bônus da raça)',lista:SEIS}],
+   checks:c=>{ const b=SEIS.map(([k])=>n0((c.base||{})[k])); const cheio=!b.includes(null); const out=[['Os 6 valores preenchidos',cheio]];
+     if(/padrão/.test(c.metodo||'')) out.push(['Usou 15, 14, 13, 12, 10 e 8',cheio&&perm(b,[15,14,13,12,10,8])]);
+     if(/Compra/.test(c.metodo||'')){ const ok=cheio&&b.every(v=>CUSTO[v]!==undefined); const custo=ok?b.reduce((s,v)=>s+CUSTO[v],0):null; out.push([`Compra de pontos: ${custo===null?'valores entre 8 e 15':custo+' de 27 pontos'}`,custo!==null&&custo<=27&&custo>=26,'Use até 27 pontos (o ideal é gastar todos).']); }
+     if(/Rolagem/.test(c.metodo||'')) out.push(['Usou os valores rolados na mesa',cheio&&!!c.rolados&&perm(b,c.rolados),'Role na mesa e distribua exatamente esses 6 valores.']);
+     const r=dndBonusOk(c); out.push(['Bônus da raça somado certo',r===true,r===null?'Escolha a raça e preencha as duas linhas.':'Valor final = valor escolhido + bônus da raça.']); return out; }},
+  {t:'Antecedente e perícias',help:c=>{ const cl=DND_CLASSES[c.classe], an=DND_ANT[c.antecedente]; return `O antecedente conta de onde o personagem veio e dá <b>2 perícias</b> (e idiomas, ferramentas e equipamento).${an?`<br><b>${esc(c.antecedente)}:</b> ${an.join(' e ')}.`:''}${cl?`<br>Da classe, marque mais <b>${cl.n}</b> perícias da lista dela.`:''}<br>Se o antecedente repetir uma perícia da classe, escolha outra qualquer no lugar.`; },
+   campos:[{k:'antecedente',l:'Antecedente',sel:Object.keys(DND_ANT)},{k:'per',l:'Perícias em que é proficiente',multi:()=>TODAS}],
+   checks:c=>{ const cl=DND_CLASSES[c.classe], an=DND_ANT[c.antecedente]||[], per=c.per||[]; const total=(cl?cl.n:0)+(an.length||2);
+     return [['Antecedente escolhido',!!c.antecedente],['Perícias do antecedente marcadas',an.length>0&&an.every(p=>per.includes(p))],[`Total de perícias: ${per.length} de ${total}`,per.length===total,`${cl?cl.n:'?'} da classe + 2 do antecedente.`],
+       ['Perícias da classe vêm da lista da classe',!!cl&&per.filter(p=>!an.includes(p)).every(p=>cl.per.includes(p))||per.length<=an.length,cl?`Lista: ${cl.per.join(', ')}`:'']]; }},
+  {t:'Contas da ficha',help:()=>`Agora preencha os números como na ficha de papel:<br>• <b>Modificador</b> = (atributo − 10) ÷ 2, arredondando para baixo.<br>• <b>Bônus de proficiência</b> = +2 do nível 1 ao 4.<br>• <b>PV no 1º nível</b> = dado de vida máximo + mod. de Constituição. A cada nível seguinte: metade do dado + 1 + mod. de CON.<br>• <b>Iniciativa</b> = mod. de Destreza.<br>• <b>Percepção passiva</b> = 10 + mod. de Sabedoria (+ proficiência se for treinado em Percepção).<br>• <b>CA</b> depende da armadura: sem armadura é 10 + mod. de Destreza.`,
+   campos:[...SEIS.map(([k,l])=>({k:'mod'+k,l:'Mod. de '+l,calc:c=>md(dndFinal(c,k)),dica:`(${k} − 10) ÷ 2`})),{k:'prof',l:'Bônus de proficiência',calc:dndProf,dica:'+2 até o nível 4'},{k:'pvmax',l:'PV máximos',calc:dndPv,dica:'dado de vida + mod. CON'},{k:'inic',l:'Iniciativa',calc:c=>md(dndFinal(c,'DES')),dica:'mod. de DES'},{k:'percp',l:'Percepção passiva',calc:c=>{ const s=md(dndFinal(c,'SAB')); return s===null?null:10+s+((c.per||[]).includes('Percepção')?dndProf(c):0); },dica:'10 + SAB (+ prof.)'},{k:'ca',l:'Classe de Armadura (CA)',n:1},{k:'desloc',l:'Deslocamento',d:'9 m'}],
+   checks:c=>['modFOR','modDES','modCON','modINT','modSAB','modCAR','prof','pvmax','inic','percp'].map(k=>{ const f=SYS.dnd5e.passos[4].campos.find(x=>x.k===k); return [f.l,eqN(c[k],f.calc(c)),f.dica]; })},
+  {t:'Equipamento e magias',help:()=>'Pegue o <b>equipamento inicial</b> da classe e do antecedente (ou compre com o ouro inicial, se o mestre deixar). Conjuradores anotam truques e magias conhecidas ou preparadas.',campos:[{k:'equip',l:'Equipamento, armas e dinheiro',area:1},{k:'magias',l:'Truques, magias e habilidades de classe',area:1}],checks:c=>[['Equipamento anotado',!!(c.equip||'').trim()]]},
+  {t:'Personalidade',help:()=>'Descreva traços de personalidade, ideais, vínculos e defeitos (o antecedente sugere opções), além do alinhamento e da história.',campos:[{k:'alinhamento',l:'Alinhamento',sel:ALIN},{k:'perso',l:'Traços, ideais, vínculos e defeitos',area:1},{k:'hist',l:'História',area:1}],checks:c=>[['Alinhamento',!!c.alinhamento],['História ou personalidade',!!((c.perso||'')+(c.hist||'')).trim()]]}
+ ]};
+
+/* ===== Vampiro: A Máscara 5ª edição ===== */
+const VTM_CLAS={'Brujah':['Celeridade','Potência','Presença'],'Gangrel':['Animalismo','Fortitude','Metamorfose'],'Malkaviano':['Auspícios','Dominação','Ofuscação'],'Nosferatu':['Animalismo','Ofuscação','Potência'],'Toreador':['Auspícios','Celeridade','Presença'],'Tremere':['Auspícios','Dominação','Feitiçaria de Sangue'],'Ventrue':['Dominação','Fortitude','Presença'],'Lasombra':['Dominação','Oblívio','Potência'],'Hecata':['Auspícios','Fortitude','Oblívio'],'Ministério':['Ofuscação','Presença','Metamorfose'],'Banu Haqim':['Celeridade','Feitiçaria de Sangue','Ofuscação'],'Ravnos':['Animalismo','Ofuscação','Presença'],'Salubri':['Auspícios','Dominação','Fortitude'],'Tzimisce':['Animalismo','Dominação','Metamorfose'],'Caitiff':'qualquer','Sangue-Fraco':'alquimia'};
+const VTM_DISC=['Animalismo','Auspícios','Celeridade','Dominação','Feitiçaria de Sangue','Fortitude','Metamorfose','Oblívio','Ofuscação','Potência','Presença'];
+const VTM_PRED={'Gato de Beco (Alleycat)':['Celeridade','Potência'],'Ensacador (Bagger)':['Feitiçaria de Sangue','Ofuscação'],'Sanguessuga (Blood Leech)':['Celeridade','Metamorfose'],'Cutelo (Cleaver)':['Dominação','Animalismo'],'Consensualista':['Auspícios','Fortitude'],'Fazendeiro (Farmer)':['Animalismo','Metamorfose'],'Osíris':['Feitiçaria de Sangue','Presença'],'Sandman':['Auspícios','Ofuscação'],'Rainha da Cena (Scene Queen)':['Dominação','Potência'],'Sereia (Siren)':['Fortitude','Presença']};
+const VTM_AT=[['For','Força'],['Des','Destreza'],['Vig','Vigor'],['Car','Carisma'],['Man','Manipulação'],['Aut','Autocontrole'],['Int','Inteligência'],['Rac','Raciocínio'],['Det','Determinação']];
+const VTM_HAB=[['Físicas',['Armas Brancas','Armas de Fogo','Atletismo','Briga','Condução','Furtividade','Furto','Ofícios','Sobrevivência']],['Sociais',['Empatia com Animais','Etiqueta','Intimidação','Intuição','Lábia','Liderança','Manha','Performance','Persuasão']],['Mentais',['Ciência','Erudição','Finanças','Investigação','Medicina','Ocultismo','Percepção','Política','Tecnologia']]];
+const VTM_DIST={'Pau para toda obra':'3 · 2 2 2 2 2 2 2 2 · 1 1 1 1 1 1 1 1 1 1','Equilibrado':'3 3 3 · 2 2 2 2 2 · 1 1 1 1 1 1 1','Especialista':'4 · 3 3 3 · 2 2 2 · 1 1 1'};
+const VTM_DIST_V={'Pau para toda obra':[3,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1],'Equilibrado':[3,3,3,2,2,2,2,2,1,1,1,1,1,1,1],'Especialista':[4,3,3,3,2,2,2,1,1,1]};
+const vat=(c,k)=>n0((c.at||{})[k]);
+const vtmDiscOpts=c=>{ const d=VTM_CLAS[c.cla]; return Array.isArray(d)?d:d==='alquimia'?['Alquimia de Sangue-Fraco']:VTM_DISC; };
+SYS.vtm={ nome:'Vampiro: A Máscara (5ª edição)', match:/vampir/i,
+ resumo:c=>[c.cla,c.conceito].filter(Boolean).join(' · '), pv:c=>c.vitalidade,
+ passos:[
+  {t:'Conceito e clã',help:c=>{ const d=VTM_CLAS[c.cla]; return `Comece pelo <b>conceito</b> (quem o personagem era em vida) e escolha o <b>clã</b>. O clã define as <b>disciplinas</b> que ele aprende com facilidade.${c.cla?`<br><b>Disciplinas do clã ${esc(c.cla)}:</b> ${Array.isArray(d)?d.join(', '):d==='qualquer'?'nenhuma fixa: um Caitiff pode escolher quaisquer disciplinas.':'Sangue-Fracos usam a Alquimia de Sangue-Fraco.'}`:''}`; },
+   campos:[{k:'conceito',l:'Conceito'},{k:'cla',l:'Clã',sel:Object.keys(VTM_CLAS)},{k:'ambicao',l:'Ambição (meta de longo prazo)'},{k:'desejo',l:'Desejo (vontade imediata)'},{k:'senhor',l:'Senhor (quem te transformou)'},{k:'geracao',l:'Geração',sel:['13ª','12ª','11ª','10ª','14ª','15ª','16ª']}],
+   checks:c=>[['Conceito',!!(c.conceito||'').trim()],['Clã',!!c.cla]]},
+  {t:'Atributos',help:()=>'Distribua os pontos (bolinhas) nos 9 atributos: <b>um</b> atributo com 4, <b>três</b> com 3, <b>quatro</b> com 2 e <b>um</b> com 1.',
+   campos:[{dots:'at',lista:VTM_AT,max:5,grupos:[['Físicos',0,3],['Sociais',3,6],['Mentais',6,9]]}],
+   checks:c=>{ const v=VTM_AT.map(([k])=>vat(c,k)); return [['Todos os atributos preenchidos',!v.includes(null)],['Distribuição 4 · 3 3 3 · 2 2 2 2 · 1',!v.includes(null)&&perm(v,[4,3,3,3,2,2,2,2,1])]]; }},
+  {t:'Habilidades',help:c=>`Escolha <b>um</b> modelo de distribuição e coloque os pontos nas habilidades:<br>${Object.entries(VTM_DIST).map(([k,v])=>`• <b>${k}:</b> ${v}`).join('<br>')}<br>Depois ganhe especializações: uma grátis para cada uma de Erudição, Ofícios, Performance e Ciência que tiver pontos, e mais <b>uma especialização livre</b>.`,
+   campos:[{k:'dist',l:'Modelo de distribuição',sel:Object.keys(VTM_DIST)},{dots:'hab',lista:VTM_HAB.flatMap(g=>g[1]).map(h=>[h,h]),max:5,min:0,grupos:[['Físicas',0,9],['Sociais',9,18],['Mentais',18,27]]},{k:'espec',l:'Especializações'}],
+   checks:c=>{ const v=VTM_HAB.flatMap(g=>g[1]).map(h=>n0((c.hab||{})[h])||0).filter(x=>x>0); const alvo=VTM_DIST_V[c.dist]; return [['Modelo escolhido',!!alvo],[alvo?`Pontos conferem com "${c.dist}"`:'Pontos conferem com o modelo',!!alvo&&perm(v,alvo),alvo?VTM_DIST[c.dist]:'']]; }},
+  {t:'Disciplinas',help:c=>{ const o=vtmDiscOpts(c); return `Escolha <b>duas disciplinas do seu clã</b>: uma com <b>2</b> pontos e outra com <b>1</b> ponto. Em cada ponto você escolhe um poder.<br><b>Disciplinas disponíveis${c.cla?' para '+esc(c.cla):''}:</b> ${o.join(', ')}.`; },
+   campos:[{k:'disc2',l:'Disciplina com 2 pontos ●●',sel:vtmDiscOpts},{k:'disc1',l:'Disciplina com 1 ponto ●',sel:vtmDiscOpts},{k:'poderes',l:'Poderes escolhidos (um por ponto)',area:1}],
+   checks:c=>{ const o=vtmDiscOpts(c); return [['Duas disciplinas diferentes',!!c.disc2&&!!c.disc1&&c.disc2!==c.disc1],['Disciplinas do clã',!!c.disc2&&o.includes(c.disc2)&&(!c.disc1||o.includes(c.disc1)||c.cla==='Sangue-Fraco'),`Do clã: ${o.join(', ')}`]]; }},
+  {t:'Tipo de predador',help:c=>{ const p=VTM_PRED[c.predador]; return `Como o personagem se alimenta? O tipo de predador dá <b>+1 ponto numa disciplina</b> (entre duas opções), uma especialização e vantagens/defeitos próprios.${p?`<br><b>${esc(c.predador)}:</b> escolha +1 em ${p.join(' ou ')}.`:''}<br><small>Ensacador e Osíris só podem pegar Feitiçaria de Sangue se o clã já tiver essa disciplina.</small>`; },
+   campos:[{k:'predador',l:'Tipo de predador',sel:Object.keys(VTM_PRED)},{k:'predDisc',l:'Disciplina que ganha +1',sel:c=>VTM_PRED[c.predador]||[]},{k:'predExtra',l:'Especialização, vantagens e defeitos do predador',area:1}],
+   checks:c=>[['Tipo de predador',!!c.predador],['Disciplina do predador',!!c.predDisc&&(VTM_PRED[c.predador]||[]).includes(c.predDisc)]]},
+  {t:'Convicções e vantagens',help:()=>'Escreva de <b>1 a 3 convicções</b> (princípios que o vampiro não abandona), cada uma ligada a uma <b>pedra de toque</b> (uma pessoa mortal importante). Depois gaste <b>7 pontos em vantagens</b> (antecedentes e méritos) e pegue <b>2 pontos de defeitos</b>.',
+   campos:[{k:'conv',l:'Convicções e pedras de toque',area:1},{k:'vant',l:'Vantagens (7 pontos)',area:1},{k:'def',l:'Defeitos (2 pontos)',area:1}],
+   checks:c=>[['Convicções',!!(c.conv||'').trim()],['Vantagens e defeitos',!!((c.vant||'')+(c.def||'')).trim()]]},
+  {t:'Contas da ficha',help:()=>'Preencha os valores calculados:<br>• <b>Vitalidade</b> = Vigor + 3.<br>• <b>Força de Vontade</b> = Autocontrole + Determinação.<br>• <b>Humanidade</b> começa em 7.<br>• <b>Potência de Sangue</b>: 1 para neonatos de 12ª ou 13ª geração (mais antigos podem ter mais, combine com o mestre).<br>• <b>Fome</b> começa em 1.',
+   campos:[{k:'vitalidade',l:'Vitalidade',calc:c=>vat(c,'Vig')===null?null:vat(c,'Vig')+3,dica:'Vigor + 3'},{k:'fdv',l:'Força de Vontade',calc:c=>vat(c,'Aut')===null||vat(c,'Det')===null?null:vat(c,'Aut')+vat(c,'Det'),dica:'Autocontrole + Determinação'},{k:'humanidade',l:'Humanidade',calc:()=>7,dica:'começa em 7'},{k:'potencia',l:'Potência de Sangue',calc:c=>/1[23]ª/.test(c.geracao||'')?1:null,dica:'12ª/13ª geração: 1'},{k:'fome',l:'Fome',calc:()=>1,dica:'começa em 1'}],
+   checks:c=>SYS.vtm.passos[6].campos.filter(f=>f.calc(c)!==null).map(f=>[f.l,eqN(c[f.k],f.calc(c)),f.dica])},
+  {t:'História',help:()=>'Conte a história do personagem: a vida mortal, o Abraço e como ele chegou à cidade da crônica.',campos:[{k:'hist',l:'História',area:1}],checks:c=>[['História',!!(c.hist||'').trim()]]}
+ ]};
+
+/* ===== Ordem Paranormal ===== */
+const OP_CL={Combatente:{pv:20,pe:2,san:12,per:'Luta ou Pontaria, Fortitude ou Reflexos, mais 1 + Intelecto perícias à sua escolha'},Especialista:{pv:16,pe:3,san:16,per:'7 + Intelecto perícias à sua escolha'},Ocultista:{pv:12,pe:4,san:20,per:'Ocultismo e Vontade, mais 3 + Intelecto perícias à sua escolha'}};
+const OP_AT=[['AGI','Agilidade'],['FOR','Força'],['INT','Intelecto'],['PRE','Presença'],['VIG','Vigor']];
+const oat=(c,k)=>n0((c.at||{})[k]);
+SYS.op={ nome:'Ordem Paranormal', match:/ordem/i,
+ resumo:c=>[c.classe,c.origem,'NEX 5%'].filter(Boolean).join(' · '), pv:c=>c.pvmax,
+ passos:[
+  {t:'Conceito',help:()=>'Pense em quem é o agente: profissão, personalidade e por que entrou para a Ordem.',campos:[{k:'conceito',l:'Conceito'},{k:'idade',l:'Idade',n:1}],checks:c=>[['Conceito',!!(c.conceito||'').trim()]]},
+  {t:'Atributos',help:()=>'Todos os atributos começam em <b>1</b>. Você tem <b>4 pontos</b> para distribuir, com <b>máximo 3</b> em cada. Pode baixar <b>um</b> atributo para 0 e ganhar 1 ponto extra.',
+   campos:[{dots:'at',lista:OP_AT,max:3,min:0}],
+   checks:c=>{ const v=OP_AT.map(([k])=>oat(c,k)); const cheio=!v.includes(null); return [['Atributos preenchidos',cheio],['Soma dos atributos = 9',cheio&&v.reduce((a,b)=>a+b,0)===9,'5 iniciais + 4 pontos (ou +5 se um ficar em 0)'],['Máximo 3 e no máximo um em 0',cheio&&v.every(x=>x<=3)&&v.filter(x=>x===0).length<=1]]; }},
+  {t:'Origem',help:()=>'A origem é o que o personagem fazia antes da Ordem (ex.: Acadêmico, Policial, Investigador). Ela dá <b>2 perícias treinadas</b> e um <b>poder de origem</b>.',campos:[{k:'origem',l:'Origem'},{k:'origemPod',l:'Perícias e poder da origem',area:1}],checks:c=>[['Origem',!!(c.origem||'').trim()]]},
+  {t:'Classe',help:c=>{ const k=OP_CL[c.classe]; return `Escolha entre Combatente, Especialista e Ocultista.${k?`<br><b>${esc(c.classe)} (NEX 5%):</b> PV ${k.pv} + Vigor · PE ${k.pe} + Presença · Sanidade ${k.san}.<br><b>Perícias treinadas:</b> ${k.per}.`:''}`; },
+   campos:[{k:'classe',l:'Classe',sel:Object.keys(OP_CL)},{k:'pericias',l:'Perícias treinadas',area:1},{k:'habClasse',l:'Habilidades da classe',area:1}],
+   checks:c=>[['Classe',!!OP_CL[c.classe]],['Perícias anotadas',!!(c.pericias||'').trim()]]},
+  {t:'Contas da ficha',help:()=>'Preencha os valores para <b>NEX 5%</b>:<br>• <b>PV</b> = base da classe + Vigor.<br>• <b>PE</b> = base da classe + Presença.<br>• <b>Sanidade</b> = base da classe.<br>• <b>Defesa</b> = 10 + Agilidade (+ proteção).',
+   campos:[{k:'pvmax',l:'PV',calc:c=>OP_CL[c.classe]&&oat(c,'VIG')!==null?OP_CL[c.classe].pv+oat(c,'VIG'):null,dica:'base da classe + VIG'},{k:'pe',l:'PE',calc:c=>OP_CL[c.classe]&&oat(c,'PRE')!==null?OP_CL[c.classe].pe+oat(c,'PRE'):null,dica:'base da classe + PRE'},{k:'san',l:'Sanidade',calc:c=>OP_CL[c.classe]?OP_CL[c.classe].san:null,dica:'base da classe'},{k:'defesa',l:'Defesa',calc:c=>oat(c,'AGI')===null?null:10+oat(c,'AGI'),dica:'10 + AGI'},{k:'desloc',l:'Deslocamento',d:'9 m'}],
+   checks:c=>SYS.op.passos[4].campos.filter(f=>f.calc).map(f=>[f.l,eqN(c[f.k],f.calc(c)),f.dica])},
+  {t:'Equipamento e história',help:()=>'Anote o inventário (o mestre define a patente e o limite de itens) e a história do agente.',campos:[{k:'equip',l:'Inventário',area:1},{k:'hist',l:'História',area:1}],checks:c=>[['História',!!(c.hist||'').trim()]]}
+ ]};
+
+/* ===== Call of Cthulhu 7ª edição ===== */
+const COC_AT=[['FOR','Força','3d6'],['CON','Constituição','3d6'],['TAM','Tamanho','2d6+6'],['DES','Destreza','3d6'],['APA','Aparência','3d6'],['INT','Inteligência','2d6+6'],['POD','Poder','3d6'],['EDU','Educação','2d6+6']];
+const cat=(c,k)=>n0((c.at||{})[k]);
+const cocDb=c=>{ const s=cat(c,'FOR'), t=cat(c,'TAM'); if(s===null||t===null) return null; const v=s+t; return v<=64?['-2','-2']:v<=84?['-1','-1']:v<=124?['0','0']:v<=164?['+1d4','1']:v<=204?['+1d6','2']:['+2d6','3']; };
+SYS.coc={ nome:'Call of Cthulhu (7ª edição)', match:/cthulhu|chamado/i,
+ resumo:c=>[c.ocupacao,c.idade?c.idade+' anos':''].filter(Boolean).join(' · '), pv:c=>c.pvmax,
+ passos:[
+  {t:'Características',help:c=>`Role cada característica e multiplique por 5:<br>• <b>FOR, CON, DES, APA e POD:</b> 3d6 × 5.<br>• <b>TAM, INT e EDU:</b> (2d6 + 6) × 5.<br>Cada rolagem já vai para a sua característica (não se troca de lugar). Na ficha, anote também a metade e o quinto de cada valor.${c.rolCoc?'<br><b>Rolado na mesa:</b> '+COC_AT.map(([k])=>`${k} ${c.rolCoc[k]}`).join(' · '):''}`,
+   campos:[{rolar:{coc:1,alvo:'rolCoc'}},{attrs:'at',l:'Valores (já × 5)',lista:COC_AT.map(a=>[a[0],a[1]])}],
+   checks:c=>{ const v=COC_AT.map(([k])=>cat(c,k)); const cheio=!v.includes(null); return [['Todas preenchidas',cheio],['Múltiplos de 5 dentro da faixa',cheio&&COC_AT.every(([k,,e])=>{ const x=cat(c,k); return x%5===0&&(e==='3d6'?x>=15&&x<=90:x>=40&&x<=90); }),'3d6×5: de 15 a 90 · (2d6+6)×5: de 40 a 90'],...(c.rolCoc?[['Iguais às rolagens da mesa',cheio&&COC_AT.every(([k])=>cat(c,k)===c.rolCoc[k])]]:[])]; }},
+  {t:'Idade e Sorte',help:()=>'Escolha a idade (15 a 89). A idade muda algumas características (ex.: jovens perdem EDU; idosos perdem FOR, CON, DES e APA e ganham EDU): siga a tabela do livro com o mestre.<br>Depois role a <b>Sorte</b>: 3d6 × 5.',campos:[{k:'idade',l:'Idade',n:1},{k:'sorte',l:'Sorte',n:1},{k:'ajusteIdade',l:'Ajustes de idade aplicados',area:1}],checks:c=>[['Idade',!!n0(c.idade)],['Sorte (múltiplo de 5, de 15 a 90)',n0(c.sorte)!==null&&c.sorte%5===0&&c.sorte>=15&&c.sorte<=90]]},
+  {t:'Atributos derivados',help:()=>'Calcule:<br>• <b>PV</b> = (CON + TAM) ÷ 10, arredondando para baixo.<br>• <b>Sanidade</b> = POD.<br>• <b>Pontos de Magia</b> = POD ÷ 5.<br>• <b>Movimento</b>: 7 se DES e FOR forem menores que TAM; 9 se os dois forem maiores; senão 8.<br>• <b>Dano Extra e Corpo</b> pela soma FOR + TAM (tabela do livro).',
+   campos:[{k:'pvmax',l:'Pontos de Vida',calc:c=>cat(c,'CON')===null||cat(c,'TAM')===null?null:Math.floor((cat(c,'CON')+cat(c,'TAM'))/10),dica:'(CON + TAM) ÷ 10'},{k:'san',l:'Sanidade',calc:c=>cat(c,'POD'),dica:'= POD'},{k:'pm',l:'Pontos de Magia',calc:c=>cat(c,'POD')===null?null:Math.floor(cat(c,'POD')/5),dica:'POD ÷ 5'},{k:'mov',l:'Movimento',calc:c=>{ const d=cat(c,'DES'),f=cat(c,'FOR'),t=cat(c,'TAM'); if([d,f,t].includes(null)) return null; return d<t&&f<t?7:d>t&&f>t?9:8; },dica:'compare DES e FOR com TAM'},{k:'db',l:'Dano Extra',calc:c=>(cocDb(c)||[null])[0],txt:1,dica:'tabela FOR + TAM'},{k:'corpo',l:'Corpo',calc:c=>(cocDb(c)||[null,null])[1],txt:1,dica:'tabela FOR + TAM'}],
+   checks:c=>SYS.coc.passos[2].campos.map(f=>[f.l,f.txt?String(c[f.k]||'').trim()===String(f.calc(c)):eqN(c[f.k],f.calc(c)),f.dica])},
+  {t:'Ocupação e perícias',help:()=>'Escolha a <b>ocupação</b>. Ela indica as perícias de ocupação e quantos pontos você tem para elas (na maioria das ocupações, <b>EDU × 4</b>). Depois distribua os <b>pontos de interesse pessoal: INT × 2</b> em quaisquer perícias. Crédito vem da faixa da ocupação.',
+   campos:[{k:'ocupacao',l:'Ocupação'},{k:'ptsOcup',l:'Pontos de ocupação',calc:c=>cat(c,'EDU')===null?null:cat(c,'EDU')*4,dica:'na maioria: EDU × 4'},{k:'ptsInt',l:'Pontos de interesse pessoal',calc:c=>cat(c,'INT')===null?null:cat(c,'INT')*2,dica:'INT × 2'},{k:'pericias',l:'Perícias (nome e %)',area:1}],
+   checks:c=>[['Ocupação',!!(c.ocupacao||'').trim()],['Pontos de interesse pessoal',eqN(c.ptsInt,cat(c,'INT')===null?null:cat(c,'INT')*2),'INT × 2'],['Perícias anotadas',!!(c.pericias||'').trim()]]},
+  {t:'História',help:()=>'Descreva aparência, ideologia, pessoas importantes, locais significativos, pertences e traços. Isso ajuda a recuperar Sanidade no jogo.',campos:[{k:'equip',l:'Equipamento e armas',area:1},{k:'hist',l:'História e antecedentes',area:1}],checks:c=>[['História',!!(c.hist||'').trim()]]}
+ ]};
+
+/* ===== Tormenta20 ===== */
+SYS.t20={ nome:'Tormenta20', match:/tormenta/i,
+ resumo:c=>[c.raca,c.classe,c.nivel?'nv '+c.nivel:''].filter(Boolean).join(' · '), pv:c=>c.pvmax,
+ passos:[
+  {t:'Atributos',help:()=>'Defina os atributos pelo método que o mestre escolher (rolagem ou compra de pontos, conforme o livro). Na ficha, anote o valor e o modificador de cada um.',campos:[{k:'metodo',l:'Método',sel:['Rolagem','Compra de pontos','Outro (combinado com o mestre)']},{rolar:{expr:'4d6',vezes:6,tira:1,alvo:'rolados',quando:c=>c.metodo==='Rolagem'}},{attrs:'at',l:'Atributos',lista:SEIS}],checks:c=>[['Atributos preenchidos',SEIS.every(([k])=>n0((c.at||{})[k])!==null)]]},
+  {t:'Raça',help:()=>'Escolha a raça e aplique os modificadores de atributo e as habilidades raciais dela.',campos:[{k:'raca',l:'Raça',sel:['Humano','Anão','Dahllan','Elfo','Goblin','Lefou','Minotauro','Qareen','Golem','Hynne','Kliren','Medusa','Osteon','Sereia/Tritão','Sílfide','Suraggel','Trog']},{k:'habRaca',l:'Habilidades raciais',area:1}],checks:c=>[['Raça',!!c.raca]]},
+  {t:'Classe',help:()=>'Escolha a classe. Ela define os <b>PV e PM</b> por nível, as perícias treinadas e as habilidades. Use a tabela da classe no livro.',campos:[{k:'classe',l:'Classe',sel:['Arcanista','Bárbaro','Bardo','Bucaneiro','Caçador','Cavaleiro','Clérigo','Druida','Guerreiro','Inventor','Ladino','Lutador','Nobre','Paladino']},{k:'nivel',l:'Nível',n:1,d:1},{k:'habClasse',l:'Habilidades de classe',area:1}],checks:c=>[['Classe',!!c.classe]]},
+  {t:'Origem e divindade',help:()=>'A <b>origem</b> mostra o passado do personagem e dá itens e benefícios. Se quiser, escolha uma <b>divindade</b> para ser devoto (com as obrigações e restrições dela).',campos:[{k:'origem',l:'Origem'},{k:'origemBen',l:'Benefícios da origem',area:1},{k:'divindade',l:'Divindade (opcional)'}],checks:c=>[['Origem',!!(c.origem||'').trim()]]},
+  {t:'Perícias e poderes',help:()=>'Marque as perícias treinadas (da classe, da raça e da origem) e anote os poderes e magias escolhidos.',campos:[{k:'pericias',l:'Perícias treinadas',area:1},{k:'poderes',l:'Poderes e magias',area:1}],checks:c=>[['Perícias anotadas',!!(c.pericias||'').trim()]]},
+  {t:'Contas da ficha',help:()=>'Preencha PV e PM pela tabela da sua classe (já com o atributo indicado nela). A <b>Defesa</b> é 10 + Destreza + bônus de armadura e escudo.',campos:[{k:'pvmax',l:'PV máximos',n:1},{k:'pm',l:'PM',n:1},{k:'defesa',l:'Defesa',n:1},{k:'desloc',l:'Deslocamento',d:'9 m'}],checks:c=>[['PV',n0(c.pvmax)!==null],['PM',n0(c.pm)!==null],['Defesa',n0(c.defesa)!==null]]},
+  {t:'Equipamento e história',help:()=>'Anote o equipamento (da classe e da origem) e o dinheiro (T$), e conte a história.',campos:[{k:'equip',l:'Equipamento e T$',area:1},{k:'hist',l:'História',area:1}],checks:c=>[['Equipamento',!!(c.equip||'').trim()]]}
+ ]};
+
+/* ===== 3D&T Alpha ===== */
+const TDT_AT=[['F','Força'],['H','Habilidade'],['R','Resistência'],['A','Armadura'],['PdF','Poder de Fogo']];
+const TDT_PTS={'Novato (5 pontos)':5,'Lutador (7 pontos)':7,'Campeão (10 pontos)':10,'Lenda (12 pontos)':12};
+SYS.tdt={ nome:'3D&T Alpha', match:/3d&t|3dt|3d & t/i, resumo:c=>c.conceito||'', pv:c=>c.pvmax,
+ passos:[
+  {t:'Conceito',help:()=>'Defina o conceito e a pontuação que o mestre liberou.',campos:[{k:'conceito',l:'Conceito'},{k:'escala',l:'Pontuação',sel:Object.keys(TDT_PTS)}],checks:c=>[['Conceito',!!(c.conceito||'').trim()],['Pontuação',!!TDT_PTS[c.escala]]]},
+  {t:'Características',help:c=>`Distribua os pontos nas 5 características (0 a 5 cada). Os pontos que sobrarem servem para comprar vantagens.${TDT_PTS[c.escala]?` Você tem <b>${TDT_PTS[c.escala]}</b> pontos no total.`:''}`,campos:[{dots:'at',lista:TDT_AT,max:5,min:0}],checks:c=>{ const s=TDT_AT.reduce((a,[k])=>a+(n0((c.at||{})[k])||0),0), t=TDT_PTS[c.escala]; return [[`Pontos nas características: ${s}${t?' de '+t:''}`,!!t&&s<=t]]; }},
+  {t:'Vantagens e desvantagens',help:()=>'Compre vantagens com os pontos restantes. Desvantagens dão pontos extras (com o limite do livro).',campos:[{k:'vantagens',l:'Vantagens',area:1},{k:'desvantagens',l:'Desvantagens',area:1},{k:'pericias',l:'Perícias e magias',area:1}],checks:()=>[]},
+  {t:'Contas da ficha',help:()=>'• <b>PV</b> = Resistência × 5 (mínimo 1).<br>• <b>PM</b> = Resistência × 5 (mínimo 1).',campos:[{k:'pvmax',l:'PV',calc:c=>{ const r=n0((c.at||{}).R); return r===null?null:Math.max(1,r*5); },dica:'R × 5'},{k:'pm',l:'PM',calc:c=>{ const r=n0((c.at||{}).R); return r===null?null:Math.max(1,r*5); },dica:'R × 5'}],checks:c=>SYS.tdt.passos[3].campos.map(f=>[f.l,eqN(c[f.k],f.calc(c)),f.dica])},
+  {t:'História',help:()=>'Conte a história do personagem.',campos:[{k:'hist',l:'História',area:1}],checks:()=>[]}
+ ]};
+
+/* ===== Livre ===== */
+SYS.livre={ nome:'Ficha livre', match:/$^/, resumo:c=>c.conceito||'', pv:c=>c.pvmax,
+ passos:[{t:'Ficha',help:()=>'Esta mesa usa um sistema sem modelo pronto. Preencha do jeito que o mestre pedir.',campos:[{k:'conceito',l:'Conceito'},{k:'nivel',l:'Nível ou experiência'},{k:'pvmax',l:'PV máximos',n:1},{k:'atributos',l:'Atributos',area:1},{k:'pericias',l:'Perícias e habilidades',area:1},{k:'equip',l:'Equipamento',area:1},{k:'hist',l:'História',area:1}],checks:()=>[]}]};
+
+const sysDaMesa=()=>{ const s=(S.mesa&&S.mesa.sistema)||''; for(const [k,f] of Object.entries(SYS)) if(f.match.test(s)) return k; return 'livre'; };
+function lerFicha(x){ const t=(x&&x.ficha)||''; if(t.startsWith('{"_ficha"')){ try{ const o=JSON.parse(t); o.c=o.c||{}; return o; }catch(e){} } return {_ficha:2, sys:null, c:t?{hist:t}:{}}; }
+function pendencias(o){ const T=SYS[o.sys||sysDaMesa()]; if(!T) return 0; let n=0; T.passos.forEach(p=>{ try{ p.checks(o.c).forEach(ch=>{ if(!ch[1]) n++; }); }catch(e){} }); return n; }
+function resumoFicha(x){ if(!x.ficha) return ''; const o=lerFicha(x), T=SYS[o.sys||sysDaMesa()]; try{ return T&&T.resumo?T.resumo(o.c):''; }catch(e){ return ''; } }
+function ficha(uid,passo){
   const x=membro(uid); if(!x) return; const pode=uid===me.id||souMestre(); const dis=pode?'':'disabled';
-  const o=lerFicha(x); let sys=o.sys||sysDaMesa(); const c=o.c;
-  const ov=dialog(`<h2>${pode?'Ficha de ':''}${esc(x.personagem||nomeJog(uid))}</h2><div id="fBody"></div>`, pode?salvar:null, 'Salvar ficha');
-  ov.querySelector('.dlg').style.width='min(760px,100%)';
-  function campo(f,val){ const v=val??f.d??''; const id='fc_'+f.k;
-    if(f.sel) return `<label class="f">${esc(f.l)}<select data-k="${f.k}" ${dis}><option value="">—</option>${f.sel.map(s=>`<option ${s===v?'selected':''}>${esc(s)}</option>`).join('')}${v&&!f.sel.includes(v)?`<option selected>${esc(v)}</option>`:''}</select></label>`;
-    if(f.n) return `<label class="f">${esc(f.l)}<input data-k="${f.k}" type="number" min="${f.n[0]}" max="${f.n[1]}" value="${esc(v)}" ${dis}></label>`;
-    return `<label class="f">${esc(f.l)}<input data-k="${f.k}" maxlength="80" value="${esc(v)}" ${dis}></label>`; }
-  function desenhar(){
-    const T=FICHAS[sys];
-    ov.querySelector('#fBody').innerHTML=`
-      ${pode?`<label class="f">Modelo de ficha<select id="fSys">${Object.entries(FICHAS).map(([k,f])=>`<option value="${k}" ${k===sys?'selected':''}>${esc(f.nome)}${k===sysDaMesa()?' (sistema da mesa)':''}</option>`).join('')}</select></label>
-      <details ${x.ficha?'':'open'} style="margin-bottom:12px;font-family:var(--ui);font-size:.88rem;color:var(--ink-2)"><summary style="cursor:pointer;color:var(--gold)">Como fazer a ficha (passo a passo)</summary><p style="margin:6px 0 0">${esc(T.passos)}</p></details>`:`<p class="muted" style="margin-top:-8px;font-family:var(--ui);font-size:.85rem">${esc(T.nome)} · jogador: ${esc(nomeJog(uid))}</p>`}
-      <div class="row"><label class="f">Nome do personagem<input id="fNome" maxlength="60" value="${esc(x.personagem)}" ${dis}></label></div>
-      <div class="fgrid">${(T.ident||[]).map(f=>campo(f,c[f.k])).join('')}</div>
-      ${T.attrs?`<h3 class="fh">Atributos</h3><div class="attrs">${T.attrs.lista.map(([k,l])=>`<label class="attr"><span>${esc(l)}</span><input data-at="${k}" type="number" min="${T.attrs.min}" max="${T.attrs.max}" value="${esc(c.at[k]??T.attrs.d)}" ${dis}><em data-mod="${k}"></em></label>`).join('')}</div>
-        ${pode&&T.gerar?`<div class="gen">${T.gerar.map((g,i)=>`<button type="button" class="btn ghost small" data-gen="${i}">${esc(g.l)}</button>`).join('')}</div><p class="muted" id="genMsg" style="font-family:var(--ui);font-size:.8rem;margin:4px 0 0"></p>`:''}`:''}
-      ${T.calc?`<div class="calc" id="fCalc"></div>`:''}
-      <h3 class="fh">Vida e recursos</h3>
-      <div class="fgrid"><label class="f">PV atuais<input id="fPa" type="number" value="${x.pv_atual??''}" ${dis}></label><label class="f" style="grid-column:span 2">PV máximos<span style="display:flex;gap:6px"><input id="fPm" type="number" min="1" value="${x.pv_max??''}" style="flex:1;min-width:0" ${dis}>${pode&&T.calc?'<button type="button" class="btn ghost small" id="fUsarPv" title="Usar os PV calculados">usar calculado</button>':''}</span></label>${(T.extra||[]).map(f=>campo(f,c[f.k])).join('')}</div>
-      ${T.pericias?`<h3 class="fh">Perícias <small class="muted" style="font-family:var(--ui);font-size:.75rem">marque as que o personagem é treinado</small></h3><div class="pers">${T.pericias.lista.map(([p,a])=>`<label><input type="checkbox" data-per="${esc(p)}" ${(c.per||[]).includes(p)?'checked':''} ${dis}> <span>${esc(p)} <small>(${a})</small></span> <b data-pb="${esc(p)}"></b></label>`).join('')}</div>`:''}
-      ${(T.textos||[]).map(f=>`<label class="f">${esc(f.l)}<textarea data-k="${f.k}" maxlength="1500" style="min-height:70px" ${dis}>${esc(c[f.k]||'')}</textarea></label>`).join('')}`;
-    const B=ov.querySelector('#fBody');
-    if(pode) B.querySelector('#fSys').onchange=e=>{ coletar(); sys=e.target.value; Object.keys(c).forEach(k=>{ if(!['hist','equip'].includes(k)) delete c[k]; }); c.at={}; desenhar(); };
-    B.addEventListener('input',atualizar); B.addEventListener('change',atualizar);
-    B.querySelectorAll('[data-gen]').forEach(b=>b.onclick=()=>gerar(T.gerar[+b.dataset.gen],b));
-    const up=B.querySelector('#fUsarPv'); if(up) up.onclick=()=>{ coletar(); const r=T.calc(c); if(r.pv){ B.querySelector('#fPm').value=r.pv; if(!B.querySelector('#fPa').value) B.querySelector('#fPa').value=r.pv; } else toast('Preencha classe e atributos primeiro.'); };
-    atualizar();
+  const o=lerFicha(x); let sys=(o.sys&&SYS[o.sys])?o.sys:sysDaMesa(); let c=o.c; let at=Math.max(0,passo||0);
+  const ov=dialog(`<h2 style="margin-bottom:6px">${esc(x.personagem||nomeJog(uid))}</h2><div id="fBody"></div>`, pode?salvar:null, 'Salvar ficha');
+  ov.querySelector('.dlg').style.width='min(820px,100%)';
+  const optsOf=f=>typeof f.sel==='function'?f.sel(c):f.sel;
+  function campo(f){
+    if(f.rolar){ if(!pode||(f.rolar.quando&&!f.rolar.quando(c))) return ''; return `<div class="gen"><button type="button" class="btn ghost small" data-rolar>🎲 Rolar na mesa (todos veem os dados)</button><span class="muted" id="genMsg" style="font-family:var(--ui);font-size:.8rem"></span></div>`; }
+    if(f.attrs) return `<div class="fsub">${esc(f.l)}</div><div class="attrs">${f.lista.map(([k,l])=>`<label class="attr"><span>${esc(l)}</span><input data-g="${f.attrs}" data-gk="${esc(k)}" type="number" value="${esc((c[f.attrs]||{})[k]??'')}" ${dis}></label>`).join('')}</div>`;
+    if(f.dots){ const g=c[f.dots]||{}; const row=([k,l])=>`<label class="dotrow"><span>${esc(l)}</span><input data-g="${f.dots}" data-gk="${esc(k)}" type="number" min="${f.min??1}" max="${f.max}" value="${esc(g[k]??'')}" ${dis}><em data-dot>${'●'.repeat(Math.max(0,Math.min(f.max,n0(g[k])||0)))}${'○'.repeat(Math.max(0,f.max-Math.min(f.max,n0(g[k])||0)))}</em></label>`;
+      return f.grupos?`<div class="dotgrid">${f.grupos.map(([t,a,b])=>`<div><div class="fsub">${esc(t)}</div>${f.lista.slice(a,b).map(row).join('')}</div>`).join('')}</div>`:`<div class="dotgrid"><div>${f.lista.map(row).join('')}</div></div>`; }
+    if(f.multi){ const sel=c[f.k]||[]; return `<div class="fsub">${esc(f.l)}</div><div class="pers">${f.multi(c).map(v=>`<label><input type="checkbox" data-m="${f.k}" value="${esc(v)}" ${sel.includes(v)?'checked':''} ${dis}> ${esc(v)}</label>`).join('')}</div>`; }
+    const v=c[f.k]??f.d??'';
+    if(f.sel){ const op=optsOf(f); return `<label class="f">${esc(f.l)}<select data-k="${f.k}" ${dis}><option value="">—</option>${op.map(s=>`<option ${s===v?'selected':''}>${esc(s)}</option>`).join('')}${v&&!op.includes(v)?`<option selected>${esc(v)}</option>`:''}</select></label>`; }
+    if(f.area) return `<label class="f full">${esc(f.l)}<textarea data-k="${f.k}" maxlength="1500" style="min-height:70px" ${dis}>${esc(v)}</textarea></label>`;
+    if(f.calc){ const e=f.calc(c), ok=f.txt?String(v).trim()===String(e):eqN(v,e); return `<label class="f">${esc(f.l)}<span class="calcrow"><input data-k="${f.k}" ${f.txt?'':'type="number"'} value="${esc(v)}" ${dis}><b data-cm="${f.k}" class="${v===''||e===null?'':ok?'okm':'warn'}" title="${esc(f.dica)}">${v===''||e===null?'':ok?'✔':'⚠'}</b></span><small class="dica">${esc(f.dica)}</small></label>`; }
+    return `<label class="f">${esc(f.l)}<input data-k="${f.k}" ${f.n?'type="number"':'maxlength="80"'} value="${esc(v)}" ${dis}></label>`;
   }
-  function coletar(){ const B=ov.querySelector('#fBody'); B.querySelectorAll('[data-k]').forEach(i=>c[i.dataset.k]=i.value); B.querySelectorAll('[data-at]').forEach(i=>c.at[i.dataset.at]=i.value===''?'':+i.value); const ps=[...B.querySelectorAll('[data-per]')]; if(ps.length) c.per=ps.filter(i=>i.checked).map(i=>i.dataset.per); }
-  function atualizar(){ coletar(); const T=FICHAS[sys], B=ov.querySelector('#fBody');
-    if(T.attrs&&T.attrs.mod) B.querySelectorAll('[data-mod]').forEach(e=>e.textContent=T.attrs.mod(c.at[e.dataset.mod]??T.attrs.d));
-    if(T.pericias) B.querySelectorAll('[data-pb]').forEach(e=>{ const p=T.pericias.lista.find(z=>z[0]===e.dataset.pb); e.textContent=T.pericias.bonus(c,p[1],(c.per||[]).includes(p[0])); });
-    const cl=B.querySelector('#fCalc'); if(cl){ try{ const r=T.calc(c); cl.innerHTML=r.linhas.map(([a,b])=>`<span><small>${esc(a)}</small><b>${esc(b)}</b></span>`).join(''); }catch(e){ cl.innerHTML=''; } } }
-  async function gerar(g,btn){ const T=FICHAS[sys], B=ov.querySelector('#fBody'), msg=B.querySelector('#genMsg');
-    if(g.padrao){ T.attrs.lista.forEach(([k],i)=>{ B.querySelector(`[data-at="${k}"]`).value=g.padrao[i]; }); msg.textContent='Valores colocados em ordem. Você pode trocar entre os atributos como quiser.'; atualizar(); return; }
+  function desenhar(){
+    const T=SYS[sys]; at=Math.min(at,T.passos.length-1); const P=T.passos[at];
+    ov.querySelector('#fBody').innerHTML=`
+      <div class="fhead">${pode?`<select id="fSys" aria-label="Modelo de ficha">${Object.entries(SYS).map(([k,f])=>`<option value="${k}" ${k===sys?'selected':''}>${esc(f.nome)}${k===sysDaMesa()?' (sistema da mesa)':''}</option>`).join('')}</select>`:`<span class="muted" style="font-family:var(--ui);font-size:.85rem">${esc(T.nome)} · jogador: ${esc(nomeJog(uid))}</span>`}
+        ${at===0?`<label class="f" style="margin:0;flex:1;min-width:180px"><span class="sr">Nome</span><input id="fNome" maxlength="60" value="${esc(x.personagem)}" placeholder="Nome do personagem" ${dis}></label>`:''}</div>
+      <ol class="fsteps" id="fSteps"></ol>
+      <div class="fhelp"><b>Passo ${at+1}: ${esc(P.t)}</b><div>${P.help(c)}</div></div>
+      <div class="fgrid">${P.campos.map(campo).join('')}</div>
+      <div id="fChk"></div>
+      ${at===T.passos.length-1?`<div class="fgrid"><label class="f">PV atuais<input id="fPa" type="number" value="${x.pv_atual??''}" ${dis}></label></div>`:''}
+      <div class="fnav"><button type="button" class="btn ghost small" id="fPrev" ${at?'':'disabled'}>← Passo anterior</button><span class="muted" id="fProg" style="font-family:var(--ui);font-size:.8rem"></span><button type="button" class="btn ghost small" id="fNext" ${at<T.passos.length-1?'':'disabled'}>Próximo passo →</button></div>`;
+    const B=ov.querySelector('#fBody');
+    if(pode) B.querySelector('#fSys').onchange=e=>{ coletar(); if(Object.keys(c).length>1&&!confirm('Trocar o modelo apaga o que foi preenchido nesta ficha. Continuar?')){ e.target.value=sys; return; } sys=e.target.value; c={}; at=0; desenhar(); };
+    B.querySelector('#fPrev').onclick=()=>{ coletar(); at--; desenhar(); }; B.querySelector('#fNext').onclick=()=>{ coletar(); at++; desenhar(); };
+    B.querySelectorAll('select[data-k]').forEach(s=>s.onchange=()=>{ coletar(); desenhar(); });
+    B.querySelectorAll('input,textarea').forEach(i=>{ if(i.id==='fNome'||i.id==='fPa') return; i.addEventListener('input',()=>{ coletar(); conferir(); }); });
+    conferir();
+    const rb=B.querySelector('[data-rolar]'); if(rb) rb.onclick=()=>rolarNaMesa(P.campos.find(f=>f.rolar).rolar,rb);
+  }
+  /* atualiza só a conferência (sem redesenhar os campos, para não perder o foco de quem está digitando) */
+  function conferir(){ const B=ov.querySelector('#fBody'), T=SYS[sys], P=T.passos[at];
+    const st=T.passos.map(p=>{ try{ return p.checks(c).every(ch=>ch[1]); }catch(e){ return false; } });
+    const chs=(()=>{ try{ return P.checks(c); }catch(e){ return []; } })();
+    B.querySelector('#fSteps').innerHTML=T.passos.map((p,i)=>`<li><button type="button" data-step="${i}" class="${i===at?'on':''} ${st[i]?'done':''}">${st[i]?'✔':i+1}. ${esc(p.t)}</button></li>`).join('');
+    B.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{ coletar(); at=+b.dataset.step; desenhar(); });
+    B.querySelector('#fChk').innerHTML=chs.length?`<ul class="fchk">${chs.map(([l,ok,d])=>`<li class="${ok?'ok':''}">${ok?'✔':'⚠'} ${esc(l)}${!ok&&d?` <small>· ${esc(d)}</small>`:''}</li>`).join('')}</ul>`:'';
+    B.querySelector('#fProg').textContent=`${st.filter(Boolean).length} de ${T.passos.length} passos conferidos`;
+    P.campos.forEach(f=>{ if(!f.calc) return; const m=B.querySelector(`[data-cm="${f.k}"]`); if(!m) return; const v=c[f.k]??'', e=f.calc(c), ok=f.txt?String(v).trim()===String(e):eqN(v,e); m.className=v===''||e===null?'':ok?'okm':'warn'; m.textContent=v===''||e===null?'':ok?'✔':'⚠'; });
+    B.querySelectorAll('[data-dot]').forEach(em=>{ const i=em.previousElementSibling, mx=+i.max, n=Math.max(0,Math.min(mx,n0(i.value)||0)); em.textContent='●'.repeat(n)+'○'.repeat(mx-n); });
+  }
+  function coletar(){ const B=ov.querySelector('#fBody'); if(!B) return;
+    const nm=B.querySelector('#fNome'); if(nm) x._nome=nm.value;
+    B.querySelectorAll('[data-k]').forEach(i=>c[i.dataset.k]=i.value);
+    B.querySelectorAll('[data-g]').forEach(i=>{ (c[i.dataset.g]=c[i.dataset.g]||{})[i.dataset.gk]=i.value===''?'':+i.value; });
+    const ms={}; B.querySelectorAll('[data-m]').forEach(i=>{ ms[i.dataset.m]=ms[i.dataset.m]||[]; if(i.checked) ms[i.dataset.m].push(i.value); }); Object.assign(c,ms);
+    const pa=B.querySelector('#fPa'); if(pa) x._pa=pa.value; }
+  async function rolarNaMesa(r,btn){ const msg=ov.querySelector('#genMsg');
     if(S.mesa.status!=='ativa'){ msg.textContent='A mesa precisa estar ativa para rolar.'; return; }
-    btn.disabled=true; msg.textContent='Rolando na mesa…';
-    try{ const per=x.personagem||nomeJog(uid);
-      for(const [k,l] of T.attrs.lista){
-        const expr=g.coc?(['TAM','INT','EDU'].includes(k)?'2d6+6':'3d6'):g.rolar;
-        const {data:id,error}=await sb.rpc('rpg_rolar',{p_mesa:S.mesa.id,p_expr:expr,p_motivo:`Criação de personagem: ${l}`,p_personagem:per,p_secreta:false}); if(error) throw error;
-        const {data:p}=await sb.from('rpg_posts').select('*').eq('id',id).maybeSingle(); if(!p||!p.rolagem) continue;
-        const ds=[...p.rolagem.dados].sort((a,b)=>a-b); let v;
-        if(g.tira) v=ds.slice(g.tira).reduce((s,d)=>s+d,0); else v=p.rolagem.total*(g.coc?5:1);
-        B.querySelector(`[data-at="${k}"]`).value=v; }
-      msg.textContent='✔ Rolado na mesa: todos podem conferir os dados no histórico.'+(g.tira?' Já tirei o menor dado de cada rolagem.':''); atualizar(); buscarNovos(false);
-    }catch(e){ msg.textContent=errMsg(e); } btn.disabled=false; }
-  async function salvar(ovl){ coletar(); const n=v=>v===''?null:Math.trunc(+v);
-    const v={personagem:ovl.querySelector('#fNome').value.trim(),ficha:JSON.stringify({_ficha:1,sys,c}),pv_atual:n(ovl.querySelector('#fPa').value),pv_max:n(ovl.querySelector('#fPm').value)};
+    btn.disabled=true; msg.textContent='Rolando na mesa…'; const per=x.personagem||nomeJog(uid);
+    try{
+      const um=async(expr,mot)=>{ const {data:id,error}=await sb.rpc('rpg_rolar',{p_mesa:S.mesa.id,p_expr:expr,p_motivo:mot,p_personagem:per,p_secreta:false}); if(error) throw error; const {data:p}=await sb.from('rpg_posts').select('*').eq('id',id).maybeSingle(); return p&&p.rolagem; };
+      if(r.coc){ const out={}; for(const [k,l,e] of COC_AT){ const g=await um(e,`Criação: ${l} (${e} × 5)`); out[k]=g.total*5; } c.rolCoc=out; msg.textContent='✔ Rolado. Anote cada valor na sua característica.'; }
+      else { const out=[]; for(let i=0;i<r.vezes;i++){ const g=await um(r.expr,`Criação: atributo ${i+1} de ${r.vezes} (${r.expr}${r.tira?', tira o menor':''})`); const ds=[...g.dados].sort((a,b)=>a-b); out.push(ds.slice(r.tira||0).reduce((s,d)=>s+d,0)); } c[r.alvo]=out; msg.textContent='✔ Rolado. Agora distribua esses valores nos atributos.'; }
+      buscarNovos(false); desenhar();
+    }catch(e){ msg.textContent=errMsg(e); btn.disabled=false; } }
+  async function salvar(ovl){ coletar(); const T=SYS[sys]; const n=v=>v===''||v===undefined||v===null||isNaN(+v)?null:Math.trunc(+v);
+    const nome=(x._nome??x.personagem??'').trim(); if(!nome) throw new Error('Dê um nome ao personagem (passo 1).');
+    const pvm=n(T.pv(c)); const pa=x._pa!==undefined?n(x._pa):x.pv_atual;
+    const v={personagem:nome,ficha:JSON.stringify({_ficha:2,sys,c}),pv_max:pvm,pv_atual:pa===null&&pvm!==null?pvm:pa};
     if(v.ficha.length>6000) throw new Error('A ficha ficou grande demais. Encurte os textos.');
-    if(!v.personagem) throw new Error('Dê um nome ao personagem.');
-    const {error}=await sb.from('rpg_membros').update(v).eq('mesa_id',S.mesa.id).eq('user_id',uid); if(error) throw error; Object.assign(x,v); renderSide(); renderComposer(); }
+    const {error}=await sb.from('rpg_membros').update(v).eq('mesa_id',S.mesa.id).eq('user_id',uid); if(error) throw error;
+    Object.assign(x,v); delete x._nome; delete x._pa; renderSide(); renderComposer(); toast(pendencias({sys,c})?`Ficha salva. Ainda há ${pendencias({sys,c})} item(ns) para conferir.`:'Ficha salva e conferida! ✔'); }
   desenhar();
 }
 
