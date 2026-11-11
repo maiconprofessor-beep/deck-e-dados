@@ -163,6 +163,20 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:none}
 .dlg .row{display:flex;gap:10px}.dlg .row>*{flex:1}
 .dlg .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap}
 .toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);background:#0d1f1e;border:1px solid var(--gold-dim);color:var(--ink);font-family:var(--ui);font-size:.88rem;padding:10px 16px;border-radius:8px;z-index:60;max-width:90vw}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0 12px}
+.fgrid input,.fgrid select{width:100%;min-width:0}
+.fh{font-family:var(--display);font-size:1.05rem;margin:10px 0 8px;color:var(--gold)}
+.attrs{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:8px}
+.attr{display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid var(--gold-dim);border-radius:8px;padding:8px 6px;background:rgba(10,24,23,.5)}
+.attr span{font-family:var(--ui);font-size:.72rem;color:var(--ink-2);text-align:center}
+.attr input{width:64px;text-align:center;font-family:var(--display);font-size:1.3rem;font-weight:800;padding:4px}
+.attr em{font-style:normal;font-family:var(--mono);font-size:.8rem;color:var(--gold);min-height:1.1em}
+.gen{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.calc{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+.calc span{border:1px dashed var(--gold-dim);border-radius:8px;padding:6px 10px;display:flex;flex-direction:column;min-width:110px}
+.calc small{font-family:var(--ui);font-size:.7rem;color:var(--ink-2)} .calc b{font-family:var(--display);font-size:1.15rem;color:var(--ink)}
+.pers{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:4px 14px;font-family:var(--ui);font-size:.85rem;margin-bottom:12px}
+.pers label{display:flex;gap:6px;align-items:center}.pers small{color:var(--ink-2)}.pers b{margin-left:auto;font-family:var(--mono);color:var(--gold)}
 footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--rule);font-family:var(--ui);font-size:.82rem;color:var(--ink-2);display:flex;gap:14px;flex-wrap:wrap}
 
 @media (max-width:900px){
@@ -394,7 +408,7 @@ function renderComposer(){
       <small class="muted" style="font-family:var(--ui);font-size:.75rem">Formatos: 1d20 · 2d6+3 · 4d6-1 · d100. Os dados são rolados no servidor: ninguém consegue escolher o resultado.</small>`:`
       ${tab==='fala'&&mestre?`<div class="crow"><input id="cNpc" maxlength="60" placeholder="Nome do NPC (ex.: Taverneiro Brom)"></div>`:''}
       ${tab==='sussurro'&&mestre?`<div class="crow"><select id="cPara">${jogadores.map(j=>`<option value="${esc(j.user_id)}">${esc(j.personagem||nomeJog(j.user_id))} (${esc(nomeJog(j.user_id))})</option>`).join('')}</select></div>`:''}
-      ${(tab==='acao'||tab==='fala')&&!mestre?`<div class="by" style="margin-bottom:6px">Como <b>${esc(eu.personagem||'seu personagem')}</b></div>`:''}
+      ${(tab==='acao'||tab==='fala')&&!mestre?`<div class="by" style="margin-bottom:6px">Como <b>${esc(eu.personagem||'seu personagem')}</b>${!eu.ficha?` · <button type="button" class="btn small" id="bFazerFicha">📝 Fazer minha ficha</button>`:''}</div>`:''}
       <textarea id="cTxt" maxlength="8000" placeholder="${esc(ph)}">${esc(rascunho)}</textarea>
       <div class="cfoot"><small>**negrito** · *itálico* · Ctrl+Enter envia · o rascunho fica salvo</small><button class="btn" id="bEnviar">Enviar</button></div>`}
     <p class="err" id="cErr"></p></div>`;
@@ -403,6 +417,7 @@ function renderComposer(){
     c.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{ $('#rExpr').value=b.dataset.d; rolar(); });
     $('#bRolar').onclick=rolar; $('#rMot').onkeydown=e=>{ if(e.key==='Enter') rolar(); };
   } else {
+    if($('#bFazerFicha')) $('#bFazerFicha').onclick=()=>ficha(me.id);
     const t=$('#cTxt'); t.oninput=()=>{ try{ localStorage.setItem(draftKey(),t.value); }catch(e){} };
     t.onkeydown=e=>{ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); enviar(); } };
     $('#bEnviar').onclick=enviar;
@@ -459,7 +474,7 @@ function renderSide(){
   <section>
     <h3>🧙 Personagens</h3>
     <div class="pcs">${S.membros.map(x=>{ const pv=x.pv_max?Math.max(0,Math.min(100,Math.round((x.pv_atual??x.pv_max)/x.pv_max*100))):null;
-      return `<div class="pcl">${avatar(x.user_id,x.personagem)}<div><b>${esc(x.personagem||nomeJog(x.user_id))}</b><small>${x.user_id===m.mestre_id?'Mestre':esc(nomeJog(x.user_id))}${pv!==null?` · PV ${esc(x.pv_atual??x.pv_max)}/${esc(x.pv_max)}`:''}</small>${pv!==null?`<div class="hp"><i class="${pv<=25?'low':''}" style="width:${pv}%"></i></div>`:''}</div>
+      return `<div class="pcl">${avatar(x.user_id,x.personagem)}<div><b>${esc(x.personagem||nomeJog(x.user_id))}</b><small>${x.user_id===m.mestre_id?'Mestre':esc(nomeJog(x.user_id))}${x.user_id!==m.mestre_id&&resumoFicha(x)?' · '+esc(resumoFicha(x)):''}${pv!==null?` · PV ${esc(x.pv_atual??x.pv_max)}/${esc(x.pv_max)}`:''}</small>${pv!==null?`<div class="hp"><i class="${pv<=25?'low':''}" style="width:${pv}%"></i></div>`:''}</div>
         ${x.user_id!==m.mestre_id||x.user_id===me.id?`<button class="btn ghost small" data-ficha="${esc(x.user_id)}">${x.user_id===me.id||mestre?'Ficha ✎':'Ficha'}</button>`:''}</div>`; }).join('')}</div>
   </section>
   ${mestre?`<section>
@@ -501,16 +516,138 @@ function renderSide(){
       const {error}=await sb.from('rpg_membros').delete().eq('mesa_id',m.id).eq('user_id',me.id); if(error) throw error; location.href='/mesa.html'; },'Sair');
   }
 }
+/* ---------- fichas por sistema ---------- */
+const mod20=v=>{ const m=Math.floor((+v-10)/2); return isNaN(m)?'':(m>=0?'+':'')+m; };
+const n0=v=>Number.isFinite(+v)?+v:0;
+const ALIN=['Leal e Bom','Neutro e Bom','Caótico e Bom','Leal e Neutro','Neutro','Caótico e Neutro','Leal e Mau','Neutro e Mau','Caótico e Mau'];
+const DND_DV={'Bárbaro':12,'Guerreiro':10,'Paladino':10,'Patrulheiro':10,'Bardo':8,'Bruxo':8,'Clérigo':8,'Druida':8,'Ladino':8,'Monge':8,'Feiticeiro':6,'Mago':6};
+const DND_PER=[['Acrobacia','DES'],['Adestrar Animais','SAB'],['Arcanismo','INT'],['Atletismo','FOR'],['Atuação','CAR'],['Enganação','CAR'],['Furtividade','DES'],['História','INT'],['Intimidação','CAR'],['Intuição','SAB'],['Investigação','INT'],['Medicina','SAB'],['Natureza','INT'],['Percepção','SAB'],['Persuasão','CAR'],['Prestidigitação','DES'],['Religião','INT'],['Sobrevivência','SAB']];
+const SEIS=[['FOR','Força'],['DES','Destreza'],['CON','Constituição'],['INT','Inteligência'],['SAB','Sabedoria'],['CAR','Carisma']];
+const OP_BASE={Combatente:[20,2,12],Especialista:[16,3,16],Ocultista:[12,4,20]};
+const FICHAS={
+  dnd5e:{ nome:'D&D 5ª edição', match:/d&d|dnd|5e|dungeons/i,
+    passos:'1) Escolha raça, classe e antecedente. 2) Gere os atributos (role na mesa ou use o conjunto padrão) e some os bônus da sua raça. 3) Marque as perícias que a sua classe e o seu antecedente dão. 4) Use os PV sugeridos. Na dúvida, pergunte ao mestre no "Fora do jogo".',
+    ident:[{k:'raca',l:'Raça',sel:['Humano','Elfo','Anão','Halfling','Draconato','Gnomo','Meio-Elfo','Meio-Orc','Tiefling']},{k:'classe',l:'Classe',sel:Object.keys(DND_DV)},{k:'nivel',l:'Nível',n:[1,20],d:1},{k:'antecedente',l:'Antecedente'},{k:'alinhamento',l:'Alinhamento',sel:ALIN}],
+    attrs:{lista:SEIS,min:1,max:30,d:10,mod:mod20},
+    gerar:[{l:'🎲 Rolar na mesa: 4d6, tira o menor (todos veem)',rolar:'4d6',tira:1},{l:'Conjunto padrão: 15, 14, 13, 12, 10, 8',padrao:[15,14,13,12,10,8]}],
+    pericias:{lista:DND_PER,bonus:(c,attr,on)=>{ const p=2+Math.floor((Math.max(1,n0(c.nivel))-1)/4); const m=Math.floor((n0(c.at[attr]??10)-10)/2)+(on?p:0); return (m>=0?'+':'')+m; }},
+    calc:c=>{ const lv=Math.max(1,n0(c.nivel)||1), dv=DND_DV[c.classe]||8, con=Math.floor((n0(c.at.CON??10)-10)/2), des=Math.floor((n0(c.at.DES??10)-10)/2), sab=Math.floor((n0(c.at.SAB??10)-10)/2), prof=2+Math.floor((lv-1)/4);
+      const pv=Math.max(1,dv+con+(lv-1)*(dv/2+1+con)); const perc=10+sab+((c.per||[]).includes('Percepção')?prof:0);
+      return {pv, linhas:[['Bônus de proficiência','+'+prof],['Dado de vida','d'+dv],['PV sugeridos',pv],['Iniciativa',(des>=0?'+':'')+des],['CA sem armadura',10+des],['Percepção passiva',perc]]}; },
+    extra:[{k:'ca',l:'Classe de Armadura (CA)',n:[0,40]},{k:'desloc',l:'Deslocamento',d:'9 m'}],
+    textos:[{k:'equip',l:'Equipamento e dinheiro'},{k:'magias',l:'Magias, talentos e habilidades de classe'},{k:'hist',l:'Personalidade e história'}],
+    resumo:c=>[c.raca,c.classe,c.nivel?'nv '+c.nivel:''].filter(Boolean).join(' · ') },
+  t20:{ nome:'Tormenta20', match:/tormenta/i,
+    passos:'1) Escolha raça, classe, origem e divindade (se tiver). 2) Gere os atributos (role na mesa ou use o conjunto) e aplique os ajustes da raça. 3) PV, PM e perícias treinadas vêm da sua classe: confira no livro ou com o mestre. 4) Defesa = 10 + Destreza + armadura e escudo.',
+    ident:[{k:'raca',l:'Raça',sel:['Humano','Anão','Dahllan','Elfo','Goblin','Lefou','Minotauro','Qareen','Golem','Hynne','Kliren','Medusa','Osteon','Sereia/Tritão','Sílfide','Suraggel','Trog']},{k:'classe',l:'Classe',sel:['Arcanista','Bárbaro','Bardo','Bucaneiro','Caçador','Cavaleiro','Clérigo','Druida','Guerreiro','Inventor','Ladino','Lutador','Nobre','Paladino']},{k:'origem',l:'Origem'},{k:'divindade',l:'Divindade'},{k:'nivel',l:'Nível',n:[1,20],d:1}],
+    attrs:{lista:SEIS,min:1,max:30,d:10,mod:mod20},
+    gerar:[{l:'🎲 Rolar na mesa: 4d6, tira o menor (todos veem)',rolar:'4d6',tira:1},{l:'Conjunto: 15, 14, 13, 12, 10, 8',padrao:[15,14,13,12,10,8]}],
+    calc:c=>{ const des=Math.floor((n0(c.at.DES??10)-10)/2); return {linhas:[['Defesa sem armadura',10+des],['Modificador de Constituição',mod20(c.at.CON??10)]]}; },
+    extra:[{k:'pm',l:'Pontos de Mana (PM)',n:[0,999]},{k:'defesa',l:'Defesa',n:[0,99]}],
+    textos:[{k:'pericias',l:'Perícias treinadas'},{k:'poderes',l:'Poderes e magias'},{k:'equip',l:'Equipamento e dinheiro (T$)'},{k:'hist',l:'História'}],
+    resumo:c=>[c.raca,c.classe,c.nivel?'nv '+c.nivel:''].filter(Boolean).join(' · ') },
+  op:{ nome:'Ordem Paranormal', match:/ordem/i,
+    passos:'1) Escolha a classe e a origem. 2) Todos os atributos começam em 1 e você tem 4 pontos para distribuir (máximo 3 em cada). Pode baixar um atributo para 0 e ganhar 1 ponto a mais. 3) PV, PE e Sanidade são calculados sozinhos para NEX 5%.',
+    ident:[{k:'classe',l:'Classe',sel:Object.keys(OP_BASE)},{k:'origem',l:'Origem'},{k:'nex',l:'NEX',sel:['5%','10%','15%','20%','25%','30%','35%','40%','45%','50%','55%','60%','65%','70%','75%','80%','85%','90%','95%','99%']},{k:'trilha',l:'Trilha'}],
+    attrs:{lista:[['AGI','Agilidade'],['FOR','Força'],['INT','Intelecto'],['PRE','Presença'],['VIG','Vigor']],min:0,max:5,d:1},
+    calc:c=>{ const b=OP_BASE[c.classe]; const a=k=>n0(c.at[k]??1); const gasto=['AGI','FOR','INT','PRE','VIG'].reduce((s,k)=>s+a(k),0)-5; const zeros=['AGI','FOR','INT','PRE','VIG'].filter(k=>a(k)===0).length;
+      const lin=[['Pontos usados',`${gasto} de ${4+Math.min(1,zeros)}`],['Defesa',10+a('AGI')]];
+      if(b) lin.push(['PV (NEX 5%)',b[0]+a('VIG')],['PE (NEX 5%)',b[1]+a('PRE')],['Sanidade (NEX 5%)',b[2]]); else lin.push(['PV, PE e SAN','escolha a classe']);
+      return {pv:b?b[0]+a('VIG'):null, linhas:lin}; },
+    extra:[{k:'pe',l:'Pontos de Esforço (PE)',n:[0,999]},{k:'san',l:'Sanidade (SAN)',n:[0,999]}],
+    textos:[{k:'pericias',l:'Perícias treinadas'},{k:'rituais',l:'Rituais e habilidades'},{k:'equip',l:'Inventário'},{k:'hist',l:'História'}],
+    resumo:c=>[c.classe,c.origem,c.nex?'NEX '+c.nex:''].filter(Boolean).join(' · ') },
+  coc:{ nome:'Call of Cthulhu (7ª edição)', match:/cthulhu|chamado/i,
+    passos:'1) Escolha a ocupação. 2) Role as características na mesa: FOR, CON, DES, APA e POD com 3d6×5; TAM, INT e EDU com (2d6+6)×5. 3) PV, Sanidade, Pontos de Magia e Movimento saem sozinhos. 4) Distribua os pontos de perícia da ocupação com o mestre.',
+    ident:[{k:'ocupacao',l:'Ocupação'},{k:'idade',l:'Idade',n:[15,90]},{k:'residencia',l:'Residência'}],
+    attrs:{lista:[['FOR','Força'],['CON','Constituição'],['TAM','Tamanho'],['DES','Destreza'],['APA','Aparência'],['INT','Inteligência'],['POD','Poder'],['EDU','Educação'],['SOR','Sorte']],min:0,max:99,d:50,mod:v=>`${Math.floor(n0(v)/2)} / ${Math.floor(n0(v)/5)}`},
+    gerar:[{l:'🎲 Rolar na mesa (todos veem)',coc:true}],
+    calc:c=>{ const a=k=>n0(c.at[k]??50); const mov=(a('DES')<a('TAM')&&a('FOR')<a('TAM'))?7:(a('DES')>a('TAM')&&a('FOR')>a('TAM'))?9:8; const pv=Math.floor((a('CON')+a('TAM'))/10);
+      return {pv, linhas:[['Pontos de Vida',pv],['Sanidade inicial',a('POD')],['Pontos de Magia',Math.floor(a('POD')/5)],['Movimento',mov]]}; },
+    extra:[{k:'san',l:'Sanidade atual',n:[0,99]}],
+    textos:[{k:'pericias',l:'Perícias (nome e %)'},{k:'armas',l:'Armas'},{k:'equip',l:'Equipamento'},{k:'hist',l:'História, pessoas importantes, fobias'}],
+    resumo:c=>[c.ocupacao,c.idade?c.idade+' anos':''].filter(Boolean).join(' · ') },
+  vtm:{ nome:'Vampiro: A Máscara (5ª edição)', match:/vampir/i,
+    passos:'1) Escolha clã, conceito e tipo de predador. 2) Distribua os atributos: um em 4, três em 3, quatro em 2 e um em 1. 3) Vitalidade e Força de Vontade são calculadas sozinhas. 4) Escolha disciplinas e habilidades com o mestre.',
+    ident:[{k:'cla',l:'Clã',sel:['Brujah','Gangrel','Malkaviano','Nosferatu','Toreador','Tremere','Ventrue','Lasombra','Hecata','Ministério','Banu Haqim','Ravnos','Salubri','Tzimisce','Caitiff','Sangue-Fraco']},{k:'conceito',l:'Conceito'},{k:'predador',l:'Tipo de predador'},{k:'geracao',l:'Geração'}],
+    attrs:{lista:[['For','Força'],['Des','Destreza'],['Vig','Vigor'],['Car','Carisma'],['Man','Manipulação'],['Aut','Autocontrole'],['Int','Inteligência'],['Rac','Raciocínio'],['Det','Determinação']],min:1,max:5,d:1,mod:v=>'●'.repeat(Math.max(0,Math.min(5,n0(v))))+'○'.repeat(Math.max(0,5-Math.min(5,n0(v))))},
+    calc:c=>{ const a=k=>n0(c.at[k]??1); const vals=['For','Des','Vig','Car','Man','Aut','Int','Rac','Det'].map(a).sort((x,y)=>y-x).join(''); const ok=vals==='433322221';
+      return {pv:a('Vig')+3, linhas:[['Vitalidade',a('Vig')+3],['Força de Vontade',a('Aut')+a('Det')],['Distribuição 4-3-3-3-2-2-2-2-1',ok?'✔ certinha':'confira os pontos']]}; },
+    extra:[{k:'humanidade',l:'Humanidade',n:[0,10],d:7},{k:'fome',l:'Fome',n:[0,5],d:1}],
+    textos:[{k:'disciplinas',l:'Disciplinas'},{k:'habilidades',l:'Habilidades'},{k:'conviccoes',l:'Convicções e pedras de toque'},{k:'hist',l:'História'}],
+    resumo:c=>[c.cla,c.conceito].filter(Boolean).join(' · ') },
+  tdt:{ nome:'3D&T Alpha', match:/3d&t|3dt|3d & t/i,
+    passos:'1) Defina o conceito do personagem. 2) Distribua os pontos nas 5 características (personagem novato: 5 pontos, máximo 5 em cada). 3) PV e PM são calculados sozinhos (Resistência × 5). 4) Escolha vantagens e desvantagens com o mestre.',
+    ident:[{k:'conceito',l:'Conceito'},{k:'escala',l:'Pontuação',sel:['Novato (5 pontos)','Lutador (7 pontos)','Campeão (10 pontos)','Lenda (12 pontos)']}],
+    attrs:{lista:[['F','Força'],['H','Habilidade'],['R','Resistência'],['A','Armadura'],['PdF','Poder de Fogo']],min:0,max:5,d:0},
+    calc:c=>{ const r=n0(c.at.R??0); const tot=['F','H','R','A','PdF'].reduce((s,k)=>s+n0(c.at[k]??0),0); return {pv:Math.max(1,r*5), linhas:[['Pontos nas características',tot],['PV',Math.max(1,r*5)],['PM',Math.max(1,r*5)]]}; },
+    extra:[{k:'pm',l:'PM atuais',n:[0,99]}],
+    textos:[{k:'vantagens',l:'Vantagens'},{k:'desvantagens',l:'Desvantagens'},{k:'pericias',l:'Perícias e magias'},{k:'hist',l:'História'}],
+    resumo:c=>c.conceito||'' },
+  livre:{ nome:'Ficha livre', match:/$^/,
+    passos:'Esta mesa usa um sistema sem modelo pronto. Preencha do jeito que o mestre pedir: conceito, atributos, perícias e equipamento.',
+    ident:[{k:'conceito',l:'Conceito (quem é o personagem)'},{k:'nivel',l:'Nível ou experiência'}],
+    textos:[{k:'atributos',l:'Atributos'},{k:'pericias',l:'Perícias e habilidades'},{k:'equip',l:'Equipamento'},{k:'hist',l:'História'}],
+    resumo:c=>c.conceito||'' }
+};
+const sysDaMesa=()=>{ const s=(S.mesa&&S.mesa.sistema)||''; for(const [k,f] of Object.entries(FICHAS)) if(f.match.test(s)) return k; return 'livre'; };
+function lerFicha(x){ const t=(x&&x.ficha)||''; if(t.startsWith('{"_ficha"')){ try{ const o=JSON.parse(t); o.c=o.c||{}; o.c.at=o.c.at||{}; return o; }catch(e){} } return {_ficha:1, sys:null, c:{at:{}, hist:t}}; }
+function resumoFicha(x){ const o=lerFicha(x), T=FICHAS[o.sys||sysDaMesa()]; try{ return T&&T.resumo?T.resumo(o.c):''; }catch(e){ return ''; } }
 function ficha(uid){
-  const x=membro(uid); if(!x) return; const pode=uid===me.id||souMestre();
-  if(!pode){ dialog(`<h2>${esc(x.personagem||nomeJog(uid))}</h2><p class="muted" style="margin-top:-8px;font-family:var(--ui);font-size:.85rem">Jogador: ${esc(nomeJog(uid))}${x.pv_max?` · PV ${esc(x.pv_atual??x.pv_max)}/${esc(x.pv_max)}`:''}</p><div style="white-space:normal">${x.ficha?fmt(x.ficha):'<span class="muted">Ficha ainda não preenchida.</span>'}</div>`); return; }
-  dialog(`<h2>Ficha de ${esc(x.personagem||nomeJog(uid))}</h2>
-    <label class="f">Nome do personagem<input id="fNome" maxlength="60" value="${esc(x.personagem)}"></label>
-    <div class="row"><label class="f">PV atuais<input id="fPa" type="number" value="${x.pv_atual??''}"></label><label class="f">PV máximos<input id="fPm" type="number" min="1" value="${x.pv_max??''}"></label></div>
-    <label class="f">Ficha (atributos, perícias, equipamentos, história)<textarea id="fTxt" maxlength="6000" placeholder="FOR 16 · DES 12 · CON 14…&#10;Espada longa, escudo, 20 PO&#10;História: …">${esc(x.ficha)}</textarea></label>`,async ov=>{
-    const n=v=>v===''?null:Math.trunc(+v);
-    const v={personagem:ov.querySelector('#fNome').value.trim(),ficha:ov.querySelector('#fTxt').value,pv_atual:n(ov.querySelector('#fPa').value),pv_max:n(ov.querySelector('#fPm').value)};
-    const {error}=await sb.from('rpg_membros').update(v).eq('mesa_id',S.mesa.id).eq('user_id',uid); if(error) throw error; Object.assign(x,v); renderSide(); renderComposer(); });
+  const x=membro(uid); if(!x) return; const pode=uid===me.id||souMestre(); const dis=pode?'':'disabled';
+  const o=lerFicha(x); let sys=o.sys||sysDaMesa(); const c=o.c;
+  const ov=dialog(`<h2>${pode?'Ficha de ':''}${esc(x.personagem||nomeJog(uid))}</h2><div id="fBody"></div>`, pode?salvar:null, 'Salvar ficha');
+  ov.querySelector('.dlg').style.width='min(760px,100%)';
+  function campo(f,val){ const v=val??f.d??''; const id='fc_'+f.k;
+    if(f.sel) return `<label class="f">${esc(f.l)}<select data-k="${f.k}" ${dis}><option value="">—</option>${f.sel.map(s=>`<option ${s===v?'selected':''}>${esc(s)}</option>`).join('')}${v&&!f.sel.includes(v)?`<option selected>${esc(v)}</option>`:''}</select></label>`;
+    if(f.n) return `<label class="f">${esc(f.l)}<input data-k="${f.k}" type="number" min="${f.n[0]}" max="${f.n[1]}" value="${esc(v)}" ${dis}></label>`;
+    return `<label class="f">${esc(f.l)}<input data-k="${f.k}" maxlength="80" value="${esc(v)}" ${dis}></label>`; }
+  function desenhar(){
+    const T=FICHAS[sys];
+    ov.querySelector('#fBody').innerHTML=`
+      ${pode?`<label class="f">Modelo de ficha<select id="fSys">${Object.entries(FICHAS).map(([k,f])=>`<option value="${k}" ${k===sys?'selected':''}>${esc(f.nome)}${k===sysDaMesa()?' (sistema da mesa)':''}</option>`).join('')}</select></label>
+      <details ${x.ficha?'':'open'} style="margin-bottom:12px;font-family:var(--ui);font-size:.88rem;color:var(--ink-2)"><summary style="cursor:pointer;color:var(--gold)">Como fazer a ficha (passo a passo)</summary><p style="margin:6px 0 0">${esc(T.passos)}</p></details>`:`<p class="muted" style="margin-top:-8px;font-family:var(--ui);font-size:.85rem">${esc(T.nome)} · jogador: ${esc(nomeJog(uid))}</p>`}
+      <div class="row"><label class="f">Nome do personagem<input id="fNome" maxlength="60" value="${esc(x.personagem)}" ${dis}></label></div>
+      <div class="fgrid">${(T.ident||[]).map(f=>campo(f,c[f.k])).join('')}</div>
+      ${T.attrs?`<h3 class="fh">Atributos</h3><div class="attrs">${T.attrs.lista.map(([k,l])=>`<label class="attr"><span>${esc(l)}</span><input data-at="${k}" type="number" min="${T.attrs.min}" max="${T.attrs.max}" value="${esc(c.at[k]??T.attrs.d)}" ${dis}><em data-mod="${k}"></em></label>`).join('')}</div>
+        ${pode&&T.gerar?`<div class="gen">${T.gerar.map((g,i)=>`<button type="button" class="btn ghost small" data-gen="${i}">${esc(g.l)}</button>`).join('')}</div><p class="muted" id="genMsg" style="font-family:var(--ui);font-size:.8rem;margin:4px 0 0"></p>`:''}`:''}
+      ${T.calc?`<div class="calc" id="fCalc"></div>`:''}
+      <h3 class="fh">Vida e recursos</h3>
+      <div class="fgrid"><label class="f">PV atuais<input id="fPa" type="number" value="${x.pv_atual??''}" ${dis}></label><label class="f" style="grid-column:span 2">PV máximos<span style="display:flex;gap:6px"><input id="fPm" type="number" min="1" value="${x.pv_max??''}" style="flex:1;min-width:0" ${dis}>${pode&&T.calc?'<button type="button" class="btn ghost small" id="fUsarPv" title="Usar os PV calculados">usar calculado</button>':''}</span></label>${(T.extra||[]).map(f=>campo(f,c[f.k])).join('')}</div>
+      ${T.pericias?`<h3 class="fh">Perícias <small class="muted" style="font-family:var(--ui);font-size:.75rem">marque as que o personagem é treinado</small></h3><div class="pers">${T.pericias.lista.map(([p,a])=>`<label><input type="checkbox" data-per="${esc(p)}" ${(c.per||[]).includes(p)?'checked':''} ${dis}> <span>${esc(p)} <small>(${a})</small></span> <b data-pb="${esc(p)}"></b></label>`).join('')}</div>`:''}
+      ${(T.textos||[]).map(f=>`<label class="f">${esc(f.l)}<textarea data-k="${f.k}" maxlength="1500" style="min-height:70px" ${dis}>${esc(c[f.k]||'')}</textarea></label>`).join('')}`;
+    const B=ov.querySelector('#fBody');
+    if(pode) B.querySelector('#fSys').onchange=e=>{ coletar(); sys=e.target.value; Object.keys(c).forEach(k=>{ if(!['hist','equip'].includes(k)) delete c[k]; }); c.at={}; desenhar(); };
+    B.addEventListener('input',atualizar); B.addEventListener('change',atualizar);
+    B.querySelectorAll('[data-gen]').forEach(b=>b.onclick=()=>gerar(T.gerar[+b.dataset.gen],b));
+    const up=B.querySelector('#fUsarPv'); if(up) up.onclick=()=>{ coletar(); const r=T.calc(c); if(r.pv){ B.querySelector('#fPm').value=r.pv; if(!B.querySelector('#fPa').value) B.querySelector('#fPa').value=r.pv; } else toast('Preencha classe e atributos primeiro.'); };
+    atualizar();
+  }
+  function coletar(){ const B=ov.querySelector('#fBody'); B.querySelectorAll('[data-k]').forEach(i=>c[i.dataset.k]=i.value); B.querySelectorAll('[data-at]').forEach(i=>c.at[i.dataset.at]=i.value===''?'':+i.value); const ps=[...B.querySelectorAll('[data-per]')]; if(ps.length) c.per=ps.filter(i=>i.checked).map(i=>i.dataset.per); }
+  function atualizar(){ coletar(); const T=FICHAS[sys], B=ov.querySelector('#fBody');
+    if(T.attrs&&T.attrs.mod) B.querySelectorAll('[data-mod]').forEach(e=>e.textContent=T.attrs.mod(c.at[e.dataset.mod]??T.attrs.d));
+    if(T.pericias) B.querySelectorAll('[data-pb]').forEach(e=>{ const p=T.pericias.lista.find(z=>z[0]===e.dataset.pb); e.textContent=T.pericias.bonus(c,p[1],(c.per||[]).includes(p[0])); });
+    const cl=B.querySelector('#fCalc'); if(cl){ try{ const r=T.calc(c); cl.innerHTML=r.linhas.map(([a,b])=>`<span><small>${esc(a)}</small><b>${esc(b)}</b></span>`).join(''); }catch(e){ cl.innerHTML=''; } } }
+  async function gerar(g,btn){ const T=FICHAS[sys], B=ov.querySelector('#fBody'), msg=B.querySelector('#genMsg');
+    if(g.padrao){ T.attrs.lista.forEach(([k],i)=>{ B.querySelector(`[data-at="${k}"]`).value=g.padrao[i]; }); msg.textContent='Valores colocados em ordem. Você pode trocar entre os atributos como quiser.'; atualizar(); return; }
+    if(S.mesa.status!=='ativa'){ msg.textContent='A mesa precisa estar ativa para rolar.'; return; }
+    btn.disabled=true; msg.textContent='Rolando na mesa…';
+    try{ const per=x.personagem||nomeJog(uid);
+      for(const [k,l] of T.attrs.lista){
+        const expr=g.coc?(['TAM','INT','EDU'].includes(k)?'2d6+6':'3d6'):g.rolar;
+        const {data:id,error}=await sb.rpc('rpg_rolar',{p_mesa:S.mesa.id,p_expr:expr,p_motivo:`Criação de personagem: ${l}`,p_personagem:per,p_secreta:false}); if(error) throw error;
+        const {data:p}=await sb.from('rpg_posts').select('*').eq('id',id).maybeSingle(); if(!p||!p.rolagem) continue;
+        const ds=[...p.rolagem.dados].sort((a,b)=>a-b); let v;
+        if(g.tira) v=ds.slice(g.tira).reduce((s,d)=>s+d,0); else v=p.rolagem.total*(g.coc?5:1);
+        B.querySelector(`[data-at="${k}"]`).value=v; }
+      msg.textContent='✔ Rolado na mesa: todos podem conferir os dados no histórico.'+(g.tira?' Já tirei o menor dado de cada rolagem.':''); atualizar(); buscarNovos(false);
+    }catch(e){ msg.textContent=errMsg(e); } btn.disabled=false; }
+  async function salvar(ovl){ coletar(); const n=v=>v===''?null:Math.trunc(+v);
+    const v={personagem:ovl.querySelector('#fNome').value.trim(),ficha:JSON.stringify({_ficha:1,sys,c}),pv_atual:n(ovl.querySelector('#fPa').value),pv_max:n(ovl.querySelector('#fPm').value)};
+    if(v.ficha.length>6000) throw new Error('A ficha ficou grande demais. Encurte os textos.');
+    if(!v.personagem) throw new Error('Dê um nome ao personagem.');
+    const {error}=await sb.from('rpg_membros').update(v).eq('mesa_id',S.mesa.id).eq('user_id',uid); if(error) throw error; Object.assign(x,v); renderSide(); renderComposer(); }
+  desenhar();
 }
 
 /* ---------- tempo real, novidades e "lido" ---------- */
