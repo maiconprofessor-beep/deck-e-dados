@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Marvel Multiverse RPG: fichas oficiais grátis | Deck e Dados</title>
+<meta name="description" content="Todas as fichas e materiais gratuitos do Marvel Multiverse RPG num lugar só, com links para o site oficial da Marvel, guia rápido do sistema d616 e mesa para jogar online.">
+<meta property="og:title" content="Marvel Multiverse RPG | Deck e Dados">
+<meta property="og:description" content="Fichas oficiais gratuitas dos heróis, guia rápido em português e mesa para jogar com os amigos.">
+<meta property="og:image" content="https://deckedados.com.br/og-image.jpg">
+<meta property="og:url" content="https://deckedados.com.br/marvel.html">
+<link rel="icon" href="/logo-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@700;800&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Marvel Multiverse no Deck e Dados: o feltro da mesa com acento vermelho de gibi. Cartões de herói como fichas empilhadas. */
+:root{
+  --felt:#132c2a; --felt-2:#1b3a37; --felt-3:#234845; --ink:#f1ede2; --ink-2:#a9bab5; --rule:rgba(241,237,226,0.14);
+  --gold:#c9a24b; --gold-dim:#8a7134; --red:#d9483b; --red-dim:#7d2a23; --parch:#efe4c8; --parch-ink:#2b2216;
+  --display:"Alegreya SC", Georgia, "Times New Roman", serif;
+  --body:"Alegreya", Georgia, "Times New Roman", serif;
+  --mono:"IBM Plex Mono", "Courier New", monospace;
+  --ui:-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--felt);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 56px;
+  background-image:radial-gradient(circle at 12% 0%,rgba(217,72,59,0.14),transparent 45%),radial-gradient(circle at 90% 8%,rgba(201,162,75,0.08),transparent 40%)}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.wrap{max-width:1120px;margin:0 auto}
+.site-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:14px;border-bottom:1px solid var(--rule)}
+.site-brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:1.05rem}
+.site-brand img{width:32px;height:32px;border-radius:50%;object-fit:cover}
+.site-links{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--ui);font-size:.85rem;color:var(--ink-2)}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--red);margin:0 0 12px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(2.2rem,6vw,3.6rem);line-height:1;margin:0 0 16px;text-wrap:balance}
+h2{font-family:var(--display);font-weight:700;font-size:clamp(1.5rem,3.5vw,2rem);margin:0 0 6px}
+.sub{color:var(--ink-2);margin:0 0 20px;max-width:68ch}
+.intro{padding-block:46px 30px;max-width:70ch}
+.intro p{margin:0 0 18px;color:var(--ink-2);font-size:1.1rem}
+.btn{display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;border:1px solid var(--red);padding:10px 20px;border-radius:6px;font-family:var(--ui);font-weight:700;font-size:.92rem;text-decoration:none;cursor:pointer}
+.btn:hover{filter:brightness(1.1)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--gold-dim)}
+.btn.small{padding:6px 12px;font-size:.8rem;font-weight:600}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+section{margin-top:48px}
+.note{font-family:var(--ui);font-size:.85rem;color:var(--ink-2);border-left:3px solid var(--gold-dim);padding:6px 12px;margin:0 0 20px;max-width:75ch}
+/* galeria */
+.heroes{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.hero{position:relative;border:1px solid var(--rule);border-radius:10px;background:linear-gradient(160deg,var(--felt-3),var(--felt-2));padding:16px 16px 14px;display:flex;flex-direction:column;gap:6px;min-height:150px}
+.hero::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;border-radius:10px 10px 0 0;background:var(--c,var(--red))}
+.hero .ini{font-family:var(--display);font-size:2rem;line-height:1;color:var(--c,var(--red))}
+.hero h3{font-family:var(--display);font-size:1.15rem;margin:0;line-height:1.15}
+.hero p{margin:0;font-family:var(--ui);font-size:.8rem;color:var(--ink-2);flex:1}
+.hero a{font-family:var(--ui);font-size:.8rem;font-weight:600;color:var(--gold);text-decoration:none}
+.hero a:hover{text-decoration:underline}
+.hero.destaque{border-color:var(--red-dim)}
+/* kits */
+.kits{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.kit{border:1px solid var(--rule);border-radius:10px;padding:14px 16px;background:rgba(27,58,55,.5);display:flex;flex-direction:column;gap:6px}
+.kit h3{margin:0;font-family:var(--body);font-weight:700;font-size:1.05rem}
+.kit p{margin:0;font-family:var(--ui);font-size:.82rem;color:var(--ink-2);flex:1}
+.kit .meta{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;color:var(--gold-dim);text-transform:uppercase}
+.kit a{font-family:var(--ui);font-size:.82rem;font-weight:600;color:var(--gold);text-decoration:none}
+/* guia */
+.guia{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.passo{background:var(--parch);color:var(--parch-ink);border-radius:8px;padding:16px 18px}
+.passo b.n{font-family:var(--display);font-size:1.6rem;color:var(--red-dim);display:block;line-height:1}
+.passo h3{margin:4px 0 6px;font-family:var(--display);font-size:1.15rem}
+.passo p{margin:0;font-size:.98rem}
+.dice{display:flex;gap:8px;margin:10px 0 4px}
+.die{width:42px;height:42px;border-radius:8px;display:grid;place-items:center;font-family:var(--mono);font-weight:500;font-size:1.2rem;background:#fff;color:var(--parch-ink);border:2px solid var(--parch-ink)}
+.die.m{background:var(--red);color:#fff;border-color:var(--red-dim)}
+.marvel-tab{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.marvel-tab span{text-align:center;font-family:var(--mono);font-size:.62rem;letter-spacing:-.02em;overflow-wrap:anywhere;padding:6px 2px;border:1px solid var(--parch-ink);border-radius:4px}
+.marvel-tab span b{display:block;font-family:var(--display);font-size:1.3rem}
+/* jogar */
+.cta{margin-top:48px;border:1px solid var(--red-dim);border-radius:12px;padding:24px;background:linear-gradient(135deg,rgba(217,72,59,.12),rgba(27,58,55,.6));display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
+.cta p{margin:0;color:var(--ink-2);max-width:60ch}
+/* dedicatória */
+.dedic{margin:64px auto 0;max-width:640px;text-align:center;padding:30px 24px;border-top:1px solid var(--gold-dim);border-bottom:1px solid var(--gold-dim)}
+.dedic .star{color:var(--gold);font-size:1.2rem;letter-spacing:.6em;display:block;margin-bottom:12px}
+.dedic p{margin:0;font-style:italic;font-size:1.2rem;line-height:1.6;text-wrap:balance}
+.dedic strong{display:block;margin-top:12px;font-style:normal;font-family:var(--display);font-size:1.45rem;color:var(--gold);letter-spacing:.02em}
+.legal{font-family:var(--ui);font-size:.78rem;color:var(--ink-2);margin-top:36px;max-width:80ch}
+footer{margin-top:28px;padding-top:18px;border-top:1px solid var(--rule);font-family:var(--ui);font-size:.82rem;color:var(--ink-2);display:flex;gap:14px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="site-nav">
+    <a class="site-brand" href="/"><img src="/logo-icon.png" alt="">Deck e Dados</a>
+    <div class="site-links"><a href="/mesa.html">Mesa de RPG</a><a href="/rpgsolo.html">RPG Solo</a><a href="/">Voltar ao site</a></div>
+  </nav>
+
+  <header class="intro">
+    <p class="eyebrow">RPG de mesa · sistema d616</p>
+    <h1>Marvel Multiverse RPG</h1>
+    <p>Jogue com o Hulk, o Homem-Aranha, a Feiticeira Escarlate ou um herói criado por você. Aqui estão todas as fichas e materiais <b>gratuitos</b> que a Marvel liberou, um guia rápido em português e a mesa para jogar com os amigos.</p>
+    <div class="row"><a class="btn" href="#herois">Ver as fichas dos heróis</a><a class="btn ghost" href="/mesa.html?sistema=Marvel%20Multiverse">🎲 Criar mesa Marvel</a></div>
+  </header>
+
+  <p class="note">Os arquivos ficam no <b>site oficial da Marvel</b>: os botões abrem o PDF direto de lá, sempre na versão mais nova. Se algum link mudar, todos os materiais estão em <a href="https://www.marvel.com/rpg" target="_blank" rel="noopener">marvel.com/rpg</a>.</p>
+
+  <section id="herois">
+    <h2>Heróis com ficha oficial grátis</h2>
+    <p class="sub">As 12 fichas da coleção <b>Marvel Rivals</b>, prontas para jogar. Todas vêm num PDF só: baixe uma vez e escolha seu herói.</p>
+    <div class="heroes" id="heroes"></div>
+  </section>
+
+  <section id="kits">
+    <h2>Outros materiais gratuitos</h2>
+    <p class="sub">Regras rápidas com aventura, mais fichas de personagens, expansões grátis e as atualizações oficiais das regras.</p>
+    <div class="kits" id="kits-list"></div>
+  </section>
+
+  <section id="guia">
+    <h2>Como se joga, em 4 passos</h2>
+    <p class="sub">O resumo do sistema d616. As regras completas estão no livro básico (Core Rulebook) e nas regras rápidas gratuitas.</p>
+    <div class="guia">
+      <div class="passo"><b class="n">1</b><h3>O Rank</h3><p>Todo herói tem um <b>Rank</b> de 1 a 6. Rank 1 é gente comum; Rank 6 é poder cósmico. O mestre define o Rank da campanha, e o grupo joga com heróis parecidos.</p></div>
+      <div class="passo"><b class="n">2</b><h3>As habilidades</h3><p>São seis, e as iniciais formam a palavra MARVEL:</p>
+        <div class="marvel-tab"><span><b>M</b>Melee</span><span><b>A</b>Agilidade</span><span><b>R</b>Resiliência</span><span><b>V</b>Vigilância</span><span><b>E</b>Ego</span><span><b>L</b>Lógica</span></div></div>
+      <div class="passo"><b class="n">3</b><h3>Os dados</h3><p>Role <b>3d6</b>: dois dados comuns e o <b>dado Marvel</b>. Some a habilidade e tente passar o número que o mestre pediu.</p>
+        <div class="dice" aria-label="Exemplo: 4, M, 2"><span class="die">4</span><span class="die m">M</span><span class="die">2</span></div>
+        <p>Se o dado Marvel cair em 1, ele vira <b>M</b> e vale 6. Se a ação der certo, é um <b>sucesso fantástico</b>.</p></div>
+      <div class="passo"><b class="n">4</b><h3>Vida, Foco e Karma</h3><p><b>Vida</b> aguenta pancada (Resiliência × 30). <b>Foco</b> paga os poderes (Vigilância × 30). <b>Karma</b> é a sorte do herói: gaste para ganhar vantagem numa jogada ou se recuperar no meio da luta.</p></div>
+    </div>
+  </section>
+
+  <div class="cta">
+    <div><h2>Jogue no Deck e Dados</h2><p>Crie uma mesa com o sistema <b>Marvel Multiverse</b>: a ficha da mesa já vem no formato do jogo. Escolha o herói oficial, copie os números do PDF e role os dados direto na mesa.</p></div>
+    <a class="btn" href="/mesa.html?sistema=Marvel%20Multiverse">🎲 Criar mesa Marvel</a>
+  </div>
+
+  <aside class="dedic" aria-label="Dedicatória">
+    <span class="star" aria-hidden="true">★ ★ ★</span>
+    <p>Dedicado ao meu irmão que, mesmo longe, ainda habita nossas lembranças.</p>
+    <strong>Professor Evandro Joel</strong>
+  </aside>
+
+  <p class="legal">Página de fãs, sem vínculo com a Marvel. Marvel, Marvel Multiverse Role-Playing Game e os personagens são marcas e propriedade da Marvel. Os materiais listados aqui são distribuídos gratuitamente pela própria Marvel em marvel.com/rpg; o Deck e Dados só aponta para eles.</p>
+
+  <footer>
+    <span>Deck e Dados · feito por jogadores, pra jogadores</span>
+    <a href="/mesa.html">Mesa de RPG</a>
+    <a href="/rpgsolo.html">RPG Solo</a>
+    <a href="/privacidade.html">Privacidade</a>
+    <a href="/termos.html">Termos de uso</a>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const CDN='https://cdn.marvel.com/u/prod/marvel/i/pdf/';
+  const RIVALS=CDN+'MMRPG_MarvelRivals_20241220.pdf';
+  const HEROES=[
+    ['Hulk','Bruce Banner, Hero Hulk e Monster Hulk: três formas na mesma ficha.','#5aa04a',1],
+    ['Homem-Aranha','Spider-Man: agilidade, teia e sentido-aranha.','#d9483b',1],
+    ['Homem de Ferro','Iron Man: armadura, repulsores e tecnologia.','#c9a24b',1],
+    ['Feiticeira Escarlate','Scarlet Witch: magia do caos que muda a realidade.','#c2365a',1],
+    ['Pantera Negra','Black Panther: o rei de Wakanda e o traje de vibranium.','#8d7bd1',0],
+    ['Magneto','Mestre do magnetismo.','#9b3b8f',0],
+    ['Loki','O deus da trapaça e das ilusões.','#4f9a5c',0],
+    ['Magik','Illyana Rasputina, a feiticeira do Limbo.','#e0a43a',0],
+    ['Namor','O príncipe submarino de Atlântida.','#3a8fb7',0],
+    ['Luna Snow','Heroína de gelo e estrela do K-pop.','#7fc6e4',0],
+    ['Groot','Eu sou Groot.','#8a6a3c',0],
+    ['Rocket Raccoon','Gênio das armas e da fuga.','#b06a3c',0]
+  ];
+  const KITS=[
+    ['Regras rápidas + aventura Thunderbolts*','Comece por aqui: as regras básicas e uma aventura pronta, com personagens para jogar.','MMRPG_Quick-Start_With_Thunderbolts_Adventure_20250718.pdf','jul/2025'],
+    ['Fichas dos X-Men \'97','Fichas de personagens da série animada X-Men \'97.','MMRPG_XMen97_20240520.pdf','mai/2024'],
+    ['Fichas de personagem','Coletânea oficial de fichas de personagem em PDF.','MMRPG_All_Character_Sheets_20240807.pdf','ago/2024'],
+    ['Perfis de personagens (atualização)','Atualização oficial dos perfis de personagens.','MMRPG_CharacterProfiles_20240717.pdf','jul/2024'],
+    ['Avengers Academy','Material gratuito ambientado na Academia dos Vingadores.','MMRPG_AvengersAcademy_20250718.pdf','jul/2025'],
+    ['Capítulo bônus da expansão X-Men','Capítulo extra gratuito da expansão X-Men.','MMRPG_Excalibur_20240819.pdf','ago/2024'],
+    ['Expansão MARVEL SNAP','Conteúdo gratuito que liga o RPG ao jogo de cartas MARVEL SNAP.','MARVEL_SNAP_x_MMRPG_20260105.pdf','jan/2026'],
+    ['Oficina do Tony (Tony\'s Workshop)','Atualização oficial de regras com novidades de equipamentos e tecnologia.','MMRPG_Tonys_Workshop_20251031.pdf','out/2025'],
+    ['Perguntas frequentes das regras','FAQ oficial com respostas sobre as regras.','MMRPG_Rules-FAQ_20250327.pdf','mar/2025'],
+    ['Errata','Correções oficiais do livro.','MMRPG_Errata_20250718.pdf','jul/2025']
+  ];
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  document.getElementById('heroes').innerHTML=HEROES.map(([n,d,c,dest])=>`<article class="hero${dest?' destaque':''}" style="--c:${c}"><span class="ini" aria-hidden="true">${esc(n.charAt(0))}</span><h3>${esc(n)}</h3><p>${esc(d)}</p><a href="${RIVALS}" target="_blank" rel="noopener">Baixar ficha oficial ↗</a></article>`).join('');
+  document.getElementById('kits-list').innerHTML=KITS.map(([t,d,f,dt])=>`<article class="kit"><span class="meta">PDF · atualizado em ${esc(dt)}</span><h3>${esc(t)}</h3><p>${esc(d)}</p><a href="${CDN+f}" target="_blank" rel="noopener">Abrir no site da Marvel ↗</a></article>`).join('');
+})();
+</script>
+</body>
+</html>
