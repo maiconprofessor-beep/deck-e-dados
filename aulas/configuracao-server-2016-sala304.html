@@ -132,13 +132,6 @@ legend{padding:0 4px}
 .startm button{display:block;width:100%;text-align:left;background:none;border:0;color:#fff;padding:7px 16px;cursor:pointer;font:inherit;font-size:12.5px}
 .startm button:hover:not(:disabled){background:#3a3a3a}.startm button:disabled{color:#777}
 .startm hr{border:0;border-top:1px solid #333;margin:4px 0}
-.lock,.login{position:absolute;inset:0;background:linear-gradient(160deg,#0b2b55,#174a8b);color:#fff;font-family:"Segoe UI",sans-serif}
-.lock{display:flex;flex-direction:column;justify-content:flex-end;padding:8%;cursor:pointer}
-.lock .tm{font-size:72px;font-weight:200;line-height:1}
-.login{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
-.login .av{width:110px;height:110px;border-radius:50%;background:#d0d8e4;display:flex;align-items:center;justify-content:center;font-size:56px;color:#5a6b84}
-.login input{width:260px;padding:6px 8px!important;font-size:14px!important}
-.login .lb2{background:rgba(255,255,255,.2);color:#fff;border:1px solid #fff;padding:6px 20px;cursor:pointer;font:inherit}
 .boot{position:absolute;inset:0;background:#000;color:#ddd;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font:18px "Segoe UI",sans-serif}
 .policy .rad label{display:flex;gap:6px;align-items:center;margin:4px 0}
 .prog{height:10px;background:#ddd;margin:6px 0}.prog i{display:block;height:100%;background:#06b025}
@@ -279,7 +272,7 @@ const gpoAl=()=>S.gpos.find(g=>low(g.name)==='gpo_alunos');
 const ALUNOS=[['Ana','Souza','ana.souza'],['Bruno','Lima','bruno.lima'],['Carla','Dias','carla.dias']];
 const MIS=[
  {t:'Preparar o servidor',intro:'Antes de instalar qualquer função, o servidor precisa de um nome que faça sentido e de um IP fixo. Tudo começa em <b>Gerenciador do Servidor > Servidor Local</b>.',steps:[
-  {t:'Renomeie para SRV-SALA304',h:'Servidor Local > clique no <b>nome do computador</b> > <b>Alterar...</b> > Nome do computador: <code>SRV-SALA304</code> > OK > OK > Fechar > <b>Reiniciar Agora</b>. Depois aperte Ctrl+Alt+Del e entre com a senha <code>Senac@2026</code>.',ok:()=>S.host===HOST&&S.phase==='desk'},
+  {t:'Renomeie para SRV-SALA304',h:'Servidor Local > clique no <b>nome do computador</b> > <b>Alterar...</b> > Nome do computador: <code>SRV-SALA304</code> > OK > OK > Fechar > <b>Reiniciar Agora</b>. O servidor reinicia e volta sozinho para a área de trabalho.',ok:()=>S.host===HOST&&S.phase==='desk'},
   {t:'IP fixo 192.168.30.10',h:'Servidor Local > link da <b>Ethernet</b> > na janela Conexões de Rede, clique com o botão direito em <b>Ethernet</b> > Propriedades > <b>Protocolo IP Versão 4 (TCP/IPv4)</b> > Propriedades.<br>IP <code>192.168.30.10</code> · Máscara <code>255.255.255.0</code> · Gateway <code>192.168.30.1</code> · DNS preferencial <code>127.0.0.1</code>.',ok:()=>S.ip===IP&&S.mask==='255.255.255.0'&&S.gw===GW&&S.dns[0]==='127.0.0.1'},
  ]},
  {t:'Instalar as funções',intro:'O servidor da sala vai ser controlador de domínio (AD DS), servidor de nomes (DNS) e vai distribuir IPs (DHCP).',steps:[
@@ -287,7 +280,7 @@ const MIS=[
  ]},
  {t:'Criar o domínio sala304.local',intro:'Promover o servidor cria a floresta, o domínio e o banco do Active Directory.',steps:[
   {t:'Promova a controlador de domínio',h:'Clique na <b>bandeira ⚑</b> > <b>Promover este servidor a um controlador de domínio</b> > <b>Adicionar uma nova floresta</b> > Nome do domínio raiz: <code>sala304.local</code> > senha do DSRM <code>Senac@2026</code> > Próximo até <b>Instalar</b>.',ok:()=>S.isDC},
-  {t:'Entre como SALA304\\Administrador',h:'O servidor reinicia sozinho. Ctrl+Alt+Del: repare que agora a conta é do domínio: <b>SALA304\\Administrador</b>.',ok:()=>S.isDC&&S.phase==='desk'},
+  {t:'Servidor reiniciado como controlador de domínio',h:'O servidor reinicia sozinho. Repare que agora a conta conectada é do domínio: <b>SALA304\\Administrador</b> (aparece no menu Iniciar).',ok:()=>S.isDC&&S.phase==='desk'},
  ]},
  {t:'Concluir a configuração do DHCP',intro:'Num domínio, o DHCP só funciona se for <b>autorizado</b> no Active Directory. Isso evita um DHCP "pirata" na rede.',steps:[
   {t:'Autorize o DHCP',h:'Clique na <b>bandeira ⚑</b> > <b>Concluir configuração do DHCP</b> > Próximo > Autorização: use as credenciais de <b>SALA304\\Administrador</b> > <b>Confirmar</b> > Fechar.<br>(Também dá para fazer no console DHCP: botão direito no servidor > <b>Autorizar</b>.)',ok:()=>S.dhcp.auth},
@@ -331,15 +324,11 @@ const MIS=[
 const scr=$('#scr');
 let MENU=null, DROP=null, START=false;
 function render(){ renderBar(); renderScreen(); tick(); renderPanel(); save(); }
-function renderBar(){ $('#vmbar').innerHTML=`<span class="t">Hyper-V · ${esc(S.host)}${S.domain?'.'+esc(S.domain):''}</span><button id="bCad" ${['lock','login','desk'].includes(S.phase)?'':'disabled'}>Ctrl+Alt+Del</button>`; $('#bCad').onclick=()=>{ if(S.phase==='lock'){ S.phase='login'; render(); } else if(S.phase==='desk') toast('Use o menu Iniciar para sair ou reiniciar.'); }; }
+function renderBar(){ $('#vmbar').innerHTML=`<span class="t">Simulação · ${esc(S.host)}${S.domain?'.'+esc(S.domain):''}</span>`; }
 function renderScreen(){
   if(S.phase==='reboot'){ scr.innerHTML=`<div class="boot"><div style="font-size:40px;color:#3a96dd">⊞</div><div>${esc(S.rmsg||'Reiniciando')}</div><div style="color:#888">◌ ◌ ◌</div></div>`; return; }
-  if(S.phase==='lock'){ const d=new Date(); scr.innerHTML=`<div class="lock"><div class="tm">${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div><div style="font-size:22px;font-weight:300">${d.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})}</div><div style="margin-top:26px">Pressione Ctrl+Alt+Del para desbloquear. <span style="opacity:.7">(botão na barra acima)</span></div></div>`; return; }
-  if(S.phase==='login'){ const u=S.isDC?NB+'\\Administrador':'Administrador'; scr.innerHTML=`<div class="login"><div class="av">👤</div><div style="font-size:22px">${esc(u)}</div><input type="password" id="lp" placeholder="Senha"><div id="le" style="color:#ffd2d2;min-height:18px"></div><button class="lb2" id="lOk">→ Entrar</button>${S.isDC?`<div style="font-size:12px;opacity:.8">Entrar em: ${NB}</div>`:''}</div>`;
-    const go=()=>{ if($('#lp').value!==PWD){ $('#le').textContent='A senha está incorreta. Tente novamente.'; return; } S.user=u; S.phase='desk'; S.wins=['sm']; S.view='painel'; S.dlg=[]; render(); };
-    $('#lOk').onclick=go; $('#lp').onkeydown=e=>{ if(e.key==='Enter') go(); }; $('#lp').focus(); return; }
   deskRender(); }
-function reboot(msg,after){ S.dlg=[]; MENU=null; S.phase='reboot'; S.rmsg=msg||'Reiniciando'; render(); setTimeout(()=>{ if(S.pendHost){ S.host=S.pendHost; S.pendHost=null; } after&&after(); S.phase='lock'; render(); },3000); }
+function reboot(msg,after){ S.dlg=[]; MENU=null; S.phase='reboot'; S.rmsg=msg||'Reiniciando'; render(); setTimeout(()=>{ if(S.pendHost){ S.host=S.pendHost; S.pendHost=null; } after&&after(); S.user=S.isDC?NB+'\\Administrador':'Administrador'; S.phase='desk'; S.wins=['sm']; S.view='painel'; render(); toast('Servidor reiniciado. Conectado como '+S.user+'.'); },3000); }
 
 /* ================= desktop e janelas ================= */
 const WPOS={sm:'left:1.5%;top:2%;width:97%;height:calc(96% - 40px)',aduc:'left:4%;top:5%;width:88%;height:calc(86% - 40px)',dns:'left:6%;top:7%;width:86%;height:calc(84% - 40px)',dhcp:'left:8%;top:6%;width:84%;height:calc(84% - 40px)',gpmc:'left:3%;top:4%;width:90%;height:calc(88% - 40px)',gpme:'left:9%;top:9%;width:84%;height:calc(82% - 40px)',netc:'left:18%;top:14%;width:60%;height:46%'};
@@ -350,7 +339,7 @@ function closeWin(w){ S.wins=S.wins.filter(x=>x!==w); }
 function deskRender(){ let h=`<div class="desk" id="dsk"><div style="position:absolute;left:14px;top:14px;color:#fff;text-align:center;width:70px">🗑️<br>Lixeira</div>`;
   S.wins.forEach((w,i)=>{ h+=`<div class="win ${w==='sm'?'sm':''}" data-w="${w}" style="${WPOS[w]};z-index:${10+i}"><div class="wt">${WICON[w]} ${esc(w==='gpme'&&S.C.gpme?S.C.gpme.title:WTITLE[w])}<button class="x" data-a="close" data-w2="${w}">✕</button></div>${w==='sm'?smBody():w==='netc'?netcBody():mmcBody(w)}</div>`; });
   h+=`<div class="taskbar"><button data-a="start" title="Iniciar">⊞</button><button title="Explorador de Arquivos" data-a="noexp">📁</button>${['sm','aduc','dns','dhcp','gpmc','gpme','netc'].filter(w=>w==='sm'||S.wins.includes(w)).map(w=>`<button data-a="task" data-w2="${w}" class="${S.wins.includes(w)?'open':''}" title="${esc(WTITLE[w])}">${WICON[w]}</button>`).join('')}<div class="clock">${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}<br>${new Date().toLocaleDateString('pt-BR')}</div></div>`;
-  if(START) h+=`<div class="startm"><div style="padding:6px 16px 8px;color:#aaa">${esc(S.user)}</div><button data-a="startgo" data-w2="sm">🗄️ Gerenciador do Servidor</button>${toolsList().map(t=>`<button data-a="startgo" data-w2="${t[0]}" ${t[2]?'':'disabled'}>${WICON[t[0]]} ${t[1]}</button>`).join('')}<hr><button data-a="logoff">Sair</button><button data-a="restart">⟳ Reiniciar</button></div>`;
+  if(START) h+=`<div class="startm"><div style="padding:6px 16px 8px;color:#aaa">${esc(S.user)}</div><button data-a="startgo" data-w2="sm">🗄️ Gerenciador do Servidor</button>${toolsList().map(t=>`<button data-a="startgo" data-w2="${t[0]}" ${t[2]?'':'disabled'}>${WICON[t[0]]} ${t[1]}</button>`).join('')}<hr><button data-a="restart">⟳ Reiniciar</button></div>`;
   h+=`</div>`;
   if(S.dlg.length) h+=S.dlg.map((d,i)=>`<div class="dlgx" style="z-index:${3000+i}">${dlgHTML(d)}</div>`).join('');
   if(MENU) h+=menuHTML();
@@ -663,7 +652,7 @@ A.startgo=el=>{ START=false; openWin(el.dataset.w2); render(); };
 A.tool=el=>{ DROP=null; openWin(el.dataset.w2); if(el.dataset.w2==='aduc'&&!C('aduc').exp.includes('dom')) C('aduc').exp.push('dom'); render(); };
 A.task=el=>{ const w=el.dataset.w2; openWin(w); render(); };
 A.noexp=()=>toast('O Explorador de Arquivos não é usado nesta atividade.');
-A.logoff=()=>{ START=false; S.phase='lock'; render(); };
+A.logoff=()=>{ START=false; toast('Nesta simulação você continua conectado.'); render(); };
 A.restart=()=>{ START=false; reboot(); };
 A.drop=el=>{ DROP=DROP===el.dataset.d?null:el.dataset.d; render(); };
 A.smgo=el=>{ S.view=el.dataset.v; DROP=null; render(); };
@@ -847,7 +836,7 @@ function renderPanel(){ const T=[['mis','Missões'],['arv','Árvore esperada'],[
     B.innerHTML=`<div class="mlist">${MIS.map((m,i)=>{ const ok=m.steps.every((s,j)=>sd(i,j)); return `<button data-mi="${i}" class="${i===S.mis?'on':''} ${ok?'ok':''}">${ok?'✔ ':''}${i+1}</button>`; }).join('')}</div><h2 class="mh">Missão ${S.mis+1}: ${M.t}</h2><p class="intro">${M.intro}</p>
       ${M.steps.map((s,i)=>{ const dn=sd(S.mis,i), c=i===cu, op=c||S.open[S.mis+'.'+i]; return `<div class="step ${dn?'done':''} ${c?'cur':''}"><div class="sh" data-op="${i}"><span class="n">${dn?'✔':i+1}</span><b>${s.t}</b></div>${op?`<div class="sb"><p>${s.h}</p></div>`:''}</div>`; }).join('')}
       ${cu===-1?`<div class="done-box">✔ Missão concluída! ${S.mis<MIS.length-1?'<button class="btn pri" id="nx" style="margin-left:8px">Próxima missão →</button>':'Configuração completa. Veja a aba Conferência. 🎉'}</div>`:''}
-      <p style="font-size:.8rem;color:var(--muted);margin-top:12px">Senha do Administrador: <b>Senac@2026</b>. Dica: quase tudo nos consoles funciona com o <b>botão direito</b>. Os passos se marcam sozinhos.</p>`;
+      <p style="font-size:.8rem;color:var(--muted);margin-top:12px">Senha usada nas atividades (DSRM e usuários): <b>Senac@2026</b>. Dica: quase tudo nos consoles funciona com o <b>botão direito</b>. Os passos se marcam sozinhos.</p>`;
     B.querySelectorAll('[data-mi]').forEach(b=>b.onclick=()=>{ S.mis=+b.dataset.mi; renderPanel(); save(); });
     B.querySelectorAll('[data-op]').forEach(b=>b.onclick=()=>{ const k=S.mis+'.'+b.dataset.op; S.open[k]=!S.open[k]; renderPanel(); });
     const nx=$('#nx'); if(nx) nx.onclick=()=>{ S.mis++; renderPanel(); save(); }; }
@@ -892,7 +881,7 @@ Default Domain Policy
     B.innerHTML=`<h2 class="mh">Conferência da configuração</h2><p class="intro">O simulador confere o estado do servidor agora. Se algo foi apagado ou ficou no lugar errado, o item volta a ficar vermelho.</p><div class="score">${pct}%</div><p style="margin:0 0 10px;color:var(--muted)">${ok} de ${all.length} itens corretos</p><ul class="chkl">${all.map(x=>`<li class="${x[2]?'ok':'no'}">${x[2]?'✔':'✖'} ${esc(x[1])} <span style="color:var(--muted)">· ${esc(x[0])}</span></li>`).join('')}</ul>`; } }
 
 let rsT=null; $('#bReset').onclick=()=>{ const b=$('#bReset'); if(!rsT){ b.textContent='⚠ Clique de novo para apagar tudo'; rsT=setTimeout(()=>{ rsT=null; b.textContent='↺ Recomeçar'; },4000); return; } clearTimeout(rsT); rsT=null; b.textContent='↺ Recomeçar'; try{ localStorage.removeItem(LS); }catch(e){} S=novo(); MENU=null; DROP=null; render(); };
-if(S.phase==='reboot') S.phase='lock';
+if(S.phase!=='desk'&&S.phase!=='reboot') S.phase='desk'; if(S.phase==='reboot'){ S.phase='desk'; }
 render();
 })();
 </script>
