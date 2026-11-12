@@ -183,7 +183,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:none}
 .fsteps button.done{border-color:var(--ok);color:var(--ok)}
 .fsteps button.on{background:var(--gold);color:var(--felt);border-color:var(--gold);font-weight:700}
 .fhelp{border-left:3px solid var(--gold);background:rgba(201,162,75,.08);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:14px;font-family:var(--ui);font-size:.88rem;line-height:1.55}
-.fhelp > b{display:block;font-family:var(--display);font-size:1.05rem;color:var(--gold);margin-bottom:4px}
+.fhelp b{color:var(--gold);font-weight:700}
 .fhelp small{color:var(--ink-2)}
 .fsub{font-family:var(--ui);font-size:.8rem;color:var(--ink-2);margin:4px 0 6px}
 .attrs{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:8px;margin-bottom:10px}
@@ -195,6 +195,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:none}
 .dotrow input{padding:3px 4px;text-align:center}
 .dotrow em{font-style:normal;color:var(--gold);letter-spacing:1px;font-size:.8rem}
 .gen{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.mbox{grid-column:1/-1;border:1px dashed var(--gold-dim);border-radius:8px;padding:10px 14px;font-family:var(--ui);font-size:.88rem;color:var(--ink-2);line-height:1.5}.mbox.ok{border-style:solid;border-color:var(--gold);color:var(--ink)}.mbox .btn{margin-top:8px}
 .calcrow{display:flex;gap:6px;align-items:center}
 .calcrow b{width:22px;text-align:center}.calcrow b.okm{color:var(--ok)}.calcrow b.warn{color:var(--gold)}
 .dica{font-family:var(--ui);font-size:.72rem;color:var(--ink-2)}
@@ -746,6 +747,13 @@ SYS.tdt={ nome:'3D&T Alpha', match:/3d&t|3dt|3d & t/i, resumo:c=>c.conceito||'',
 /* ===== Marvel Multiverse RPG (d616) ===== */
 const MMR_AT=[['MEL','Combate (Melee)'],['AGI','Agilidade'],['RES','Resiliência'],['VIG','Vigilância'],['EGO','Ego'],['LOG','Lógica']];
 const MMR_HER=['Black Panther (Pantera Negra)','Hulk (Bruce Banner / Hero Hulk / Monster Hulk)','Groot','Iron Man (Homem de Ferro)','Loki','Luna Snow','Magik','Magneto','Namor','Rocket Raccoon','Scarlet Witch (Feiticeira Escarlate)','Spider-Man (Homem-Aranha)','Outro herói oficial (outro PDF ou livro)'];
+const MMR_PDF='https://cdn.marvel.com/u/prod/marvel/i/pdf/MMRPG_MarvelRivals_20241220.pdf';
+const mmrBox=(c,pode)=>{ if(!c.tipo) return `<div class="mbox">👆 Escolha o <b>tipo de ficha</b>: herói oficial (Hulk, Homem-Aranha…) ou herói criado por você.</div>`;
+  if(/criado/i.test(c.tipo)) return '';
+  if(!c.heroi) return `<div class="mbox">👆 Agora escolha o <b>herói</b> na lista. Também dá para ver todas as fichas na <a href="/marvel.html" target="_blank" rel="noopener">página Marvel</a>.</div>`;
+  const rivals=!/^Outro/.test(c.heroi); if(rivals&&!c.link) c.link=MMR_PDF;
+  const url=c.link||'/marvel.html';
+  return `<div class="mbox ok"><b>Ficha oficial: ${esc(c.heroi)}</b><br>${rivals?'Está no PDF de fichas gratuitas da Marvel (coleção Marvel Rivals). ':''}Abra a ficha, ache o seu herói e copie os números para os campos abaixo: Rank, habilidades, Vida, Foco, Karma, poderes e traços.<br><a class="btn small" href="${esc(url)}" target="_blank" rel="noopener">📄 Abrir a ficha oficial${rivals?' de '+esc(c.heroi.split(' (')[0]):''}</a></div>`; };
 const mrank=c=>{ const r=n0(c.rank); return r!==null&&r>=1&&r<=6?r:null; };
 const mcriado=c=>/criado/i.test(c.tipo||'');
 const mat=(c,k)=>n0((c.at||{})[k]);
@@ -754,7 +762,7 @@ SYS.marvel={ nome:'Marvel Multiverse RPG', match:/marvel|multiverse|d616/i,
  resumo:c=>[c.codinome||c.heroi,mrank(c)?'Rank '+mrank(c):''].filter(Boolean).join(' · '), pv:c=>c.vida,
  passos:[
   {t:'Herói e Rank',help:c=>`Você pode jogar com um <b>herói oficial</b> ou <b>criar o seu</b>.<br>• <b>Herói oficial:</b> baixe a ficha gratuita na <a href="/marvel.html" target="_blank" rel="noopener">página Marvel do Deck e Dados</a> (os links levam ao site da Marvel) e copie os números dela para cá, como o próprio livro manda fazer.<br>• <b>Herói criado:</b> siga os passos e a ficha confere as contas.<br>O <b>Rank</b> (1 a 6) mede o nível de poder: 1 é gente comum, 6 é cósmico. <b>Combine o Rank com o mestre</b>: heróis muito acima do grupo desequilibram a campanha.${/Hulk/.test(c.heroi||'')?'<br><b>Hulk:</b> a ficha oficial traz três formas (Bruce Banner, Hero Hulk e Monster Hulk). Anote a forma em que você começa e use o campo de poderes para as outras.':''}`,
-   campos:[{k:'tipo',l:'Tipo de ficha',sel:['Herói oficial (ficha da Marvel)','Herói criado por mim']},{k:'heroi',l:'Herói oficial (se for o caso)',sel:MMR_HER},{k:'codinome',l:'Codinome'},{k:'identidade',l:'Nome verdadeiro'},{k:'rank',l:'Rank',sel:['1','2','3','4','5','6']},{k:'link',l:'Link da ficha oficial (PDF)',ml:300}],
+   campos:[{k:'tipo',l:'Tipo de ficha',sel:['Herói oficial (ficha da Marvel)','Herói criado por mim']},{k:'heroi',l:'Herói oficial (se for o caso)',sel:MMR_HER},{html:mmrBox},{k:'codinome',l:'Codinome'},{k:'identidade',l:'Nome verdadeiro'},{k:'rank',l:'Rank',sel:['1','2','3','4','5','6']},{k:'link',l:'Link da ficha oficial (PDF)',ml:300}],
    checks:c=>[['Tipo de ficha',!!c.tipo],['Rank',!!mrank(c)],...(c.tipo&&!mcriado(c)?[['Herói oficial escolhido',!!c.heroi]]:[['Codinome',!!(c.codinome||'').trim()]])]},
   {t:'Origem e ocupação',help:()=>'A <b>origem</b> explica de onde vêm os poderes (ex.: Mutante, Alta Tecnologia, Treinamento Especial, Alienígena, Mística). A <b>ocupação</b> é o que o herói faz quando não está de uniforme. As duas dão traços e às vezes tags.<br>Herói oficial: copie origem e ocupação da ficha.',
    campos:[{k:'origem',l:'Origem'},{k:'ocupacao',l:'Ocupação'}],
@@ -797,6 +805,7 @@ function ficha(uid,passo){
   const optsOf=f=>typeof f.sel==='function'?f.sel(c):f.sel;
   function campo(f){
     if(f.rolar){ if(!pode||(f.rolar.quando&&!f.rolar.quando(c))) return ''; return `<div class="gen"><button type="button" class="btn ghost small" data-rolar="${SYS[sys].passos.findIndex(p=>p.campos.includes(f))}">🎲 Rolar na mesa (todos veem os dados)</button><span class="muted" id="genMsg" style="font-family:var(--ui);font-size:.8rem"></span></div>`; }
+    if(f.html) return `<div class="full">${f.html(c,pode)}</div>`;
     if(f.attrs) return `<div class="fsub">${esc(f.l)}</div><div class="attrs">${f.lista.map(([k,l])=>`<label class="attr"><span>${esc(l)}</span><input data-g="${f.attrs}" data-gk="${esc(k)}" type="number" value="${esc((c[f.attrs]||{})[k]??'')}" ${dis}></label>`).join('')}</div>`;
     if(f.dots){ const g=c[f.dots]||{}; const row=([k,l])=>`<label class="dotrow"><span>${esc(l)}</span><input data-g="${f.dots}" data-gk="${esc(k)}" type="number" min="${f.min??1}" max="${f.max}" value="${esc(g[k]??'')}" ${dis}><em data-dot>${'●'.repeat(Math.max(0,Math.min(f.max,n0(g[k])||0)))}${'○'.repeat(Math.max(0,f.max-Math.min(f.max,n0(g[k])||0)))}</em></label>`;
       return f.grupos?`<div class="dotgrid">${f.grupos.map(([t,a,b])=>`<div><div class="fsub">${esc(t)}</div>${f.lista.slice(a,b).map(row).join('')}</div>`).join('')}</div>`:`<div class="dotgrid"><div>${f.lista.map(row).join('')}</div></div>`; }
