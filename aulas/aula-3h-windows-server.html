@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<!-- Atividade didática (Prof. Maicon Kuzer, Senac). Página estática: não coleta, não envia e não baixa dados; funciona offline. -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula de 3 horas: Windows Server 2016 (Desktop, Core e Datacenter)</title>
+<style>
+:root{--bg:#f2f4f8;--card:#fff;--text:#1b2430;--muted:#5d6878;--line:#dde2ea;--accent:#0f62c9;--soft:#e6eefb;--ok:#1f9d55;--oksoft:#e4f5ea;--bad:#c93a3a;--badsoft:#fdecec;--warn:#b7791f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:18px}
+header{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+h1{margin:0;font-size:clamp(1.3rem,3vw,1.8rem)}
+header p{margin:4px 0 0;color:var(--muted)}
+.who{display:flex;gap:8px;align-items:center}
+.who input{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;width:240px}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 16px}
+nav.tabs button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 12px;cursor:pointer;font:inherit;font-size:.92rem;text-align:left}
+nav.tabs button small{display:block;color:var(--muted);font-size:.75rem}
+nav.tabs button.on{border-color:var(--accent);background:var(--soft)}
+nav.tabs button.done{border-color:var(--ok)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:14px}
+.card h2{margin:0 0 6px;font-size:1.25rem}
+.card h3{margin:16px 0 6px;font-size:1.05rem}
+.muted{color:var(--muted)}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:8px 14px;cursor:pointer;font:inherit;font-size:.92rem;color:var(--text);text-decoration:none;display:inline-block}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.bar{height:10px;background:#e3e7ee;border-radius:6px;overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;background:var(--ok)}
+.q{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0}
+.q p{margin:0 0 8px;font-weight:600}
+.opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 12px;margin:5px 0;cursor:pointer;font:inherit}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.right{border-color:var(--ok);background:var(--oksoft)}
+.opt.wrong{border-color:var(--bad);background:var(--badsoft)}
+.opt:disabled{cursor:default;color:inherit}
+.exp{font-size:.9rem;margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:.93rem}
+th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:.82rem}
+.st{font-weight:700;white-space:nowrap}.st.ok{color:var(--ok)}.st.no{color:var(--bad)}.st.part{color:var(--warn)}
+textarea{width:100%;min-height:80px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-size:.95rem}
+.note{background:#fff8e1;border:1px solid #f0d58a;border-radius:10px;padding:10px 12px;font-size:.9rem}
+.score{font-size:2.2rem;font-weight:800;color:var(--accent);line-height:1}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.tile{border:1px solid var(--line);border-radius:12px;padding:12px}
+.tile b{display:block;font-size:1.5rem}
+.timer{font-variant-numeric:tabular-nums;font-weight:700}
+.gab{background:#f6f8fb;border-left:4px solid var(--accent);padding:8px 12px;margin:6px 0;font-size:.9rem}
+footer{color:var(--muted);font-size:.8rem;text-align:center;margin:20px 0}
+@media print{nav.tabs,.noprint,.btn{display:none!important}body{background:#fff}.card{border:0;padding:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1>Aula de 3 horas: Windows Server 2016</h1><p>Desktop, Core e Datacenter · domínio sala304.local · exercícios práticos</p></div>
+  <div class="who noprint"><label for="nome">Aluno(a):</label><input id="nome" placeholder="Digite seu nome"></div>
+</header>
+<nav class="tabs" id="tabs"></nav>
+<main id="main"></main>
+<footer>Atividade didática · Prof. Maicon Kuzer · Senac</footer>
+</div>
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const KEY='aula3h-windows-server-v1';
+const LAB_KEY='lab-server2016-std-datacenter-v1', SALA_KEY='cfg-server2016-sala304-v1';
+const LAB_FILE='laboratorio-server-standard-datacenter.html', SALA_FILE='configuracao-server-2016-sala304.html', AD_FILE='ad-dns-lab-local.html';
+const PROF='senac2026';
+function load(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
+let A=load(KEY)||{tab:0,quiz:{},man:{},esc:{},nome:'',prof:false};
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(A)); }catch(e){} }
+
+/* ---------- conteúdo ---------- */
+const QUIZ=[
+ {q:'Qual a principal diferença entre a instalação com Experiência Desktop e o Server Core?',o:['O Core não tem Active Directory','O Core não tem interface gráfica: é administrado por comandos ou remotamente','O Desktop só funciona na edição Datacenter','O Core é uma versão de avaliação'],a:1,e:'O Core tem as mesmas funções de servidor, mas sem área de trabalho: usa sconfig, PowerShell ou administração remota.'},
+ {q:'Qual destas é uma vantagem do Server Core?',o:['É mais fácil para iniciantes','Tem mais programas instalados','Precisa de menos atualizações e reinícios','Permite usar o Internet Explorer'],a:2,e:'Sem componentes gráficos, há menos coisa para atualizar e menos superfície de ataque.'},
+ {q:'Na lista do instalador do Windows Server 2016, qual opção vem selecionada primeiro?',o:['Standard (Experiência Desktop)','Standard, que é o Server Core','Datacenter (Experiência Desktop)','Nenhuma'],a:1,e:'A primeira opção, já marcada, é o Server Core. Quem avança sem ler instala sem área de trabalho.'},
+ {q:'No Windows Server 2016, dá para transformar um Core em Desktop depois de instalado?',o:['Sim, pelo sconfig','Sim, pelo Gerenciador do Servidor','Não, só reinstalando','Sim, com o DISM'],a:2,e:'No 2016 a escolha é definitiva. No 2012 dava para alternar.'},
+ {q:'Que ferramenta em texto configura o básico do Server Core (nome, IP, domínio)?',o:['regedit','sconfig','msconfig','diskpart'],a:1,e:'O sconfig é um menu numerado que configura nome, rede, domínio, Área de Trabalho Remota e mais.'},
+ {q:'Quais são as duas edições do Windows Server 2016 usadas na aula?',o:['Home e Pro','Standard e Datacenter','Essentials e Enterprise','Core e Desktop'],a:1,e:'Core e Desktop são formas de instalação; as edições são Standard e Datacenter.'},
+ {q:'Quantas VMs com Windows Server a licença Standard cobre num host (todos os núcleos licenciados)?',o:['1','2','4','Ilimitadas'],a:1,e:'A Standard cobre 2 VMs; a Datacenter cobre VMs ilimitadas.'},
+ {q:'Qual destes recursos só existe na edição Datacenter do 2016?',o:['Hyper-V','Servidor DHCP','Espaços de Armazenamento Diretos (Storage Spaces Direct)','Active Directory'],a:2,e:'Storage Spaces Direct, Réplica de Armazenamento, VMs Blindadas e o Controlador de Rede (SDN) são exclusivos da Datacenter.'},
+ {q:'Por que o DNS é instalado junto com o Active Directory?',o:['Porque o AD depende do DNS para localizar o controlador de domínio e guardar registros','Porque o DNS substitui o DHCP','Porque o DNS cria os usuários','Não precisa: é opcional'],a:0,e:'Sem DNS os computadores não encontram o controlador de domínio.'},
+ {q:'Para que serve uma Unidade Organizacional (OU)?',o:['Para guardar arquivos dos usuários','Para organizar objetos do domínio e aplicar GPOs e delegação','Para dividir o disco do servidor','Para criar redes virtuais'],a:1,e:'As OUs organizam usuários, grupos e computadores; nelas vinculamos GPOs e delegamos administração.'},
+];
+const LAB_ITEMS=[[0,null,'1. Instalar com Experiência Desktop (VM1)'],[3,null,'4. Instalar o Server Core (VM2)'],[4,[0,1,2,3,4],'5. Configurar com o sconfig (passos 1 a 5)'],[9,null,'10. Instalar a edição Datacenter (VM3)'],[11,null,'12. Qual edição estou usando?'],[12,null,'13. Recursos exclusivos da Datacenter']];
+const LAB_STEPS={0:6,3:6,4:6,9:4,11:2,12:5,13:4};
+const SALA_ITEMS=[[0,2,'1. Preparar o servidor (nome e IP)'],[1,1,'2. Instalar AD DS, DNS e DHCP'],[2,2,'3. Criar o domínio sala304.local'],[3,1,'4. Autorizar o DHCP'],[4,2,'5. Montar a árvore de OUs'],[5,3,'6. Criar os usuários'],[6,3,'7. Grupos e computadores']];
+const ESCRITA=[
+ ['Uma empresa vai instalar um servidor só para DHCP e DNS, sem ninguém usando a tela. Desktop ou Core? Justifique.','Core: é serviço de rede sem uso da tela, e o Core é mais seguro, mais leve e reinicia menos.'],
+ ['Um aluno instalou o Core por engano. O que ele precisa fazer para ter a interface gráfica no Windows Server 2016?','Reinstalar escolhendo a opção com Experiência Desktop. No 2016 não dá para converter.'],
+ ['Qual comando mostra a edição instalada (Standard ou Datacenter)?','dism /online /Get-CurrentEdition (ou Get-ComputerInfo no PowerShell).'],
+ ['Por que usamos grupos (como GG_Alunos) em vez de dar permissão direto para cada usuário?','Permissões e políticas dadas ao grupo valem para todos os membros: quem entra ou sai só é colocado ou tirado do grupo.'],
+ ['Por que não dá para converter para Datacenter o servidor que é controlador de domínio?','O Windows não tem suporte para mudar a edição de um controlador de domínio: é preciso rebaixar o servidor antes ou usar outro.'],
+];
+const BLOCOS=[
+ {t:'Bloco 1',s:'Aquecimento · 20 min',min:20},
+ {t:'Bloco 2',s:'Desktop, Core e Datacenter · 70 min',min:70},
+ {t:'Intervalo',s:'10 min',min:10},
+ {t:'Bloco 3',s:'Domínio sala304 · 50 min',min:50},
+ {t:'Bloco 4',s:'Desafio e avaliação · 30 min',min:30},
+ {t:'Resultado',s:'Nota e impressão',min:0},
+];
+
+/* ---------- leitura dos simuladores ---------- */
+function labDone(mi,si){ const L=load(LAB_KEY); return !!(L&&L.done&&L.done[mi+'.'+si]); }
+function salaDone(mi,si){ const L=load(SALA_KEY); return !!(L&&L.done&&L.done[mi+'.'+si]); }
+const labOn=()=>!!load(LAB_KEY), salaOn=()=>!!load(SALA_KEY);
+function labItem(it){ const [mi,only]=it; const steps=only||[...Array(LAB_STEPS[mi]).keys()]; const n=steps.filter(si=>labDone(mi,si)).length; return [n,steps.length]; }
+function salaItem(it){ const [mi,n]=it; let d=0; for(let si=0;si<n;si++) if(salaDone(mi,si)) d++; return [d,n]; }
+function pct(list,fn,manKey){ let d=0,t=0; list.forEach((it,i)=>{ const [a,b]=fn(it); const m=A.man[manKey+i]; d+=m?b:a; t+=b; }); return t?Math.round(d*100/t):0; }
+function desafio(){ const L=load(SALA_KEY); const ad=(L&&L.ad)||[]; const low=s=>String(s||'').trim().toLowerCase();
+  const ou=(n,p)=>ad.find(o=>o.cls==='ou'&&low(o.name)===low(n)&&(!p||o.parent===p));
+  const sala=ou('SALA304','dom'), coord=sala&&ou('Coordenacao',sala.id), comp=sala&&ou('Computadores',sala.id);
+  const user=ad.find(o=>o.cls==='user'&&low(o.sam)==='paula.mendes');
+  const grp=ad.find(o=>o.cls==='group'&&low(o.sam||o.name)==='gg_coordenacao');
+  const pc=ad.find(o=>o.cls==='computer'&&low(o.name)==='pc-coord-01');
+  return [
+   ['OU Coordenacao dentro de SALA304',!!coord],
+   ['Usuária paula.mendes na OU Coordenacao',!!(user&&coord&&user.parent===coord.id)],
+   ['Grupo GG_Coordenacao com escopo Global e tipo Segurança',!!(grp&&grp.scope==='Global'&&grp.gtype==='Security')],
+   ['Paula é membro de GG_Coordenacao',!!(grp&&user&&(grp.members||[]).includes(user.id))],
+   ['PC-COORD-01 na OU Computadores',!!(pc&&comp&&pc.parent===comp.id)],
+  ]; }
+const quizScore=()=>QUIZ.filter((q,i)=>A.quiz[i]===q.a).length;
+
+/* ---------- cronômetro ---------- */
+let TM={tab:-1,start:null}, tIv=null;
+function timerHTML(min){ if(!min) return ''; return `<div class="noprint" style="display:flex;gap:10px;align-items:center;margin:6px 0 12px"><span class="muted">Tempo do bloco:</span><span class="timer" id="tm">${min}:00</span><button class="btn" id="tGo">▶ Iniciar</button><button class="btn" id="tRs">↺</button></div>`; }
+function bindTimer(min){ const tm=$('#tm'); clearInterval(tIv); if(!tm) return; const left=()=>Math.max(0,min*60-Math.floor((Date.now()-TM.start)/1000));
+  const draw=s=>{ tm.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); tm.style.color=s<=300?'var(--bad)':''; };
+  const run=()=>{ clearInterval(tIv); tIv=setInterval(()=>{ const s=left(); draw(s); if(!s) clearInterval(tIv); },1000); draw(left()); };
+  if(TM.tab===A.tab&&TM.start){ run(); $('#tGo').textContent='⏱ Em andamento'; }
+  $('#tGo').onclick=()=>{ TM={tab:A.tab,start:Date.now()}; run(); $('#tGo').textContent='⏱ Em andamento'; };
+  $('#tRs').onclick=()=>{ clearInterval(tIv); TM={tab:-1,start:null}; draw(min*60); $('#tGo').textContent='▶ Iniciar'; }; }
+/* ---------- telas ---------- */
+function tabs(){ const done=[quizScore()===QUIZ.length||Object.keys(A.quiz).length===QUIZ.length, pct(LAB_ITEMS,labItem,'lab')===100, true, pct(SALA_ITEMS,salaItem,'sala')===100, desafio().every(x=>x[1])&&ESCRITA.every((e,i)=>(A.esc[i]||'').trim()), false];
+  $('#tabs').innerHTML=BLOCOS.map((b,i)=>`<button data-t="${i}" class="${A.tab===i?'on':''} ${done[i]&&i!==2&&i!==5?'done':''}">${done[i]&&i!==2&&i!==5?'✔ ':''}${b.t}<small>${b.s}</small></button>`).join('');
+  document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ A.tab=+b.dataset.t; save(); render(); }); }
+function statusCell(a,b,manual){ if(manual) return '<span class="st ok">✔ marcado pelo aluno</span>'; return a===b?'<span class="st ok">✔ concluída</span>':a?`<span class="st part">${a} de ${b} passos</span>`:'<span class="st no">não iniciada</span>'; }
+function render(){ tabs(); const M=$('#main'); const b=BLOCOS[A.tab];
+  if(A.tab===0){ const sc=quizScore(), resp=Object.keys(A.quiz).length;
+    M.innerHTML=`<section class="card"><h2>Bloco 1: aquecimento</h2>${timerHTML(b.min)}<p class="muted">Responda as 10 perguntas sobre a aula anterior. Cada resposta mostra na hora se está certa e por quê. Só vale a primeira tentativa.</p>
+     ${QUIZ.map((q,i)=>{ const r=A.quiz[i]; return `<div class="q"><p>${i+1}. ${esc(q.q)}</p>${q.o.map((o,j)=>`<button class="opt ${r!==undefined?(j===q.a?'right':j===r?'wrong':''):''}" data-q="${i}" data-o="${j}" ${r!==undefined?'disabled':''}>${r!==undefined&&j===q.a?'✔ ':r===j&&j!==q.a?'✖ ':''}${esc(o)}</button>`).join('')}${r!==undefined?`<div class="exp" style="color:${r===q.a?'var(--ok)':'var(--bad)'}">${r===q.a?'Correto!':'Não é essa.'} <span style="color:var(--text)">${esc(q.e)}</span></div>`:''}</div>`; }).join('')}
+     <p><b>Acertos: ${sc} de ${QUIZ.length}</b> ${resp<QUIZ.length?`<span class="muted">(faltam ${QUIZ.length-resp})</span>`:''}</p><button class="btn pri" data-go="1">Ir para o Bloco 2 →</button></section>`;
+    M.querySelectorAll('[data-q]').forEach(x=>x.onclick=()=>{ A.quiz[x.dataset.q]=+x.dataset.o; save(); render(); }); }
+  else if(A.tab===1){ const p=pct(LAB_ITEMS,labItem,'lab');
+    M.innerHTML=`<section class="card"><h2>Bloco 2: Desktop, Core e Datacenter</h2>${timerHTML(b.min)}
+     <p>Abra o laboratório e faça as missões da lista. O andamento aparece aqui sozinho: o laboratório e esta página guardam o progresso no mesmo navegador.</p>
+     <p><a class="btn pri" href="${LAB_FILE}" target="_blank">🖥️ Abrir o Laboratório Desktop, Core e Datacenter</a></p>
+     ${labOn()?'':`<p class="note">Ainda não há progresso do laboratório neste navegador. Abra-o pelo botão acima (o arquivo <b>${LAB_FILE}</b> precisa estar na mesma pasta desta página) e volte aqui. Se o andamento não aparecer, marque as missões manualmente.</p>`}
+     <div class="bar"><i style="width:${p}%"></i></div><p class="muted" style="margin-top:0">${p}% do bloco</p>
+     <table><tr><th>Missão</th><th>Situação</th><th class="noprint">Marcar à mão</th></tr>${LAB_ITEMS.map((it,i)=>{ const [a,t]=labItem(it); return `<tr><td>${esc(it[2])}</td><td>${statusCell(a,t,A.man['lab'+i])}</td><td class="noprint"><input type="checkbox" data-man="lab${i}" ${A.man['lab'+i]?'checked':''}></td></tr>`; }).join('')}</table>
+     <h3>Pergunta de fechamento (em dupla)</h3><p>A empresa vai comprar um host para 20 VMs com Windows Server. Standard ou Datacenter? Por quê?</p><textarea data-esc="b2" placeholder="Sua resposta">${esc(A.esc.b2||'')}</textarea>
+     <p class="muted">Terminou antes? Faça a missão 14 do laboratório: converter a VM2 de Standard para Datacenter com o DISM.</p>
+     <button class="btn pri" data-go="2">Ir para o intervalo →</button></section>`; }
+  else if(A.tab===2){ M.innerHTML=`<section class="card"><h2>Intervalo</h2>${timerHTML(b.min)}<p>10 minutos. Na volta, abra o simulador da sala304: vamos montar o domínio da sala.</p><button class="btn pri" data-go="3">Ir para o Bloco 3 →</button></section>`; }
+  else if(A.tab===3){ const p=pct(SALA_ITEMS,salaItem,'sala');
+    M.innerHTML=`<section class="card"><h2>Bloco 3: domínio sala304.local</h2>${timerHTML(b.min)}
+     <p>Prepare o servidor da sala e monte a árvore do Active Directory. Antes de começar, veja no simulador a aba <b>Árvore esperada</b>.</p>
+     <p><a class="btn pri" href="${SALA_FILE}" target="_blank">🗄️ Abrir o simulador da sala304</a></p>
+     ${salaOn()?'':`<p class="note">Ainda não há progresso do simulador neste navegador. Abra-o pelo botão acima (o arquivo <b>${SALA_FILE}</b> precisa estar na mesma pasta) e volte aqui.</p>`}
+     <div class="bar"><i style="width:${p}%"></i></div><p class="muted" style="margin-top:0">${p}% do bloco</p>
+     <table><tr><th>Missão</th><th>Situação</th><th class="noprint">Marcar à mão</th></tr>${SALA_ITEMS.map((it,i)=>{ const [a,t]=salaItem(it); return `<tr><td>${esc(it[2])}</td><td>${statusCell(a,t,A.man['sala'+i])}</td><td class="noprint"><input type="checkbox" data-man="sala${i}" ${A.man['sala'+i]?'checked':''}></td></tr>`; }).join('')}</table>
+     <p class="muted">Terminou antes? Faça as missões 8 (DNS), 9 (DHCP) e 10 (GPO) do mesmo simulador, ou o simulador extra <a href="${AD_FILE}" target="_blank">AD e DNS (lab.local)</a>.</p>
+     <button class="btn pri" data-go="4">Ir para o Bloco 4 →</button></section>`; }
+  else if(A.tab===4){ const D=desafio(); const pts=D.filter(x=>x[1]).length*2;
+    M.innerHTML=`<section class="card"><h2>Bloco 4: desafio sem roteiro</h2>${timerHTML(b.min)}
+     <p>Individual, sem olhar o painel de missões. No mesmo servidor da sala304, atenda o pedido da coordenação:</p>
+     <p class="note" style="background:#f6f8fb;border-color:var(--line)">A coordenação do curso vai usar o servidor da sala. Crie, dentro da OU SALA304, a OU <b>Coordenacao</b>. Nela, crie a usuária <b>Paula Mendes</b> (logon <code>paula.mendes</code>) e o grupo <b>GG_Coordenacao</b> (Global, Segurança), com a Paula como membro. Crie também o computador <b>PC-COORD-01</b> na OU Computadores.</p>
+     <p><a class="btn" href="${SALA_FILE}" target="_blank">🗄️ Abrir o simulador da sala304</a> <button class="btn" id="chk">🔍 Conferir agora</button></p>
+     <table><tr><th>Item</th><th>Pontos</th></tr>${D.map(x=>`<tr><td>${esc(x[0])}</td><td>${x[1]?'<span class="st ok">✔ 2</span>':'<span class="st no">✖ 0</span>'}</td></tr>`).join('')}<tr><td><b>Total</b></td><td><b>${pts} de 10</b></td></tr></table>
+    </section>
+    <section class="card"><h2>Avaliação escrita</h2><p class="muted">Responda com suas palavras. As respostas ficam salvas neste navegador e aparecem no resultado.</p>
+     ${ESCRITA.map((e,i)=>`<h3>${i+1}. ${esc(e[0])}</h3><textarea data-esc="${i}" placeholder="Sua resposta">${esc(A.esc[i]||'')}</textarea>`).join('')}
+     <p><button class="btn pri" data-go="5">Ver meu resultado →</button></p></section>`;
+    $('#chk').onclick=()=>render(); }
+  else { const sc=quizScore(), p2=pct(LAB_ITEMS,labItem,'lab'), p3=pct(SALA_ITEMS,salaItem,'sala'), D=desafio(), pts=D.filter(x=>x[1]).length*2, esc5=ESCRITA.filter((e,i)=>(A.esc[i]||'').trim()).length;
+    M.innerHTML=`<section class="card"><h2>Resultado${A.nome?': '+esc(A.nome):''}</h2><p class="muted">${new Date().toLocaleString('pt-BR')}</p>
+     <div class="grid"><div class="tile">Bloco 1 · quiz<b>${sc}/${QUIZ.length}</b></div><div class="tile">Bloco 2 · laboratório<b>${p2}%</b></div><div class="tile">Bloco 3 · sala304<b>${p3}%</b></div><div class="tile">Bloco 4 · desafio<b>${pts}/10</b></div><div class="tile">Respostas escritas<b>${esc5}/${ESCRITA.length}</b></div></div>
+     ${Object.keys(A.man).some(k=>A.man[k])?'<p class="note" style="margin-top:12px">Algumas missões foram marcadas à mão pelo aluno: confira na tela do simulador.</p>':''}
+     <h3>Pergunta do Bloco 2</h3><p>${esc(A.esc.b2||'(sem resposta)')}</p>
+     <h3>Avaliação escrita</h3>${ESCRITA.map((e,i)=>`<p><b>${i+1}. ${esc(e[0])}</b><br>${esc(A.esc[i]||'(sem resposta)')}</p>${A.prof?`<div class="gab">Gabarito: ${esc(e[1])}</div>`:''}`).join('')}
+     ${A.prof?`<div class="gab">Gabarito do Bloco 2: Datacenter, porque cobre VMs ilimitadas. Com Standard seria preciso licenciar o host várias vezes (cada licença completa cobre 2 VMs).</div>`:''}
+     <p class="noprint"><button class="btn pri" id="prt">🖨️ Imprimir / salvar em PDF</button> <button class="btn" id="prof">${A.prof?'🔒 Esconder gabarito':'🔑 Área do professor'}</button> <button class="btn" id="zera">↺ Apagar as respostas desta página</button></p>
+     <div id="profBox" class="noprint"></div></section>`;
+    $('#prt').onclick=()=>window.print();
+    $('#prof').onclick=()=>{ if(A.prof){ A.prof=false; save(); return render(); } $('#profBox').innerHTML=`<p>Código do professor: <input id="pc" type="text" autocomplete="off" style="padding:6px;border:1px solid var(--line);border-radius:6px"> <button class="btn" id="pok">Entrar</button> <span id="pe" style="color:var(--bad)"></span></p>`; $('#pc').focus(); const go=()=>{ if($('#pc').value===PROF){ A.prof=true; save(); render(); } else $('#pe').textContent='Código incorreto.'; }; $('#pok').onclick=go; $('#pc').onkeydown=e=>{ if(e.key==='Enter') go(); }; };
+    let arm=false; $('#zera').onclick=e=>{ if(!arm){ arm=true; e.target.textContent='⚠ Clique de novo para apagar'; setTimeout(()=>{ arm=false; if(e.target.isConnected) e.target.textContent='↺ Apagar as respostas desta página'; },3500); return; } const n=A.nome; A={tab:0,quiz:{},man:{},esc:{},nome:n,prof:false}; save(); render(); }; }
+  M.querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>{ A.tab=+x.dataset.go; save(); render(); window.scrollTo(0,0); });
+  M.querySelectorAll('[data-man]').forEach(x=>x.onchange=()=>{ A.man[x.dataset.man]=x.checked; save(); render(); });
+  M.querySelectorAll('[data-esc]').forEach(x=>x.oninput=()=>{ A.esc[x.dataset.esc]=x.value; save(); });
+  bindTimer(b.min); }
+$('#nome').value=A.nome||''; $('#nome').oninput=e=>{ A.nome=e.target.value; save(); };
+window.addEventListener('focus',()=>{ if([1,3,4,5].includes(A.tab)){ const ta=document.activeElement&&document.activeElement.tagName==='TEXTAREA'; if(!ta) render(); } });
+render();
+})();
+</script>
+</body>
+</html>
