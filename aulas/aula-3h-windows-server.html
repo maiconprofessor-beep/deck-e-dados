@@ -67,7 +67,7 @@ footer{color:var(--muted);font-size:.8rem;text-align:center;margin:20px 0}
 'use strict';
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const KEY='aula3h-windows-server-v1';
+const KEY='aula3h-windows-server-v2';
 const LAB_KEY='lab-server2016-std-datacenter-v1', SALA_KEY='cfg-server2016-sala304-v1';
 const LAB_FILE='laboratorio-server-standard-datacenter.html', SALA_FILE='configuracao-server-2016-sala304.html', AD_FILE='ad-dns-lab-local.html';
 const PROF='senac2026';
@@ -101,8 +101,7 @@ const ESCRITA=[
 const BLOCOS=[
  {t:'Bloco 1',s:'Aquecimento · 20 min',min:20},
  {t:'Bloco 2',s:'Desktop, Core e Datacenter · 70 min',min:70},
- {t:'Intervalo',s:'10 min',min:10},
- {t:'Bloco 3',s:'Domínio sala304 · 50 min',min:50},
+ {t:'Bloco 3',s:'Domínio sala304 · 60 min',min:60},
  {t:'Bloco 4',s:'Desafio e avaliação · 30 min',min:30},
  {t:'Resultado',s:'Nota e impressão',min:0},
 ];
@@ -139,8 +138,8 @@ function bindTimer(min){ const tm=$('#tm'); clearInterval(tIv); if(!tm) return; 
   $('#tGo').onclick=()=>{ TM={tab:A.tab,start:Date.now()}; run(); $('#tGo').textContent='⏱ Em andamento'; };
   $('#tRs').onclick=()=>{ clearInterval(tIv); TM={tab:-1,start:null}; draw(min*60); $('#tGo').textContent='▶ Iniciar'; }; }
 /* ---------- telas ---------- */
-function tabs(){ const done=[quizScore()===QUIZ.length||Object.keys(A.quiz).length===QUIZ.length, pct(LAB_ITEMS,labItem,'lab')===100, true, pct(SALA_ITEMS,salaItem,'sala')===100, desafio().every(x=>x[1])&&ESCRITA.every((e,i)=>(A.esc[i]||'').trim()), false];
-  $('#tabs').innerHTML=BLOCOS.map((b,i)=>`<button data-t="${i}" class="${A.tab===i?'on':''} ${done[i]&&i!==2&&i!==5?'done':''}">${done[i]&&i!==2&&i!==5?'✔ ':''}${b.t}<small>${b.s}</small></button>`).join('');
+function tabs(){ const done=[quizScore()===QUIZ.length||Object.keys(A.quiz).length===QUIZ.length, pct(LAB_ITEMS,labItem,'lab')===100, pct(SALA_ITEMS,salaItem,'sala')===100, desafio().every(x=>x[1])&&ESCRITA.every((e,i)=>(A.esc[i]||'').trim()), false];
+  $('#tabs').innerHTML=BLOCOS.map((b,i)=>`<button data-t="${i}" class="${A.tab===i?'on':''} ${done[i]&&i!==4?'done':''}">${done[i]&&i!==4?'✔ ':''}${b.t}<small>${b.s}</small></button>`).join('');
   document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ A.tab=+b.dataset.t; save(); render(); }); }
 function statusCell(a,b,manual){ if(manual) return '<span class="st ok">✔ marcado pelo aluno</span>'; return a===b?'<span class="st ok">✔ concluída</span>':a?`<span class="st part">${a} de ${b} passos</span>`:'<span class="st no">não iniciada</span>'; }
 function render(){ tabs(); const M=$('#main'); const b=BLOCOS[A.tab];
@@ -158,9 +157,8 @@ function render(){ tabs(); const M=$('#main'); const b=BLOCOS[A.tab];
      <table><tr><th>Missão</th><th>Situação</th><th class="noprint">Marcar à mão</th></tr>${LAB_ITEMS.map((it,i)=>{ const [a,t]=labItem(it); return `<tr><td>${esc(it[2])}</td><td>${statusCell(a,t,A.man['lab'+i])}</td><td class="noprint"><input type="checkbox" data-man="lab${i}" ${A.man['lab'+i]?'checked':''}></td></tr>`; }).join('')}</table>
      <h3>Pergunta de fechamento (em dupla)</h3><p>A empresa vai comprar um host para 20 VMs com Windows Server. Standard ou Datacenter? Por quê?</p><textarea data-esc="b2" placeholder="Sua resposta">${esc(A.esc.b2||'')}</textarea>
      <p class="muted">Terminou antes? Faça a missão 14 do laboratório: converter a VM2 de Standard para Datacenter com o DISM.</p>
-     <button class="btn pri" data-go="2">Ir para o intervalo →</button></section>`; }
-  else if(A.tab===2){ M.innerHTML=`<section class="card"><h2>Intervalo</h2>${timerHTML(b.min)}<p>10 minutos. Na volta, abra o simulador da sala304: vamos montar o domínio da sala.</p><button class="btn pri" data-go="3">Ir para o Bloco 3 →</button></section>`; }
-  else if(A.tab===3){ const p=pct(SALA_ITEMS,salaItem,'sala');
+     <button class="btn pri" data-go="2">Ir para o Bloco 3 →</button></section>`; }
+  else if(A.tab===2){ const p=pct(SALA_ITEMS,salaItem,'sala');
     M.innerHTML=`<section class="card"><h2>Bloco 3: domínio sala304.local</h2>${timerHTML(b.min)}
      <p>Prepare o servidor da sala e monte a árvore do Active Directory. Antes de começar, veja no simulador a aba <b>Árvore esperada</b>.</p>
      <p><a class="btn pri" href="${SALA_FILE}" target="_blank">🗄️ Abrir o simulador da sala304</a></p>
@@ -168,8 +166,8 @@ function render(){ tabs(); const M=$('#main'); const b=BLOCOS[A.tab];
      <div class="bar"><i style="width:${p}%"></i></div><p class="muted" style="margin-top:0">${p}% do bloco</p>
      <table><tr><th>Missão</th><th>Situação</th><th class="noprint">Marcar à mão</th></tr>${SALA_ITEMS.map((it,i)=>{ const [a,t]=salaItem(it); return `<tr><td>${esc(it[2])}</td><td>${statusCell(a,t,A.man['sala'+i])}</td><td class="noprint"><input type="checkbox" data-man="sala${i}" ${A.man['sala'+i]?'checked':''}></td></tr>`; }).join('')}</table>
      <p class="muted">Terminou antes? Faça as missões 8 (DNS), 9 (DHCP) e 10 (GPO) do mesmo simulador, ou o simulador extra <a href="${AD_FILE}" target="_blank">AD e DNS (lab.local)</a>.</p>
-     <button class="btn pri" data-go="4">Ir para o Bloco 4 →</button></section>`; }
-  else if(A.tab===4){ const D=desafio(); const pts=D.filter(x=>x[1]).length*2;
+     <button class="btn pri" data-go="3">Ir para o Bloco 4 →</button></section>`; }
+  else if(A.tab===3){ const D=desafio(); const pts=D.filter(x=>x[1]).length*2;
     M.innerHTML=`<section class="card"><h2>Bloco 4: desafio sem roteiro</h2>${timerHTML(b.min)}
      <p>Individual, sem olhar o painel de missões. No mesmo servidor da sala304, atenda o pedido da coordenação:</p>
      <p class="note" style="background:#f6f8fb;border-color:var(--line)">A coordenação do curso vai usar o servidor da sala. Crie, dentro da OU SALA304, a OU <b>Coordenacao</b>. Nela, crie a usuária <b>Paula Mendes</b> (logon <code>paula.mendes</code>) e o grupo <b>GG_Coordenacao</b> (Global, Segurança), com a Paula como membro. Crie também o computador <b>PC-COORD-01</b> na OU Computadores.</p>
@@ -178,7 +176,7 @@ function render(){ tabs(); const M=$('#main'); const b=BLOCOS[A.tab];
     </section>
     <section class="card"><h2>Avaliação escrita</h2><p class="muted">Responda com suas palavras. As respostas ficam salvas neste navegador e aparecem no resultado.</p>
      ${ESCRITA.map((e,i)=>`<h3>${i+1}. ${esc(e[0])}</h3><textarea data-esc="${i}" placeholder="Sua resposta">${esc(A.esc[i]||'')}</textarea>`).join('')}
-     <p><button class="btn pri" data-go="5">Ver meu resultado →</button></p></section>`;
+     <p><button class="btn pri" data-go="4">Ver meu resultado →</button></p></section>`;
     $('#chk').onclick=()=>render(); }
   else { const sc=quizScore(), p2=pct(LAB_ITEMS,labItem,'lab'), p3=pct(SALA_ITEMS,salaItem,'sala'), D=desafio(), pts=D.filter(x=>x[1]).length*2, esc5=ESCRITA.filter((e,i)=>(A.esc[i]||'').trim()).length;
     M.innerHTML=`<section class="card"><h2>Resultado${A.nome?': '+esc(A.nome):''}</h2><p class="muted">${new Date().toLocaleString('pt-BR')}</p>
@@ -197,7 +195,7 @@ function render(){ tabs(); const M=$('#main'); const b=BLOCOS[A.tab];
   M.querySelectorAll('[data-esc]').forEach(x=>x.oninput=()=>{ A.esc[x.dataset.esc]=x.value; save(); });
   bindTimer(b.min); }
 $('#nome').value=A.nome||''; $('#nome').oninput=e=>{ A.nome=e.target.value; save(); };
-window.addEventListener('focus',()=>{ if([1,3,4,5].includes(A.tab)){ const ta=document.activeElement&&document.activeElement.tagName==='TEXTAREA'; if(!ta) render(); } });
+window.addEventListener('focus',()=>{ if([1,2,3,4].includes(A.tab)){ const ta=document.activeElement&&document.activeElement.tagName==='TEXTAREA'; if(!ta) render(); } });
 render();
 })();
 </script>
