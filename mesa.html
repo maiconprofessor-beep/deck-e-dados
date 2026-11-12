@@ -195,6 +195,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:none}
 .dotrow input{padding:3px 4px;text-align:center}
 .dotrow em{font-style:normal;color:var(--gold);letter-spacing:1px;font-size:.8rem}
 .gen{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.utbox{border:1px solid var(--gold-dim);border-radius:8px;padding:8px 10px;margin:8px 0;font-family:var(--ui);font-size:.85rem}.utbox .crow{margin-top:6px}.utbox .muted{font-size:.75rem}
+.ut{font-family:var(--ui);font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:4px;white-space:nowrap}.ut-white{background:#f1ede2;color:#2b2216}.ut-green{background:#3f9b5a;color:#fff}.ut-yellow{background:#e8c440;color:#2b2216}.ut-red{background:#c8372d;color:#fff}
 .mbox{grid-column:1/-1;border:1px dashed var(--gold-dim);border-radius:8px;padding:10px 14px;font-family:var(--ui);font-size:.88rem;color:var(--ink-2);line-height:1.5}.mbox.ok{border-style:solid;border-color:var(--gold);color:var(--ink)}.mbox .btn{margin-top:8px}
 .calcrow{display:flex;gap:6px;align-items:center}
 .calcrow b{width:22px;text-align:center}.calcrow b.okm{color:var(--ok)}.calcrow b.warn{color:var(--gold)}
@@ -239,7 +241,7 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--rule);font-fa
 (function(){
 const SUPABASE_URL="https://baoquuhwoqftboziight.supabase.co";
 const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhb3F1dWh3b3FmdGJvemlpZ2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0NTE1MjcsImV4cCI6MjEwMzAyNzUyN30.5ut-Gd9OWdy99sX2YnUQPimssfYCbtn0cLjBRERXO-w";
-const SISTEMAS=['D&D 5e','Tormenta20','Ordem Paranormal','Call of Cthulhu','Vampiro: A Máscara','Marvel Multiverse','Pathfinder','3D&T','GURPS','Sistema próprio'];
+const SISTEMAS=['D&D 5e','Tormenta20','Ordem Paranormal','Call of Cthulhu','Vampiro: A Máscara','Marvel Multiverse','Marvel Super Heroes (FASERIP)','Pathfinder','3D&T','GURPS','Sistema próprio'];
 const PAGE=120;
 
 const $=s=>document.querySelector(s);
@@ -426,7 +428,8 @@ function postHTML(p){
   else if(p.tipo==='acao'||p.tipo==='fala') h=`<article class="p-pc ${mine?'mine':''}">${avatar(p.autor_id,per)}<div>${w}<div class="by"><b>${esc(per)}</b><span>${autorMestre&&p.tipo==='fala'?'(NPC)':`(${esc(nomeJog(p.autor_id))})`}</span> · ${t}</div><div class="tx ${p.tipo}">${fmt(p.texto)}</div></div></article>`;
   else if(p.tipo==='ooc') h=`<div class="p-ooc">${w}☕ <b>${esc(nomeJog(p.autor_id))}</b> <span>(fora do jogo)</span>: ${fmt(p.texto)} · ${t}</div>`;
   else if(p.tipo==='rolagem'){ const r=p.rolagem||{}; const ds=(r.dados||[]).map(d=>`<span class="d ${d===r.faces?'max':d===1?'min':''}">${d}</span>`).join('');
-    const crit=r.faces===20&&(r.dados||[]).length===1?(r.dados[0]===20?' <span class="chip ok">20 natural!</span>':r.dados[0]===1?' <span class="chip red">1 natural</span>':''):'';
+    const ut=r.faces===100&&(r.dados||[]).length===1&&!r.mod?String(p.texto||'').match(/^\[Coluna: (.+?)\]/):null; const utc=ut?frCor(FR.findIndex(x=>x[0]===ut[1]),r.total):null;
+    const crit=utc?` <span class="ut ut-${utc[2]}">${utc[1]}</span>`:r.faces===20&&(r.dados||[]).length===1?(r.dados[0]===20?' <span class="chip ok">20 natural!</span>':r.dados[0]===1?' <span class="chip red">1 natural</span>':''):'';
     h=`<div class="p-roll"><span class="tot">${esc(r.total)}</span><div>${w}<div><b>${esc(per)}</b> rolou <code>${esc(r.expr)}</code>${p.texto?` · ${esc(p.texto)}`:''}${crit}</div><div class="by" style="margin:2px 0 0">dados:<span class="dice">${ds}</span>${r.mod?` ${r.mod>0?'+':''}${esc(r.mod)}`:''} · ${t}</div></div></div>`; }
   return `<div class="post ${p.para_id?'whisper':''}" data-id="${p.id}">${tools}${h}</div>`;
 }
@@ -452,6 +455,10 @@ async function carregarAnteriores(){
 const TABS_MESTRE=[['narracao','📜 Narração'],['cena','🎬 Nova cena'],['fala','💬 Fala de NPC'],['rolar','🎲 Rolar dados'],['sussurro','🤫 Sussurro'],['ooc','☕ Fora do jogo']];
 const TABS_JOG=[['acao','🎭 Ação'],['fala','💬 Fala'],['rolar','🎲 Rolar dados'],['sussurro','🤫 Sussurro ao mestre'],['ooc','☕ Fora do jogo']];
 const draftKey=()=>'mesa.rascunho.'+S.mesa.id;
+function utOpts(){ const o=lerFicha(membro(me.id)||{}), c=o.c||{}; const meus=(o.sys==='faserip'||(!o.sys&&sysDaMesa()==='faserip'))?FR_AT.filter(([k])=>frIdx(c[k])>=0).map(([k,l])=>`<option value="${frIdx(c[k])}|${esc(l.split(' (')[0])}">${esc(l.split(' (')[0])}: ${esc(c[k])}</option>`):[];
+  return (meus.length?`<optgroup label="Meus atributos">${meus.join('')}</optgroup>`:'')+`<optgroup label="Nível (poder, outro valor)">${FR.map((r,i)=>`<option value="${i}|" ${!meus.length&&i===3?'selected':''}>${esc(r[0])} (${r[2]})</option>`).join('')}</optgroup>`; }
+async function rolarUt(){ const [i,at]=$('#utCol').value.split('|'); const col=Math.max(0,Math.min(FR.length-1,+i+(+$('#utCs').value))); const cs=+$('#utCs').value;
+  const mot=$('#rMot').value.trim(); $('#rMot').value=`[Coluna: ${FR[col][0]}] ${at?at+(cs?` ${cs>0?'+':''}${cs} col.`:'')+(mot?' · ':''):cs?`${cs>0?'+':''}${cs} col.`+(mot?' · ':''):''}${mot}`.trim(); $('#rExpr').value='1d100'; await rolar(); }
 function renderComposer(){
   const c=$('#composer'); if(!c) return; const m=S.mesa, mestre=souMestre(), eu=membro(me.id)||{};
   if(S.obs){ c.innerHTML='<div class="composer"><p class="closed">🛡️ Modo administrador: você está observando esta mesa.</p></div>'; return; }
@@ -467,6 +474,8 @@ function renderComposer(){
       <div class="dicebtns">${['d4','d6','d8','d10','d12','d20','d100'].map(d=>`<button type="button" data-d="1${d}">${d}</button>`).join('')}</div>
       <div class="crow"><input id="rExpr" value="1d20" maxlength="12" aria-label="Dados" style="max-width:130px;font-family:var(--mono)"><input id="rMot" maxlength="300" placeholder="Para quê? Ex.: Ataque com espada"></div>
       <div class="cfoot"><label class="chk"><input type="checkbox" id="rSec"> Rolagem secreta (só o mestre vê)</label><button class="btn" id="bRolar">🎲 Rolar</button></div>
+      ${sysDaMesa()==='faserip'?`<div class="utbox"><b>🎨 Tabela Universal</b> <span class="muted">rola d100 e mostra a cor do resultado para todos</span>
+        <div class="crow"><select id="utCol" aria-label="Coluna">${utOpts()}</select><select id="utCs" aria-label="Deslocamento de coluna">${[-3,-2,-1,0,1,2,3].map(n=>`<option value="${n}" ${n===0?'selected':''}>${n===0?'sem deslocamento':(n>0?'+':'')+n+' coluna'+(Math.abs(n)>1?'s':'')}</option>`).join('')}</select><button type="button" class="btn" id="bUt">Rolar na tabela</button></div></div>`:''}
       <small class="muted" style="font-family:var(--ui);font-size:.75rem">Formatos: 1d20 · 2d6+3 · 4d6-1 · d100. Os dados são rolados no servidor: ninguém consegue escolher o resultado.</small>`:`
       ${tab==='fala'&&mestre?`<div class="crow"><input id="cNpc" maxlength="60" placeholder="Nome do NPC (ex.: Taverneiro Brom)"></div>`:''}
       ${tab==='sussurro'&&mestre?`<div class="crow"><select id="cPara">${jogadores.map(j=>`<option value="${esc(j.user_id)}">${esc(j.personagem||nomeJog(j.user_id))} (${esc(nomeJog(j.user_id))})</option>`).join('')}</select></div>`:''}
@@ -477,6 +486,7 @@ function renderComposer(){
   c.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{ S.tab=b.dataset.tab; renderComposer(); const t=$('#cTxt'); t&&t.focus(); });
   if(tab==='rolar'){
     c.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{ $('#rExpr').value=b.dataset.d; rolar(); });
+    if($('#bUt')) $('#bUt').onclick=rolarUt;
     $('#bRolar').onclick=rolar; $('#rMot').onkeydown=e=>{ if(e.key==='Enter') rolar(); };
   } else {
     if($('#bFazerFicha')) $('#bFazerFicha').onclick=()=>ficha(me.id);
@@ -758,7 +768,7 @@ const mrank=c=>{ const r=n0(c.rank); return r!==null&&r>=1&&r<=6?r:null; };
 const mcriado=c=>/criado/i.test(c.tipo||'');
 const mat=(c,k)=>n0((c.at||{})[k]);
 const mpadrao=(c,fn)=>mcriado(c)?fn(c):null; /* perfis oficiais trazem os números prontos: só conferimos as contas de quem cria o herói */
-SYS.marvel={ nome:'Marvel Multiverse RPG', match:/marvel|multiverse|d616/i,
+SYS.marvel={ nome:'Marvel Multiverse RPG', match:{test:s=>/multiverse|d616/i.test(s)||(/marvel/i.test(s)&&!/super.?her|faserip|1984|tsr/i.test(s))},
  resumo:c=>[c.codinome||c.heroi,mrank(c)?'Rank '+mrank(c):''].filter(Boolean).join(' · '), pv:c=>c.vida,
  passos:[
   {t:'Herói e Rank',help:c=>`Você pode jogar com um <b>herói oficial</b> ou <b>criar o seu</b>.<br>• <b>Herói oficial:</b> baixe a ficha gratuita na <a href="/marvel.html" target="_blank" rel="noopener">página Marvel do Deck e Dados</a> (os links levam ao site da Marvel) e copie os números dela para cá, como o próprio livro manda fazer.<br>• <b>Herói criado:</b> siga os passos e a ficha confere as contas.<br>O <b>Rank</b> (1 a 6) mede o nível de poder: 1 é gente comum, 6 é cósmico. <b>Combine o Rank com o mestre</b>: heróis muito acima do grupo desequilibram a campanha.${/Hulk/.test(c.heroi||'')?'<br><b>Hulk:</b> a ficha oficial traz três formas (Bruce Banner, Hero Hulk e Monster Hulk). Anote a forma em que você começa e use o campo de poderes para as outras.':''}`,
@@ -787,6 +797,33 @@ SYS.marvel={ nome:'Marvel Multiverse RPG', match:/marvel|multiverse|d616/i,
   {t:'Traços, tags e história',help:()=>'<b>Traços</b> são vantagens (ex.: Destemido, Reflexos de Combate). <b>Tags</b> descrevem o herói e podem trazer complicações (ex.: Identidade Secreta, Famoso). Termine com a história e a personalidade.',
    campos:[{k:'tracos',l:'Traços',area:1},{k:'tags',l:'Tags',area:1},{k:'hist',l:'História e personalidade',area:1}],
    checks:c=>[['Traços',!!(c.tracos||'').trim()]]}
+ ]};
+
+/* ===== Marvel Super Heroes (TSR, 1984) · FASERIP ===== */
+/* [nome, nome no livro, valor, verde a partir de, amarelo a partir de, vermelho a partir de] */
+const FR=[['Shift 0','Shift 0',0,66,95,100],['Fraco','Feeble',2,61,91,100],['Pobre','Poor',4,56,86,100],['Típico','Typical',6,51,81,98],['Bom','Good',10,46,76,98],['Excelente','Excellent',20,41,71,95],['Notável','Remarkable',30,36,66,95],['Incrível','Incredible',40,31,61,91],['Espantoso','Amazing',50,26,56,91],['Monstruoso','Monstrous',75,21,51,86],['Inalcançável','Unearthly',100,16,46,86],['Shift X','Shift X',150,11,41,81],['Shift Y','Shift Y',200,7,41,81],['Shift Z','Shift Z',500,4,36,76],['Classe 1000','Class 1000',1000,2,36,76]];
+const FR_OPT=FR.slice(1).map(r=>`${r[0]} (${r[2]})`);
+const FR_AT=[['aF','Luta (Fighting)'],['aA','Agilidade (Agility)'],['aS','Força (Strength)'],['aE','Vigor (Endurance)'],['aR','Raciocínio (Reason)'],['aI','Intuição (Intuition)'],['aP','Psique (Psyche)']];
+const frIdx=v=>{ const m=String(v||'').match(/^(.+?) \(/); return m?FR.findIndex(r=>r[0]===m[1]):-1; };
+const frVal=v=>{ const i=frIdx(v); return i<0?null:FR[i][2]; };
+const frCor=(col,d)=>{ const r=FR[col]; if(!r) return null; return d>=r[5]?['vermelho','Vermelho: sucesso excepcional','red']:d>=r[4]?['amarelo','Amarelo: sucesso','yellow']:d>=r[3]?['verde','Verde: sucesso parcial','green']:['branco','Branco: falhou','white']; };
+const frSoma=(c,ks)=>{ const v=ks.map(k=>frVal(c[k])); return v.includes(null)?null:v.reduce((a,b)=>a+b,0); };
+SYS.faserip={ nome:'Marvel Super Heroes (1984 · FASERIP)', match:/super.?her|faserip|1984|tsr/i,
+ resumo:c=>[c.codinome,c.origem].filter(Boolean).join(' · '), pv:c=>c.vida,
+ passos:[
+  {t:'Herói',help:()=>'O clássico da TSR. Você pode jogar com um <b>herói do livro</b> (copie os níveis da ficha dele) ou <b>criar o seu</b>: descreva o herói e os poderes ao mestre, e combinem os níveis juntos (o livro também traz tabelas de criação aleatória).<br>A <b>origem</b> diz de onde vêm os poderes: Humano Alterado, Mutante, Maravilha Tecnológica, Robô ou Alienígena.',
+   campos:[{k:'codinome',l:'Codinome'},{k:'identidade',l:'Nome verdadeiro'},{k:'origem',l:'Origem',sel:['Humano Alterado','Mutante','Maravilha Tecnológica','Robô','Alienígena','Humano normal']},{k:'tipo',l:'Ficha',sel:['Herói do livro','Herói criado com o mestre']}],
+   checks:c=>[['Codinome',!!(c.codinome||'').trim()],['Origem',!!c.origem]]},
+  {t:'Atributos (F.A.S.E.R.I.P.)',help:()=>`Os sete atributos usam <b>níveis com nome</b>, do mais fraco ao cósmico: ${FR.slice(1,11).map(r=>`<b>${r[0]}</b> (${r[1]}, ${r[2]})`).join(' · ')}… até Shift X, Y, Z e Classe 1000.<br>• <b>Luta</b>: combate corpo a corpo · <b>Agilidade</b>: esquiva, mira, acrobacia · <b>Força</b>: levantar e bater · <b>Vigor</b>: aguentar dano e veneno<br>• <b>Raciocínio</b>: conhecimento · <b>Intuição</b>: percepção e reflexo · <b>Psique</b>: força de vontade e magia<br>Gente comum é <b>Típico (6)</b>. Herói de rua tem atributos entre Bom e Notável; o Hulk tem Força no nível dos monstros.`,
+   campos:FR_AT.map(([k,l])=>({k,l,sel:FR_OPT})),
+   checks:c=>[['Os 7 atributos escolhidos',FR_AT.every(([k])=>frVal(c[k])!==null)]]},
+  {t:'Vida, Karma e Recursos',help:()=>'Calcule com os <b>números</b> dos níveis:<br>• <b>Vida</b> = Luta + Agilidade + Força + Vigor.<br>• <b>Karma</b> = Raciocínio + Intuição + Psique.<br>• <b>Recursos</b> (dinheiro) também é um nível: gente comum costuma ser Típico.<br>• <b>Popularidade</b>: quanto o público gosta do herói (pode ser negativa).<br><small>Karma se gasta para melhorar jogadas e se ganha agindo como herói. Matar ou deixar inocentes em perigo faz perder Karma.</small>',
+   campos:[{k:'vida',l:'Vida',calc:c=>frSoma(c,['aF','aA','aS','aE']),dica:'F + A + S + E'},{k:'karma',l:'Karma',calc:c=>frSoma(c,['aR','aI','aP']),dica:'R + I + P'},{k:'recursos',l:'Recursos',sel:FR_OPT},{k:'popularidade',l:'Popularidade',n:1}],
+   checks:c=>SYS.faserip.passos[2].campos.filter(f=>f.calc&&f.calc(c)!==null).map(f=>[f.l,eqN(c[f.k],f.calc(c)),f.dica])},
+  {t:'Poderes, talentos e contatos',help:()=>'Cada <b>poder</b> também tem um nível (ex.: <i>Rajada de energia: Incrível (40)</i>). Na hora de usar, você rola na coluna desse nível.<br><b>Talentos</b> são áreas de conhecimento ou treino (ex.: Medicina, Artes Marciais) e dão +1 coluna nas jogadas da área. <b>Contatos</b> são pessoas e grupos que ajudam o herói.',
+   campos:[{k:'poderes',l:'Poderes (nome e nível)',area:1},{k:'talentos',l:'Talentos',area:1},{k:'contatos',l:'Contatos',area:1}],
+   checks:c=>[['Poderes anotados',!!(c.poderes||'').trim()]]},
+  {t:'História',help:()=>'Conte quem é o herói, como ganhou os poderes e o que o motiva. Anote também a identidade secreta (se tiver) e a base.',campos:[{k:'hist',l:'História',area:1}],checks:c=>[['História',!!(c.hist||'').trim()]]}
  ]};
 
 /* ===== Livre ===== */
