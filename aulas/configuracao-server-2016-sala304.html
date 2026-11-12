@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configurando o Windows Server 2016: domínio sala304.local</title>
+<style>
+:root{--bg:#eef1f5;--card:#fff;--text:#1b2430;--muted:#5d6878;--line:#dde2ea;--chip:#eef1f5;--accent:#0f62c9;--accent-soft:#e6eefb;--ok:#1f9d55;--ok-soft:#e4f5ea;--bad:#c93a3a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,sans-serif}
+.wrap{max-width:1500px;margin:0 auto;padding:14px}
+header.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+header.top h1{margin:0;font-size:clamp(1.2rem,2.6vw,1.6rem)}
+header.top p{margin:2px 0 0;color:var(--muted);font-size:.9rem}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:8px;padding:6px 12px;cursor:pointer;font:inherit;font-size:.9rem}
+.btn:hover{border-color:var(--accent)}.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:14px;align-items:start}
+@media (max-width:1150px){.layout{grid-template-columns:1fr}}
+.vmbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:#2b2f36;color:#e8ecf2;padding:6px 8px;font-size:.85rem;border-radius:10px 10px 0 0}
+.vmbar .t{font-weight:600;margin-right:auto;padding-left:4px}
+.vmbar button{background:#3b414b;border:1px solid #4b5260;color:#e8ecf2;border-radius:6px;padding:4px 9px;cursor:pointer;font:inherit;font-size:.82rem}
+.vmbar button:disabled{opacity:.4;cursor:default}
+.screen{position:relative;width:100%;aspect-ratio:16/10;min-height:600px;background:#000;overflow:hidden;border-radius:0 0 10px 10px;color:#111;font:12px/1.35 "Segoe UI",Tahoma,system-ui,sans-serif;user-select:none}
+.screen *{box-sizing:border-box}
+.screen input,.screen select,.screen textarea{user-select:text}
+.desk{position:absolute;inset:0;background:radial-gradient(circle at 70% 40%,#1f5aa6,#0a2a5c 70%)}
+.taskbar{position:absolute;left:0;right:0;bottom:0;height:40px;background:#101317;display:flex;align-items:center;gap:2px;z-index:900}
+.taskbar button{height:40px;min-width:44px;background:none;border:0;color:#fff;cursor:pointer;font-size:16px;padding:0 10px;border-bottom:2px solid transparent}
+.taskbar button.open{border-bottom-color:#76b9ed}
+.taskbar button:hover{background:#2a2f37}
+.taskbar .clock{margin-left:auto;color:#fff;font-size:11px;text-align:center;padding:0 12px;line-height:1.3}
+.win{position:absolute;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.45);display:flex;flex-direction:column;border:1px solid #1979ca}
+.win .wt{height:30px;flex:none;display:flex;align-items:center;gap:8px;padding-left:10px;background:#fff;font-size:12px;white-space:nowrap;overflow:hidden}
+.win .wt .x{margin-left:auto;width:44px;height:30px;border:0;background:none;cursor:pointer;font-size:14px;flex:none}
+.win .wt .x:hover{background:#e81123;color:#fff}
+.win .wb{flex:1;overflow:auto;position:relative;min-height:0}
+.mbar{display:flex;gap:0;padding:0 4px;border-bottom:1px solid #e3e3e3;flex:none}
+.mbar button{background:none;border:0;padding:3px 8px;font:inherit;cursor:pointer}
+.mbar button:hover,.mbar button.on{background:#cce8ff}
+.tbar{display:flex;gap:2px;padding:2px 6px;border-bottom:1px solid #e3e3e3;flex:none}
+.tbar button{background:none;border:1px solid transparent;width:26px;height:24px;cursor:pointer;font-size:13px;padding:0}
+.tbar button:hover:not(:disabled){border-color:#7eb4ea;background:#e5f3ff}.tbar button:disabled{opacity:.35}
+.tbar i{border-left:1px solid #ddd;margin:2px 4px}
+.mmc{flex:1;display:grid;grid-template-columns:minmax(180px,30%) 1fr 170px;min-height:0}
+.mmc.noact{grid-template-columns:minmax(180px,32%) 1fr}
+.tree{overflow:auto;border-right:1px solid #ddd;padding:3px 0}
+.tn{display:flex;align-items:center;gap:3px;padding:1px 4px 1px 0;white-space:nowrap;cursor:default}
+.tn .ex{width:14px;text-align:center;color:#555;font-size:9px;cursor:pointer;flex:none}
+.tn .lb{padding:1px 4px;border:1px solid transparent}
+.tn.sel .lb{background:#cce8ff;border-color:#99d1ff}
+.tn .lb:hover{background:#e5f3ff}
+.lst{overflow:auto;min-width:0}
+.lst table{width:100%;border-collapse:collapse}
+.lst th{font-weight:400;text-align:left;padding:3px 8px;border-right:1px solid #e5e5e5;border-bottom:1px solid #e5e5e5;color:#4c607a;background:#fff;position:sticky;top:0;white-space:nowrap}
+.lst td{padding:2px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px}
+.lst tr.r:hover td{background:#e5f3ff}.lst tr.r.sel td{background:#cce8ff}
+.lst .empty{padding:14px;color:#666;text-align:center}
+.acts{border-left:1px solid #ddd;overflow:auto;font-size:11.5px}
+.acts h4{margin:0;background:#e9eef5;padding:3px 8px;font-size:11.5px;font-weight:600;border-bottom:1px solid #dde}
+.acts button{display:block;width:100%;text-align:left;background:none;border:0;padding:3px 14px;cursor:pointer;font:inherit;color:#0645ad}
+.acts button:hover{text-decoration:underline}
+.sbar{height:20px;flex:none;border-top:1px solid #e3e3e3;background:#f0f0f0;padding:2px 8px;font-size:11px;color:#444}
+.cm{position:absolute;background:#f2f2f2;border:1px solid #979797;box-shadow:2px 3px 8px rgba(0,0,0,.35);padding:2px;z-index:5000;min-width:200px;font-size:12px}
+.cm .it{position:relative;padding:4px 26px 4px 26px;cursor:default;white-space:nowrap}
+.cm .it:hover:not(.dis){background:#cce8ff;outline:1px solid #99d1ff}
+.cm .it.dis{color:#999}
+.cm .it.b{font-weight:700}
+.cm .it .ar{position:absolute;right:8px}
+.cm hr{border:0;border-top:1px solid #d5d5d5;margin:3px 2px}
+.cm .sub{display:none;position:absolute;left:100%;top:-3px}
+.cm .it:hover>.sub{display:block}
+/* dialogs */
+.dlgx{position:absolute;inset:0;z-index:3000}
+.dlg{position:absolute;background:#f0f0f0;border:1px solid #1979ca;box-shadow:0 8px 30px rgba(0,0,0,.4);display:flex;flex-direction:column;max-height:96%}
+.dlg .wt{background:#fff}
+.dlg .db{padding:12px 14px;overflow:auto;flex:1}
+.dlg .df{display:flex;justify-content:flex-end;gap:7px;padding:10px 12px;flex:none;align-items:center}
+.dlg .df .l{margin-right:auto}
+.wb2{background:#fff;padding:14px 18px}
+.btnw{background:#e1e1e1;border:1px solid #adadad;color:#000;padding:3px 12px;min-width:76px;cursor:pointer;font:inherit;font-size:12px}
+.btnw:hover:not(:disabled){background:#e5f1fb;border-color:#0078d7}
+.btnw:disabled{color:#a0a0a0;border-color:#ccc;cursor:default}
+.btnw.def{border-color:#0078d7;box-shadow:inset 0 0 0 1px #0078d7}
+.f{display:grid;grid-template-columns:150px 1fr;gap:6px 8px;align-items:center;margin:6px 0}
+.f.c3{grid-template-columns:150px 1fr auto}
+.screen input[type=text],.screen input[type=password],.screen input:not([type]),.screen select,.screen textarea{border:1px solid #7a7a7a;padding:2px 4px;font:inherit;font-size:12px;background:#fff;min-width:0}
+.screen input:disabled{background:#f0f0f0;color:#6d6d6d;border-color:#ccc}
+.chk{display:flex;gap:6px;align-items:center;margin:4px 0}
+.chk input{margin:0}
+fieldset{border:1px solid #d5dfe5;margin:8px 0;padding:6px 10px 10px}
+legend{padding:0 4px}
+.tabs{display:flex;gap:0;border-bottom:1px solid #d9d9d9;margin-bottom:-1px;flex-wrap:wrap}
+.tabs button{background:#f0f0f0;border:1px solid #d9d9d9;border-bottom:0;padding:3px 9px;margin-right:-1px;cursor:pointer;font:inherit;font-size:12px}
+.tabs button.on{background:#fff;position:relative;top:1px;padding-bottom:4px}
+.tabp{background:#fff;border:1px solid #d9d9d9;padding:12px;min-height:250px}
+.lbox{border:1px solid #828790;background:#fff;height:150px;overflow:auto}
+.lbox div{padding:2px 6px;cursor:default}.lbox div.sel{background:#cce8ff}
+.wzh{background:#fff;padding:10px 16px;border-bottom:1px solid #ddd;display:flex;gap:12px;align-items:center}
+.wzh b{display:block;font-size:13px}.wzh span{color:#555;margin-left:14px}
+.wzw{display:grid;grid-template-columns:150px 1fr;height:100%;background:#fff}
+.wzw nav{padding:14px 0;border-right:1px solid #ddd}
+.wzw nav div{padding:4px 14px;color:#888;font-size:12px}.wzw nav div.on{color:#111;font-weight:600;border-left:3px solid #1979ca;padding-left:11px}.wzw nav div.dn{color:#333}
+.wzw .pg{padding:14px 18px;overflow:auto}
+.wzw h3,.wb2 h3{margin:0 0 10px;font-weight:300;font-size:18px;color:#1d3c8f}
+.msgi{display:flex;gap:12px;align-items:flex-start;background:#fff;padding:18px 16px;font-size:12.5px}
+.msgi .ic{font-size:28px;line-height:1}
+.sm .wb{display:flex;flex-direction:column}
+.smh{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid #ddd;flex:none}
+.smh .ttl{font-size:19px;font-weight:300}
+.smh .mn{margin-left:auto;display:flex;gap:2px;align-items:center;position:relative}
+.smh .mn button{background:none;border:0;padding:6px 10px;cursor:pointer;font:inherit;font-size:13px}
+.smh .mn button:hover{background:#e5f1fb}
+.flag{position:relative;font-size:16px}.flag b{position:absolute;top:-2px;right:-4px;background:#e8a33d;color:#000;border-radius:50%;width:15px;height:15px;font-size:10px;display:flex;align-items:center;justify-content:center}
+.smb{flex:1;display:grid;grid-template-columns:170px 1fr;min-height:0}
+.smb nav{background:#f4f4f4;border-right:1px solid #ddd;padding:8px 0;overflow:auto}
+.smb nav button{display:block;width:100%;text-align:left;background:none;border:0;padding:7px 12px;font:inherit;cursor:pointer}
+.smb nav button.on{background:#d6e8f8;font-weight:600}
+.smb .main{padding:14px 18px;overflow:auto}
+.welc{background:#0a4c8c;color:#fff;padding:14px 18px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.welc h3{margin:0 0 6px;font-weight:300;font-size:15px}
+.welc ol{margin:0;padding-left:22px;font-size:13px}.welc li{margin:3px 0}
+.welc button{background:none;border:0;color:#fff;text-decoration:underline;cursor:pointer;font:inherit;padding:0}
+.tiles{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.tile{border-top:4px solid #2e7d32;background:#f6f6f6;padding:8px 12px;min-width:150px}
+.props{display:grid;grid-template-columns:190px 1fr 190px 1fr;gap:5px 12px;margin-top:8px}
+.props span:nth-child(odd){color:#555}
+.lnk{color:#0066cc;cursor:pointer;background:none;border:0;padding:0;font:inherit;text-align:left}
+.lnk:hover{text-decoration:underline}
+.drop{position:absolute;background:#f2f2f2;border:1px solid #999;box-shadow:0 6px 18px rgba(0,0,0,.4);z-index:50;min-width:260px;padding:3px 0}
+.drop button{display:block;width:100%;text-align:left;background:none;border:0;padding:5px 16px;cursor:pointer;font:inherit}
+.drop button:hover:not(:disabled){background:#cce8ff}.drop button:disabled{color:#999}
+.startm{position:absolute;left:0;bottom:40px;background:#1f1f1f;color:#fff;width:300px;padding:6px 0;z-index:950;box-shadow:0 0 20px rgba(0,0,0,.5)}
+.startm button{display:block;width:100%;text-align:left;background:none;border:0;color:#fff;padding:7px 16px;cursor:pointer;font:inherit;font-size:12.5px}
+.startm button:hover:not(:disabled){background:#3a3a3a}.startm button:disabled{color:#777}
+.startm hr{border:0;border-top:1px solid #333;margin:4px 0}
+.lock,.login{position:absolute;inset:0;background:linear-gradient(160deg,#0b2b55,#174a8b);color:#fff;font-family:"Segoe UI",sans-serif}
+.lock{display:flex;flex-direction:column;justify-content:flex-end;padding:8%;cursor:pointer}
+.lock .tm{font-size:72px;font-weight:200;line-height:1}
+.login{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.login .av{width:110px;height:110px;border-radius:50%;background:#d0d8e4;display:flex;align-items:center;justify-content:center;font-size:56px;color:#5a6b84}
+.login input{width:260px;padding:6px 8px!important;font-size:14px!important}
+.login .lb2{background:rgba(255,255,255,.2);color:#fff;border:1px solid #fff;padding:6px 20px;cursor:pointer;font:inherit}
+.boot{position:absolute;inset:0;background:#000;color:#ddd;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font:18px "Segoe UI",sans-serif}
+.policy .rad label{display:flex;gap:6px;align-items:center;margin:4px 0}
+.prog{height:10px;background:#ddd;margin:6px 0}.prog i{display:block;height:100%;background:#06b025}
+/* painel */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;max-height:calc(100vh - 24px);position:sticky;top:12px}
+@media (max-width:1150px){.panel{position:static;max-height:none}}
+.ptabs{display:flex;border-bottom:1px solid var(--line)}
+.ptabs button{flex:1;background:none;border:0;padding:10px 4px;cursor:pointer;font:inherit;font-size:.86rem;color:var(--muted);border-bottom:3px solid transparent}
+.ptabs button.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.pbody{padding:12px 14px;overflow:auto}
+.mlist{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.mlist button{border:1px solid var(--line);background:var(--chip);border-radius:14px;padding:3px 9px;font:inherit;font-size:.78rem;cursor:pointer}
+.mlist button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.mlist button.ok{border-color:var(--ok);color:var(--ok)}.mlist button.ok.on{background:var(--ok);color:#fff}
+.mh{margin:0 0 4px;font-size:1.1rem}.intro{color:var(--muted);font-size:.9rem;margin:0 0 10px}
+.step{border:1px solid var(--line);border-radius:10px;margin:8px 0;overflow:hidden}
+.step .sh{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;cursor:pointer}
+.step .n{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--muted)}
+.step.cur{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}.step.cur .n{border-color:var(--accent);color:var(--accent)}
+.step.done .n{background:var(--ok);border-color:var(--ok);color:#fff}.step.done b{color:var(--ok)}
+.step .sb{padding:0 12px 10px 40px;font-size:.88rem}
+.step .sb p{margin:4px 0}
+.path{display:inline;background:#eef3fb;border-radius:4px;padding:0 4px;font-size:.84rem}
+.done-box{background:var(--ok-soft);border:1px solid var(--ok);border-radius:10px;padding:10px 12px;margin:10px 0;color:var(--ok);font-weight:600}
+.tree-exp{font:12.5px/1.6 Consolas,monospace;background:#0f1722;color:#e6edf3;border-radius:8px;padding:10px 12px;white-space:pre;overflow:auto}
+.chkl{list-style:none;padding:0;margin:0}.chkl li{padding:4px 0;border-bottom:1px solid var(--line);font-size:.88rem}
+.chkl li.ok{color:var(--ok)}.chkl li.no{color:var(--bad)}
+.score{font-size:2rem;font-weight:800;color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#1b2430;color:#fff;padding:9px 16px;border-radius:8px;font-size:.9rem;z-index:9000;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.on{opacity:1}
+footer{color:var(--muted);font-size:.8rem;text-align:center;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div><h1>🗄️ Configurando o Windows Server 2016: domínio sala304.local</h1>
+    <p>O servidor já está instalado. Agora configure tudo como numa empresa: nome, IP, funções, domínio, árvore do AD, DNS, DHCP e GPO.</p></div>
+    <div><button class="btn" id="bReset">↺ Recomeçar</button></div>
+  </header>
+  <div class="layout">
+    <div><div class="vmbar" id="vmbar"></div><div class="screen" id="scr"></div></div>
+    <aside class="panel"><div class="ptabs" id="ptabs"></div><div class="pbody" id="pbody"></div></aside>
+  </div>
+  <footer>Simulador didático · Prof. Maicon Kuzer · Senac. Reproduz as telas do Windows Server 2016 em português de forma simplificada.</footer>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const LS='cfg-server2016-sala304-v1';
+const DOM='sala304.local', NB='SALA304', HOST='SRV-SALA304', IP='192.168.30.10', GW='192.168.30.1', PWD='Senac@2026';
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(()=>t.classList.remove('on'),2800); }
+const isIP=s=>/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.test(s||'')&&s.split('.').every(n=>+n<=255);
+const ip2n=s=>s.split('.').reduce((a,o)=>a*256+(+o),0);
+const n2ip=n=>[24,16,8,0].map(b=>Math.floor(n/Math.pow(2,b))%256).join('.');
+const maskOk=m=>['255.0.0.0','255.255.0.0','255.255.255.0','255.255.255.128','255.255.255.192'].includes(m);
+const m2p=m=>m.split('.').reduce((a,o)=>a+(+o).toString(2).split('').filter(x=>x==='1').length,0);
+const p2m=p=>{ const b=[]; for(let i=0;i<4;i++){ const n=Math.max(0,Math.min(8,p-8*i)); b.push(256-Math.pow(2,8-n)); } return b.join('.'); };
+const netOf=(ip,m)=>ip.split('.').map((o,i)=>(+o)&(+m.split('.')[i])).join('.');
+const pwOk=p=>p.length>=7&&[/[A-Z]/,/[a-z]/,/\d/,/[^A-Za-z0-9]/].filter(r=>r.test(p)).length>=3;
+const low=s=>String(s||'').trim().toLowerCase();
+const now=()=>{ const d=new Date(); return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); };
+let SEQ=1; const nid=p=>p+'-'+Date.now().toString(36)+'-'+(SEQ++);
+
+/* ================= estado ================= */
+function novo(){ return { phase:'desk', host:'WIN-8N3J2Q5LKD1', pendHost:null, ip:null, mask:'255.255.255.0', gw:'', dns:[], dhcpCli:true,
+  feats:['FileAndStorage-Services','FS-FileServer','NET-Framework-45-Core'], isDC:false, promoting:false, domain:null, user:'Administrador',
+  ad:null, dnsz:[], dhcp:{auth:false,post:false,scopes:[]}, gpos:[], adv:false,
+  wins:['sm'], view:'painel', C:{}, dlg:[], done:{}, mis:0, tab:'mis', open:{} }; }
+let S=load()||novo();
+function load(){ try{ const o=JSON.parse(localStorage.getItem(LS)); if(o&&o.wins) return o; }catch(e){} return null; }
+function save(){ try{ const c=Object.assign({},S,{dlg:[]}); localStorage.setItem(LS,JSON.stringify(c)); }catch(e){} }
+const has=f=>S.feats.includes(f);
+const fqdn=()=>(S.host+(S.domain?'.'+S.domain:'')).toLowerCase();
+const ipNow=()=>S.ip||'169.254.88.21';
+
+/* ================= Active Directory ================= */
+function adInit(){ const o=[]; const add=(x)=>{ o.push(x); return x.id; };
+  add({id:'dom',cls:'domain',name:DOM});
+  add({id:'c-builtin',cls:'builtin',name:'Builtin',parent:'dom'});
+  add({id:'c-comp',cls:'container',name:'Computers',parent:'dom',desc:'Default container for upgraded computer accounts'});
+  add({id:'ou-dc',cls:'ou',name:'Domain Controllers',parent:'dom',desc:'Default container for domain controllers',prot:true,sys:true});
+  add({id:'c-fsp',cls:'container',name:'ForeignSecurityPrincipals',parent:'dom',desc:'Default container for security identifiers (SIDs) associated with objects from external, trusted domains'});
+  add({id:'c-msa',cls:'container',name:'Managed Service Accounts',parent:'dom',desc:'Default container for managed service accounts'});
+  add({id:'c-users',cls:'container',name:'Users',parent:'dom',desc:'Default container for upgraded user accounts'});
+  ['LostAndFound','Program Data','System','NTDS Quotas','TPM Devices'].forEach((n,i)=>add({id:'adv-'+i,cls:'container',name:n,parent:'dom',adv:true}));
+  add({id:'pc-dc',cls:'computer',name:HOST,parent:'ou-dc',sys:true,os:'Windows Server 2016 Standard'});
+  const B=[['Administradores','Os administradores têm acesso completo e irrestrito ao computador/domínio'],['Convidados','Por padrão, os convidados têm o mesmo acesso que os membros do grupo Usuários'],['Operadores de Backup','Os Operadores de Backup podem substituir restrições de segurança apenas para fazer backup ou restaurar arquivos'],['Operadores de Contas','Os membros podem administrar contas de usuário e de grupo do domínio'],['Operadores de Impressão','Os membros podem administrar impressoras do domínio'],['Operadores de Servidores','Os membros podem administrar servidores de domínio'],['Usuários','Os usuários não podem fazer alterações acidentais ou intencionais no sistema'],['Usuários da área de trabalho remota','Os membros deste grupo recebem o direito de fazer logon remotamente']];
+  B.forEach(([n,d],i)=>add({id:'bi-'+i,cls:'group',name:n,parent:'c-builtin',desc:d,scope:'DomainLocal',gtype:'Security',members:[],sys:true,builtin:true}));
+  add({id:'u-adm',cls:'user',name:'Administrador',parent:'c-users',sam:'Administrador',desc:'Conta interna para a administração do computador/domínio',sys:true,first:'',last:''});
+  add({id:'u-guest',cls:'user',name:'Convidado',parent:'c-users',sam:'Convidado',desc:'Conta interna para acesso convidado ao computador/domínio',disabled:true,sys:true});
+  add({id:'u-def',cls:'user',name:'DefaultAccount',parent:'c-users',sam:'DefaultAccount',desc:'Uma conta de usuário gerenciada pelo sistema.',disabled:true,sys:true});
+  add({id:'u-krb',cls:'user',name:'krbtgt',parent:'c-users',sam:'krbtgt',desc:'Conta de Serviço do Centro de Distribuição de Chaves',disabled:true,sys:true});
+  const G=[['Admins. do Domínio','Global','Administradores designados do domínio',['u-adm']],['Admins. de Empresa','Universal','Administradores designados da empresa',['u-adm']],['Admins. de Esquema','Universal','Administradores designados do esquema',['u-adm']],['Usuários do Domínio','Global','Todos os usuários do domínio',['u-adm']],['Convidados do Domínio','Global','Todos os convidados do domínio',['u-guest']],['Computadores do Domínio','Global','Todas as estações de trabalho e servidores associados ao domínio',[]],['Controladores de Domínio','Global','Todos os controladores do domínio',['pc-dc']],['Proprietários Criadores de Política de Grupo','Global','Os membros deste grupo podem modificar a política de grupo para o domínio',['u-adm']],['DnsAdmins','DomainLocal','Grupo de administradores de DNS',[]],['DnsUpdateProxy','Global','Clientes DNS com permissão para executar atualizações dinâmicas em nome de outros clientes',[]],['Editores de Certificados','DomainLocal','Os membros deste grupo têm permissão para publicar certificados no diretório',[]],['Usuários Protegidos','Global','Os membros deste grupo recebem proteções adicionais contra ameaças de segurança de autenticação',[]]];
+  G.forEach(([n,sc,d,m],i)=>add({id:'g-'+i,cls:'group',name:n,parent:'c-users',scope:sc,gtype:'Security',desc:d,members:m,sys:true}));
+  return o; }
+const AD=()=>S.ad||[];
+const obj=id=>AD().find(o=>o.id===id);
+const kids=id=>AD().filter(o=>o.parent===id&&(!o.adv||S.adv)).sort((a,b)=>a.name.localeCompare(b.name,'pt'));
+const isCont=o=>['domain','container','builtin','ou'].includes(o.cls);
+const typeOf=o=>({domain:'Domínio',container:'Contêiner',builtin:'builtinDomain',ou:'Unidade Organizacional',user:'Usuário',computer:'Computador'}[o.cls]||(o.gtype==='Security'?'Grupo de segurança - ':'Grupo de distribuição - ')+({Global:'Global',DomainLocal:'Domínio Local',Universal:'Universal'}[o.scope]));
+const icon=o=>({domain:'🌐',container:'📁',builtin:'📁',ou:'🗂️',user:o.disabled?'🚫':'👤',computer:'🖥️',group:'👥'}[o.cls]);
+const dn=o=>{ const p=[]; let x=o; while(x&&x.cls!=='domain'){ p.push((x.cls==='ou'?'OU=':'CN=')+x.name); x=obj(x.parent); } return p.concat(DOM.split('.').map(d=>'DC='+d)).join(','); };
+const pathOf=o=>{ const p=[]; let x=obj(o.parent); while(x&&x.cls!=='domain'){ p.unshift(x.name); x=obj(x.parent); } return DOM+'/'+p.join('/'); };
+const memberOf=id=>AD().filter(g=>g.cls==='group'&&(g.members||[]).includes(id));
+const findOU=(name,parentId)=>AD().find(o=>o.cls==='ou'&&low(o.name)===low(name)&&(!parentId||o.parent===parentId));
+const findSam=s=>AD().find(o=>(o.cls==='user'||o.cls==='computer'||o.cls==='group')&&low(o.sam||o.name)===low(s));
+
+/* ================= GPO ================= */
+const UPOL=[
+ {id:'u-at',t:'Área de Trabalho',items:[['hideDesk','Ocultar e desabilitar todos os itens da área de trabalho'],['noRecycle','Remover o ícone Lixeira da área de trabalho'],['noSave','Não salvar configurações ao sair']],sub:[{id:'u-at-at',t:'Área de Trabalho',items:[['wall','Papel de parede da área de trabalho','wall'],['noAD','Desabilitar Active Desktop']]}]},
+ {id:'u-cw',t:'Componentes do Windows',items:[],sub:[{id:'u-cw-ex',t:'Explorador de Arquivos',items:[['noDrives','Ocultar estas unidades especificadas em Meu Computador']]},{id:'u-cw-ie',t:'Internet Explorer',items:[]}]},
+ {id:'u-mi',t:'Menu Iniciar e Barra de Tarefas',items:[['noShut','Remover e impedir o acesso aos comandos Desligar, Reiniciar, Suspender e Hibernar'],['noRun','Remover o menu Executar do Menu Iniciar']]},
+ {id:'u-cp',t:'Painel de Controle',items:[['noCP','Proibir o acesso ao Painel de Controle e às configurações do PC'],['showOnly','Mostrar somente itens especificados do Painel de Controle'],['hideItems','Ocultar itens especificados do Painel de Controle']],sub:[{id:'u-cp-p',t:'Personalização',items:[['noTheme','Impedir alteração do tema'],['noScreen','Impedir alteração da proteção de tela']]},{id:'u-cp-pr',t:'Programas',items:[]},{id:'u-cp-im',t:'Impressoras',items:[]}]},
+ {id:'u-ps',t:'Pastas Compartilhadas',items:[]},
+ {id:'u-re',t:'Rede',items:[]},
+ {id:'u-si',t:'Sistema',items:[['noCmd','Impedir acesso ao prompt de comando'],['noReg','Impedir o acesso às ferramentas de edição do Registro']],sub:[{id:'u-si-cad',t:'Opções Ctrl+Alt+Del',items:[['noTM','Remover Gerenciador de Tarefas'],['noLock','Remover Bloquear o Computador']]}]},
+];
+const PHELP={noCP:'Desabilita todos os programas do Painel de Controle e o aplicativo Configurações do PC. Impede que Control.exe e SystemSettings.exe sejam iniciados.',noCmd:'Impede que os usuários executem o prompt de comando interativo (Cmd.exe). Também determina se arquivos em lotes (.cmd e .bat) podem ser executados.',wall:'Especifica o papel de parede da área de trabalho exibido nas áreas de trabalho de todos os usuários. Digite o caminho completo e o nome do arquivo que contém a imagem (pode ser um caminho UNC, como \\\\Servidor\\Compartilhamento\\Imagem.jpg).',noTM:'Impede que os usuários iniciem o Gerenciador de Tarefas.',noReg:'Impede que os usuários executem o Editor do Registro (Regedit.exe).',noShut:'Remove os comandos Desligar, Reiniciar, Suspender e Hibernar do Menu Iniciar.'};
+const PWP=[['hist','Aplicar histórico de senhas','senhas memorizadas',24],['maxAge','Tempo de vida máximo da senha','dias',42],['minAge','Tempo de vida mínimo da senha','dias',1],['minLen','Comprimento mínimo da senha','caracteres',7],['complex','A senha deve satisfazer a requisitos de complexidade','bool',true],['rev','Armazenar senhas usando criptografia reversível','bool',false]];
+const BLP=[['lockDur','Duração do bloqueio de conta','minutos',null],['lockThr','Limite de bloqueio de conta','tentativas de logon inválidas',0],['lockReset','Zerar contador de bloqueios de conta após','minutos',null]];
+function gpoInit(){ return [{id:'gpo-ddp',name:'Default Domain Policy',links:['dom'],u:{},pw:{hist:24,maxAge:42,minAge:1,minLen:7,complex:true,rev:false,lockThr:0},sys:true},{id:'gpo-ddcp',name:'Default Domain Controllers Policy',links:['ou-dc'],u:{},pw:null,sys:true}]; }
+const gpo=id=>S.gpos.find(g=>g.id===id);
+
+/* ================= missões ================= */
+const ouSala=()=>findOU('SALA304','dom');
+const ouIn=n=>{ const s=ouSala(); return s&&findOU(n,s.id); };
+const userIn=(sam,ou)=>{ const u=findSam(sam), o=ouIn(ou); return !!(u&&o&&u.cls==='user'&&u.parent===o.id); };
+const grpOk=(n)=>{ const g=findSam(n), o=ouIn('Grupos'); return !!(g&&o&&g.cls==='group'&&g.parent===o.id&&g.scope==='Global'&&g.gtype==='Security'); };
+const memb=(g,u)=>{ const G=findSam(g), U=findSam(u); return !!(G&&U&&(G.members||[]).includes(U.id)); };
+const revZ=()=>S.dnsz.find(z=>z.rev&&z.name==='30.168.192.in-addr.arpa');
+const fwdZ=()=>S.dnsz.find(z=>!z.rev&&z.name===DOM);
+const scope=()=>S.dhcp.scopes.find(s=>s.id==='192.168.30.0');
+const gpoAl=()=>S.gpos.find(g=>low(g.name)==='gpo_alunos');
+const ALUNOS=[['Ana','Souza','ana.souza'],['Bruno','Lima','bruno.lima'],['Carla','Dias','carla.dias']];
+const MIS=[
+ {t:'Preparar o servidor',intro:'Antes de instalar qualquer função, o servidor precisa de um nome que faça sentido e de um IP fixo. Tudo começa em <b>Gerenciador do Servidor > Servidor Local</b>.',steps:[
+  {t:'Renomeie para SRV-SALA304',h:'Servidor Local > clique no <b>nome do computador</b> > <b>Alterar...</b> > Nome do computador: <code>SRV-SALA304</code> > OK > OK > Fechar > <b>Reiniciar Agora</b>. Depois aperte Ctrl+Alt+Del e entre com a senha <code>Senac@2026</code>.',ok:()=>S.host===HOST&&S.phase==='desk'},
+  {t:'IP fixo 192.168.30.10',h:'Servidor Local > link da <b>Ethernet</b> > na janela Conexões de Rede, clique com o botão direito em <b>Ethernet</b> > Propriedades > <b>Protocolo IP Versão 4 (TCP/IPv4)</b> > Propriedades.<br>IP <code>192.168.30.10</code> · Máscara <code>255.255.255.0</code> · Gateway <code>192.168.30.1</code> · DNS preferencial <code>127.0.0.1</code>.',ok:()=>S.ip===IP&&S.mask==='255.255.255.0'&&S.gw===GW&&S.dns[0]==='127.0.0.1'},
+ ]},
+ {t:'Instalar as funções',intro:'O servidor da sala vai ser controlador de domínio (AD DS), servidor de nomes (DNS) e vai distribuir IPs (DHCP).',steps:[
+  {t:'Adicione AD DS, DNS e DHCP',h:'<b>Gerenciar > Adicionar Funções e Recursos</b> > Próximo > Instalação baseada em função > SRV-SALA304 > marque <b>Serviços de Domínio Active Directory</b>, <b>Servidor DHCP</b> e <b>Servidor DNS</b> (aceite <b>Adicionar Recursos</b> em cada uma) > Próximo até <b>Instalar</b>.',ok:()=>has('AD-Domain-Services')&&has('DNS')&&has('DHCP')},
+ ]},
+ {t:'Criar o domínio sala304.local',intro:'Promover o servidor cria a floresta, o domínio e o banco do Active Directory.',steps:[
+  {t:'Promova a controlador de domínio',h:'Clique na <b>bandeira ⚑</b> > <b>Promover este servidor a um controlador de domínio</b> > <b>Adicionar uma nova floresta</b> > Nome do domínio raiz: <code>sala304.local</code> > senha do DSRM <code>Senac@2026</code> > Próximo até <b>Instalar</b>.',ok:()=>S.isDC},
+  {t:'Entre como SALA304\\Administrador',h:'O servidor reinicia sozinho. Ctrl+Alt+Del: repare que agora a conta é do domínio: <b>SALA304\\Administrador</b>.',ok:()=>S.isDC&&S.phase==='desk'},
+ ]},
+ {t:'Concluir a configuração do DHCP',intro:'Num domínio, o DHCP só funciona se for <b>autorizado</b> no Active Directory. Isso evita um DHCP "pirata" na rede.',steps:[
+  {t:'Autorize o DHCP',h:'Clique na <b>bandeira ⚑</b> > <b>Concluir configuração do DHCP</b> > Próximo > Autorização: use as credenciais de <b>SALA304\\Administrador</b> > <b>Confirmar</b> > Fechar.<br>(Também dá para fazer no console DHCP: botão direito no servidor > <b>Autorizar</b>.)',ok:()=>S.dhcp.auth},
+ ]},
+ {t:'Montar a árvore de OUs',intro:'As <b>Unidades Organizacionais (OUs)</b> organizam o domínio como pastas: por elas aplicamos políticas (GPO) e delegamos administração. Abra <b>Ferramentas > Usuários e Computadores do Active Directory</b>.',steps:[
+  {t:'OU SALA304 na raiz do domínio',h:'Botão direito em <b>sala304.local</b> > <b>Novo > Unidade Organizacional</b> > Nome: <code>SALA304</code>. Deixe marcado "Proteger contêiner contra exclusão acidental".',ok:()=>!!ouSala()},
+  {t:'OUs Professores, Alunos, Computadores e Grupos',h:'Botão direito na OU <b>SALA304</b> > Novo > Unidade Organizacional. Crie as quatro <b>dentro</b> da SALA304.',ok:()=>['Professores','Alunos','Computadores','Grupos'].every(n=>!!ouIn(n))},
+ ]},
+ {t:'Criar os usuários',intro:'Cada pessoa tem uma conta própria, dentro da OU certa. Senha inicial de todos: <code>Senac@2026</code>.',steps:[
+  {t:'Professor em Professores',h:'Botão direito na OU <b>Professores</b> > Novo > Usuário. Nome <code>Maicon</code>, Sobrenome <code>Kuzer</code>, logon <code>maicon.kuzer</code>. Na senha, desmarque "deve alterar a senha" (é a conta do professor).',ok:()=>userIn('maicon.kuzer','Professores')},
+  {t:'Três alunos em Alunos',h:'Na OU <b>Alunos</b>, crie: Ana Souza (<code>ana.souza</code>), Bruno Lima (<code>bruno.lima</code>) e Carla Dias (<code>carla.dias</code>). Deixe marcado <b>"O usuário deve alterar a senha no próximo logon"</b>: cada aluno cria a sua senha.',ok:()=>ALUNOS.every(a=>userIn(a[2],'Alunos'))},
+  {t:'Alunos trocam a senha no 1º logon',h:'Confira nas propriedades (aba <b>Conta</b>) se os três alunos têm "O usuário deve alterar a senha no próximo logon".',ok:()=>ALUNOS.every(a=>{ const u=findSam(a[2]); return u&&u.mustChange; })},
+ ]},
+ {t:'Grupos e computadores',intro:'Permissões e políticas são dadas a <b>grupos</b>, não a pessoas. E cada PC da sala tem uma conta de computador.',steps:[
+  {t:'Grupos GG_Professores e GG_Alunos',h:'Na OU <b>Grupos</b>: Novo > Grupo. Escopo <b>Global</b>, tipo <b>Segurança</b>. (GG = Grupo Global.)',ok:()=>grpOk('GG_Professores')&&grpOk('GG_Alunos')},
+  {t:'Coloque os membros',h:'Propriedades do grupo > aba <b>Membros</b> > Adicionar... > digite o nome > <b>Verificar Nomes</b> > OK.<br>GG_Professores: maicon.kuzer · GG_Alunos: os três alunos. (Ou selecione os alunos, botão direito > <b>Adicionar a um grupo...</b>)',ok:()=>memb('GG_Professores','maicon.kuzer')&&ALUNOS.every(a=>memb('GG_Alunos',a[2]))},
+  {t:'Computadores PC-304-01 a 03',h:'Na OU <b>Computadores</b>: Novo > Computador. Crie <code>PC-304-01</code>, <code>PC-304-02</code> e <code>PC-304-03</code>.',ok:()=>['PC-304-01','PC-304-02','PC-304-03'].every(n=>{ const c=findSam(n), o=ouIn('Computadores'); return c&&o&&c.cls==='computer'&&c.parent===o.id; })},
+ ]},
+ {t:'DNS: zona reversa e registros',intro:'A zona direta (sala304.local) foi criada na promoção. Falta a <b>zona reversa</b>, que traduz IP para nome. Abra <b>Ferramentas > DNS</b>.',steps:[
+  {t:'Zona de pesquisa inversa 192.168.30',h:'Botão direito em <b>Zonas de Pesquisa Inversa > Nova Zona...</b> > Zona primária (armazenar no AD) > Para todos os servidores DNS no domínio > <b>Zona de Pesquisa Inversa IPv4</b> > ID da rede <code>192.168.30</code> > Permitir somente atualizações dinâmicas seguras > Concluir.',ok:()=>!!revZ()},
+  {t:'Ponteiro (PTR) do servidor',h:'Na zona <b>30.168.192.in-addr.arpa</b>: botão direito > <b>Novo Ponteiro (PTR)...</b> > IP <code>192.168.30.10</code> > Nome do host <code>srv-sala304.sala304.local</code>.',ok:()=>{ const z=revZ(); return !!z&&z.recs.some(r=>r.type==='PTR'&&r.name==='10'&&/srv-sala304\.sala304\.local/i.test(r.data)); }},
+  {t:'Host (A) da impressora com PTR',h:'Na zona <b>sala304.local</b>: botão direito > <b>Novo Host (A ou AAAA)...</b> > Nome <code>impressora</code> > IP <code>192.168.30.50</code> > marque <b>Criar registro de ponteiro (PTR) associado</b> > Adicionar Host.',ok:()=>{ const z=fwdZ(), r=revZ(); return !!z&&z.recs.some(x=>x.type==='A'&&low(x.name)==='impressora'&&x.data==='192.168.30.50')&&!!r&&r.recs.some(x=>x.type==='PTR'&&x.name==='50'); }},
+ ]},
+ {t:'DHCP: escopo da sala',intro:'Os PCs da sala vão receber IP automático. Abra <b>Ferramentas > DHCP</b>.',steps:[
+  {t:'Escopo "Sala 304"',h:'Expanda o servidor > botão direito em <b>IPv4 > Novo Escopo...</b><br>Nome <code>Sala 304</code> · Inicial <code>192.168.30.100</code> · Final <code>192.168.30.200</code> · Comprimento <code>24</code>.',ok:()=>{ const s=scope(); return !!s&&low(s.name)==='sala 304'&&s.start==='192.168.30.100'&&s.end==='192.168.30.200'; }},
+  {t:'Exclusão .100 a .109',h:'No assistente (ou depois em <b>Pool de Endereços</b>): exclua <code>192.168.30.100</code> a <code>192.168.30.109</code> (reservados para impressoras e equipamentos).',ok:()=>{ const s=scope(); return !!s&&s.excl.some(e=>e[0]==='192.168.30.100'&&e[1]==='192.168.30.109'); }},
+  {t:'Opções: gateway, DNS e domínio',h:'No assistente: <b>Sim, quero configurar essas opções agora</b> > Roteador <code>192.168.30.1</code> > Domínio pai <code>sala304.local</code> e servidor DNS <code>192.168.30.10</code>.',ok:()=>{ const s=scope(); return !!s&&s.opts.router==='192.168.30.1'&&(s.opts.dns||[]).includes(IP)&&low(s.opts.domain)===DOM; }},
+  {t:'Escopo ativado',h:'No fim do assistente: <b>Sim, quero ativar este escopo agora</b>. (Ou botão direito no escopo > Ativar.)',ok:()=>{ const s=scope(); return !!s&&s.active; }},
+  {t:'Reserva para o PC do professor',h:'No escopo > botão direito em <b>Reservas > Nova Reserva...</b> > Nome <code>PC-PROFESSOR</code> · IP <code>192.168.30.150</code> · MAC <code>00-15-5D-30-01-50</code>.',ok:()=>{ const s=scope(); return !!s&&s.res.some(r=>r.ip==='192.168.30.150'&&r.mac.replace(/[-:]/g,'').toUpperCase()==='00155D300150'); }},
+ ]},
+ {t:'GPO: regras para os alunos',intro:'Política de Grupo aplica configurações automaticamente em todos os usuários de uma OU. Abra <b>Ferramentas > Gerenciamento de Política de Grupo</b>.',steps:[
+  {t:'GPO_Alunos vinculada à OU Alunos',h:'Expanda Floresta > Domínios > sala304.local > SALA304 > botão direito em <b>Alunos</b> > <b>Criar um GPO neste domínio e vinculá-lo aqui...</b> > Nome <code>GPO_Alunos</code>.',ok:()=>{ const g=gpoAl(), o=ouIn('Alunos'); return !!g&&!!o&&g.links.includes(o.id); }},
+  {t:'Bloquear o Painel de Controle',h:'Botão direito no vínculo GPO_Alunos > <b>Editar...</b> > Configuração do Usuário > Políticas > Modelos Administrativos > <b>Painel de Controle</b> > "Proibir o acesso ao Painel de Controle e às configurações do PC" > <b>Habilitado</b>.',ok:()=>{ const g=gpoAl(); return !!g&&(g.u.noCP||{}).st==='en'; }},
+  {t:'Bloquear o prompt de comando',h:'No mesmo editor: Modelos Administrativos > <b>Sistema</b> > "Impedir acesso ao prompt de comando" > <b>Habilitado</b>.',ok:()=>{ const g=gpoAl(); return !!g&&(g.u.noCmd||{}).st==='en'; }},
+  {t:'Papel de parede da sala',h:'Modelos Administrativos > Área de Trabalho > <b>Área de Trabalho</b> > "Papel de parede da área de trabalho" > Habilitado > Nome: <code>\\\\SRV-SALA304\\Publico\\sala304.jpg</code> · Estilo: Preencher.',ok:()=>{ const g=gpoAl(); return !!g&&(g.u.wall||{}).st==='en'&&!!((g.u.wall||{}).path||'').trim(); }},
+  {t:'Senha mínima de 8 caracteres no domínio',h:'Política de senha vale para o domínio inteiro, por isso fica na <b>Default Domain Policy</b>: botão direito > Editar > Configuração do Computador > Políticas > Configurações do Windows > Configurações de Segurança > Políticas de Conta > <b>Política de Senha</b> > "Comprimento mínimo da senha" = <code>8</code>.',ok:()=>{ const g=gpo('gpo-ddp'); return !!g&&g.pw.minLen===8; }},
+ ]},
+];
+
+/* ================= render geral ================= */
+const scr=$('#scr');
+let MENU=null, DROP=null, START=false;
+function render(){ renderBar(); renderScreen(); tick(); renderPanel(); save(); }
+function renderBar(){ $('#vmbar').innerHTML=`<span class="t">Hyper-V · ${esc(S.host)}${S.domain?'.'+esc(S.domain):''}</span><button id="bCad" ${['lock','login','desk'].includes(S.phase)?'':'disabled'}>Ctrl+Alt+Del</button>`; $('#bCad').onclick=()=>{ if(S.phase==='lock'){ S.phase='login'; render(); } else if(S.phase==='desk') toast('Use o menu Iniciar para sair ou reiniciar.'); }; }
+function renderScreen(){
+  if(S.phase==='reboot'){ scr.innerHTML=`<div class="boot"><div style="font-size:40px;color:#3a96dd">⊞</div><div>${esc(S.rmsg||'Reiniciando')}</div><div style="color:#888">◌ ◌ ◌</div></div>`; return; }
+  if(S.phase==='lock'){ const d=new Date(); scr.innerHTML=`<div class="lock"><div class="tm">${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div><div style="font-size:22px;font-weight:300">${d.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})}</div><div style="margin-top:26px">Pressione Ctrl+Alt+Del para desbloquear. <span style="opacity:.7">(botão na barra acima)</span></div></div>`; return; }
+  if(S.phase==='login'){ const u=S.isDC?NB+'\\Administrador':'Administrador'; scr.innerHTML=`<div class="login"><div class="av">👤</div><div style="font-size:22px">${esc(u)}</div><input type="password" id="lp" placeholder="Senha"><div id="le" style="color:#ffd2d2;min-height:18px"></div><button class="lb2" id="lOk">→ Entrar</button>${S.isDC?`<div style="font-size:12px;opacity:.8">Entrar em: ${NB}</div>`:''}</div>`;
+    const go=()=>{ if($('#lp').value!==PWD){ $('#le').textContent='A senha está incorreta. Tente novamente.'; return; } S.user=u; S.phase='desk'; S.wins=['sm']; S.view='painel'; S.dlg=[]; render(); };
+    $('#lOk').onclick=go; $('#lp').onkeydown=e=>{ if(e.key==='Enter') go(); }; $('#lp').focus(); return; }
+  deskRender(); }
+function reboot(msg,after){ S.dlg=[]; MENU=null; S.phase='reboot'; S.rmsg=msg||'Reiniciando'; render(); setTimeout(()=>{ if(S.pendHost){ S.host=S.pendHost; S.pendHost=null; } after&&after(); S.phase='lock'; render(); },3000); }
+
+/* ================= desktop e janelas ================= */
+const WPOS={sm:'left:1.5%;top:2%;width:97%;height:calc(96% - 40px)',aduc:'left:4%;top:5%;width:88%;height:calc(86% - 40px)',dns:'left:6%;top:7%;width:86%;height:calc(84% - 40px)',dhcp:'left:8%;top:6%;width:84%;height:calc(84% - 40px)',gpmc:'left:3%;top:4%;width:90%;height:calc(88% - 40px)',gpme:'left:9%;top:9%;width:84%;height:calc(82% - 40px)',netc:'left:18%;top:14%;width:60%;height:46%'};
+const WTITLE={sm:'Gerenciador do Servidor',aduc:'Usuários e Computadores do Active Directory',dns:'Gerenciador DNS',dhcp:'DHCP',gpmc:'Gerenciamento de Política de Grupo',gpme:'Editor de Gerenciamento de Política de Grupo',netc:'Conexões de Rede'};
+const WICON={sm:'🗄️',aduc:'👥',dns:'🌐',dhcp:'🖧',gpmc:'📜',gpme:'📝',netc:'🔌'};
+function openWin(w){ S.wins=S.wins.filter(x=>x!==w); S.wins.push(w); }
+function closeWin(w){ S.wins=S.wins.filter(x=>x!==w); }
+function deskRender(){ let h=`<div class="desk" id="dsk"><div style="position:absolute;left:14px;top:14px;color:#fff;text-align:center;width:70px">🗑️<br>Lixeira</div>`;
+  S.wins.forEach((w,i)=>{ h+=`<div class="win ${w==='sm'?'sm':''}" data-w="${w}" style="${WPOS[w]};z-index:${10+i}"><div class="wt">${WICON[w]} ${esc(w==='gpme'&&S.C.gpme?S.C.gpme.title:WTITLE[w])}<button class="x" data-a="close" data-w2="${w}">✕</button></div>${w==='sm'?smBody():w==='netc'?netcBody():mmcBody(w)}</div>`; });
+  h+=`<div class="taskbar"><button data-a="start" title="Iniciar">⊞</button><button title="Explorador de Arquivos" data-a="noexp">📁</button>${['sm','aduc','dns','dhcp','gpmc','gpme','netc'].filter(w=>w==='sm'||S.wins.includes(w)).map(w=>`<button data-a="task" data-w2="${w}" class="${S.wins.includes(w)?'open':''}" title="${esc(WTITLE[w])}">${WICON[w]}</button>`).join('')}<div class="clock">${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}<br>${new Date().toLocaleDateString('pt-BR')}</div></div>`;
+  if(START) h+=`<div class="startm"><div style="padding:6px 16px 8px;color:#aaa">${esc(S.user)}</div><button data-a="startgo" data-w2="sm">🗄️ Gerenciador do Servidor</button>${toolsList().map(t=>`<button data-a="startgo" data-w2="${t[0]}" ${t[2]?'':'disabled'}>${WICON[t[0]]} ${t[1]}</button>`).join('')}<hr><button data-a="logoff">Sair</button><button data-a="restart">⟳ Reiniciar</button></div>`;
+  h+=`</div>`;
+  if(S.dlg.length) h+=S.dlg.map((d,i)=>`<div class="dlgx" style="z-index:${3000+i}">${dlgHTML(d)}</div>`).join('');
+  if(MENU) h+=menuHTML();
+  scr.innerHTML=h;
+  const top=S.dlg[S.dlg.length-1]; if(top){ const i=scr.querySelector('.dlgx:last-child [data-focus]')||scr.querySelector('.dlgx:last-child input:not([disabled]):not([type=checkbox]):not([type=radio])'); if(i&&!top._f){ i.focus(); top._f=1; } }
+  scr.querySelectorAll('[data-w]').forEach(w=>w.addEventListener('mousedown',e=>{ const id=w.dataset.w; if(S.wins[S.wins.length-1]!==id&&!e.target.closest('[data-a=close]')){ S.wins=S.wins.filter(x=>x!==id); S.wins.push(id); scr.querySelectorAll('[data-w]').forEach(el=>el.style.zIndex=10+S.wins.indexOf(el.dataset.w)); } }));
+}
+function toolsList(){ return [['aduc','Usuários e Computadores do Active Directory',S.isDC],['dhcp','DHCP',has('DHCP')],['dns','DNS',has('DNS')],['gpmc','Gerenciamento de Política de Grupo',S.isDC]]; }
+
+/* ---------- Gerenciador do Servidor ---------- */
+function flags(){ const L=[]; if(has('AD-Domain-Services')&&!S.isDC) L.push(['promo','Configuração necessária para Serviços de Domínio Active Directory em '+S.host,'Promover este servidor a um controlador de domínio']); if(has('DHCP')&&!S.dhcp.post) L.push(['dhcppost','Configuração necessária para Servidor DHCP em '+S.host,'Concluir configuração do DHCP']); return L; }
+function smBody(){ const nav=[['painel','▦ Painel'],['local','▪ Servidor Local'],['all','▪ Todos os Servidores']]; if(has('AD-Domain-Services')) nav.push(['adds','▪ AD DS']); if(has('DHCP')) nav.push(['dhcpv','▪ DHCP']); if(has('DNS')) nav.push(['dnsv','▪ DNS']); nav.push(['files','▪ Serviços de Arquivo e Armazenamento']);
+  const F=flags(); let main='';
+  if(S.view==='painel') main=`<div class="welc"><div><h3>BEM-VINDO AO GERENCIADOR DO SERVIDOR</h3><b>INÍCIO RÁPIDO</b></div><ol><li><button data-a="smgo" data-v="local">Configurar este servidor local</button></li><li><button data-a="rolewiz">Adicionar funções e recursos</button></li><li>Adicionar outros servidores para gerenciar</li><li>Criar um grupo de servidores</li><li>Conectar este servidor aos serviços de nuvem</li></ol></div><h4 style="margin:14px 0 4px;font-weight:400;font-size:14px">FUNÇÕES E GRUPOS DE SERVIDORES</h4><div class="tiles">${nav.slice(3).map(n=>`<div class="tile"><b>${n[1].replace('▪ ','')}</b> 1<br>Capacidade de gerenciamento<br>Eventos · Serviços</div>`).join('')}<div class="tile"><b>Servidor Local</b> 1</div><div class="tile"><b>Todos os Servidores</b> 1</div></div>`;
+  else if(S.view==='local') main=`<h3 style="font-weight:300;margin:0 0 4px;font-size:16px">PROPRIEDADES</h3><div style="color:#555">Para ${esc(S.host)}</div><div class="props">
+    <span>Nome do computador</span><span><button class="lnk" data-a="sysprop">${esc(S.host)}</button>${S.pendHost?` <i style="color:#b7791f">(reinício pendente)</i>`:''}</span><span>Últimas atualizações instaladas</span><span>Nunca</span>
+    <span>${S.domain?'Domínio':'Grupo de trabalho'}</span><span>${S.domain?esc(S.domain):'WORKGROUP'}</span><span>Windows Update</span><span>Baixar atualizações somente</span>
+    <span>Firewall do Windows</span><span>${S.domain?'Domínio':'Público'}: Ativado</span><span>Windows Defender</span><span>Proteção em Tempo Real: Ativado</span>
+    <span>Gerenciamento remoto</span><span>Habilitado</span><span>Comentários e Diagnóstico</span><span>Configurações</span>
+    <span>Área de Trabalho Remota</span><span>Desabilitado</span><span>Configuração de Segurança Aprimorada do IE</span><span>Ativada</span>
+    <span>Agrupamento NIC</span><span>Desabilitado</span><span>Fuso horário</span><span>(UTC-03:00) Brasília</span>
+    <span>Ethernet</span><span><button class="lnk" data-a="netc">${S.ip?esc(S.ip)+', IPv6 habilitado':'Endereço IPv4 atribuído por DHCP, IPv6 habilitado'}</button></span><span>ID do Produto</span><span>Não ativado</span>
+    <span>Sistema operacional</span><span>Microsoft Windows Server 2016 Standard</span><span>Processadores</span><span>Intel(R) Xeon(R) CPU E5-2680</span>
+    <span>Memória (RAM)</span><span>4 GB</span><span>Espaço total em disco</span><span>59,4 GB</span></div>`;
+  else main=`<h3 style="font-weight:300;margin:0 0 8px;font-size:16px">SERVIDORES · ${({all:'Todos os servidores',adds:'AD DS',dhcpv:'DHCP',dnsv:'DNS',files:'Serviços de Arquivo e Armazenamento'})[S.view]}</h3><table style="border-collapse:collapse;width:100%"><tr style="color:#4c607a"><td>Nome do Servidor</td><td>Endereço IPv4</td><td>Capacidade de Gerenciamento</td><td>Ativação do Windows</td></tr><tr><td>${esc(S.host)}</td><td>${esc(ipNow())}</td><td>Online - Contadores de desempenho não iniciados</td><td>Não ativado</td></tr></table>${F.length&&['adds','dhcpv'].includes(S.view)?`<p style="background:#fff8e1;border:1px solid #f0d58a;padding:8px;margin-top:12px">⚠ ${esc(F[0][1])}. <button class="lnk" data-a="${F[0][0]}">Mais...</button></p>`:''}`;
+  return `<div class="wb"><div class="smh"><span class="ttl">Gerenciador do Servidor ▸ ${esc({painel:'Painel',local:'Servidor Local',all:'Todos os Servidores',adds:'AD DS',dhcpv:'DHCP',dnsv:'DNS',files:'Serviços de Arquivo e Armazenamento'}[S.view])}</span><div class="mn"><button data-a="drop" data-d="flag" class="flag">⚑${F.length?'<b>'+F.length+'</b>':''}</button><button data-a="drop" data-d="ger">Gerenciar</button><button data-a="drop" data-d="fer">Ferramentas</button><button>Exibir</button><button>Ajuda</button>
+    ${DROP==='ger'?`<div class="drop" style="right:110px;top:32px"><button data-a="rolewiz">Adicionar Funções e Recursos</button><button disabled>Remover Funções e Recursos</button><button disabled>Adicionar Servidores</button><button disabled>Criar Grupo de Servidores</button><button disabled>Propriedades do Gerenciador do Servidor</button></div>`:''}
+    ${DROP==='fer'?`<div class="drop" style="right:40px;top:32px">${[...toolsList(),['x','Gerenciamento do Computador',false],['x','Visualizador de Eventos',false],['x','Windows PowerShell',false]].sort((a,b)=>a[1].localeCompare(b[1])).map(t=>`<button data-a="tool" data-w2="${t[0]}" ${t[2]?'':'disabled'}>${esc(t[1])}</button>`).join('')}</div>`:''}
+    ${DROP==='flag'?`<div class="drop" style="right:170px;top:32px;min-width:340px;padding:8px">${F.length?F.map(f=>`<div style="padding:4px 8px;font-weight:600">⚠ Configuração pós-implantação</div><div style="padding:0 8px 6px">${esc(f[1])}</div><button data-a="${f[0]}" style="color:#0066cc">${esc(f[2])}</button><hr style="border:0;border-top:1px solid #ccc">`).join(''):'<div style="padding:4px 8px;color:#555">Nenhuma notificação.</div>'}</div>`:''}
+  </div></div><div class="smb"><nav>${nav.map(n=>`<button data-a="smgo" data-v="${n[0]}" class="${S.view===n[0]?'on':''}">${n[1]}</button>`).join('')}</nav><div class="main">${main}</div></div></div>`; }
+function netcBody(){ const sel=S.C.netsel; return `<div class="mbar"><button>Arquivo</button><button>Editar</button><button>Exibir</button><button>Avançado</button><button>Ferramentas</button></div><div class="tbar" style="font-size:11.5px;padding:4px 8px;gap:14px;width:auto;color:#333">Organizar ▾ <span style="color:${sel?'#333':'#aaa'}">Desabilitar este dispositivo de rede</span> <span style="color:${sel?'#333':'#aaa'}">Diagnosticar esta conexão</span> <span style="color:${sel?'#333':'#aaa'}">Renomear esta conexão</span></div><div class="wb" style="padding:12px"><div data-a="netsel" data-cx="net" style="display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border:1px solid ${sel?'#99d1ff':'transparent'};background:${sel?'#cce8ff':'transparent'};cursor:default"><span style="font-size:30px">🖧</span><div><b>Ethernet</b><br>${S.domain?esc(S.domain):'Rede não identificada'}<br>Microsoft Hyper-V Network Adapter</div></div><p style="color:#666;margin-top:16px">Dica: clique com o botão direito em <b>Ethernet</b> e escolha <b>Propriedades</b> (ou dê dois cliques).</p></div>`; }
+
+/* ---------- MMC genérico ---------- */
+function C(k){ return S.C[k]||(S.C[k]={sel:null,exp:[],rsel:null}); }
+function mmcBody(k){ const D=CONS[k]; const c=C(k); const roots=D.tree(); const map={}; const walk=(n,d)=>{ map[n.id]=n; (n.kids||[]).forEach(x=>walk(x,d+1)); }; roots.forEach(n=>walk(n,0));
+  if(!c.sel||!map[c.sel]) c.sel=roots[0].id; const node=map[c.sel]; const L=node.list?node.list():{cols:['Nome'],rows:[]};
+  const tr=(n,d)=>{ const open=c.exp.includes(n.id)||n.alwaysOpen; const hk=(n.kids||[]).length>0; return `<div class="tn ${c.sel===n.id?'sel':''}" style="padding-left:${4+d*16}px" data-a="tsel" data-c="${k}" data-n="${esc(n.id)}" data-cx="node"><span class="ex" data-a="texp" data-c="${k}" data-n="${esc(n.id)}">${hk?(open?'◢':'▷'):''}</span><span class="lb">${n.ic||''} ${esc(n.t)}</span></div>${open?(n.kids||[]).map(x=>tr(x,d+1)).join(''):''}`; };
+  const acts=D.actions?D.actions(node,c):null;
+  return `<div class="mbar"><button data-a="mmenu" data-c="${k}" data-m="arq">Arquivo</button><button data-a="mmenu" data-c="${k}" data-m="acao">Ação</button><button data-a="mmenu" data-c="${k}" data-m="exib">Exibir</button><button>Ajuda</button></div>
+   <div class="tbar"><button disabled>←</button><button disabled>→</button><i></i><button title="Atualizar" data-a="refresh">⟳</button>${(D.tb?D.tb(node):[]).map(b=>`<button title="${esc(b[1])}" data-a="tbb" data-c="${k}" data-i="${b[2]}" ${b[3]===false?'disabled':''}>${b[0]}</button>`).join('')}</div>
+   <div class="mmc ${acts?'':'noact'}"><div class="tree">${roots.map(n=>tr(n,0)).join('')}</div>
+   <div class="lst" data-cx="blank" data-c="${k}">${L.html?L.html:`<table><thead><tr>${L.cols.map(x=>`<th>${esc(x)}</th>`).join('')}</tr></thead><tbody>${L.rows.map(r=>`<tr class="r ${c.rsel===r.id?'sel':''}" data-a="rsel" data-c="${k}" data-r="${esc(r.id)}" data-cx="row">${r.cells.map((x,i)=>`<td>${i===0&&r.ic?r.ic+' ':''}${esc(x)}</td>`).join('')}</tr>`).join('')}</tbody></table>${L.rows.length?'':`<div class="empty">${esc(L.empty||'Não há itens a serem mostrados neste modo de exibição.')}</div>`}`}</div>
+   ${acts?`<div class="acts"><h4>Ações</h4><h4 style="background:#f4f6f9;font-weight:600">${esc(node.t)} ▴</h4>${acts.map(a=>a.sep?'<div style="height:6px"></div>':`<button data-a="actb" data-c="${k}" data-i="${a.i}">${esc(a.t)}</button>`).join('')}</div>`:''}</div>
+   <div class="sbar">${esc(D.status?D.status(node,L):'')}</div>`; }
+
+/* ================= consoles ================= */
+const CONS={};
+/* ---- ADUC ---- */
+CONS.aduc={ tree(){ if(!S.ad) return [{id:'r',t:'Usuários e Computadores do Active Directory',ic:'👥',kids:[],list:()=>({cols:['Nome'],rows:[],empty:'O domínio não existe ou não pôde ser contatado.'})}];
+  const mk=o=>({id:o.id,t:o.name,ic:icon(o),obj:o,kids:kids(o.id).filter(isCont).map(mk),list:()=>({cols:['Nome','Tipo','Descrição'],rows:kids(o.id).map(x=>({id:x.id,ic:icon(x),cells:[x.name,typeOf(x),x.desc||'']}))})});
+  return [{id:'r',t:`Usuários e Computadores do Active Directory [${HOST}.${DOM}]`,ic:'👥',alwaysOpen:true,kids:[{id:'saved',t:'Consultas Salvas',ic:'📁',kids:[],list:()=>({cols:['Nome','Tipo','Descrição'],rows:[]})},mk(obj('dom'))],list:()=>({cols:['Nome','Tipo','Descrição'],rows:[{id:'saved',ic:'📁',cells:['Consultas Salvas','','Pasta para armazenar suas consultas favoritas']},{id:'dom',ic:'🌐',cells:[DOM,'Domínio','']}]})}]; },
+ status(n,L){ return n.obj?`${L.rows.length} objeto(s)`:''; },
+ tb(n){ const o=n.obj; const can=o&&['domain','ou','container'].includes(o.cls)&&o.cls!=='builtin'; return [['👤','Criar um novo usuário no contêiner atual','nu',!!can],['👥','Criar um novo grupo no contêiner atual','ng',!!can],['🗂️','Criar uma nova unidade organizacional no contêiner atual','no',!!(o&&(o.cls==='domain'||o.cls==='ou'))],['🔍','Localizar objetos no Active Directory','find',false]]; },
+ actions(n){ const o=n.obj; if(!o) return [{t:'Exibir',i:'x'}]; const L=[]; if(o.cls!=='builtin') L.push({t:'Novo',i:'menu'}); L.push({t:'Atualizar',i:'ref'}); if(o.cls==='ou') L.push({t:'Excluir',i:'del'},{t:'Renomear',i:'ren'}); L.push({t:'Propriedades',i:'props'}); return L; } };
+function newMenu(o){ const ok=o.cls!=='builtin'; const ouOK=o.cls==='domain'||o.cls==='ou'; return {t:'Novo',dis:!ok,sub:[{t:'Computador',f:()=>dlgPush({k:'newcomp',parent:o.id})},{t:'Contato',dis:1},{t:'Grupo',f:()=>dlgPush({k:'newgroup',parent:o.id})},{t:'InetOrgPerson',dis:1},{t:'Alias de Fila MSMQ',dis:1},{t:'Unidade Organizacional',dis:!ouOK,f:()=>dlgPush({k:'newou',parent:o.id})},{t:'Impressora',dis:1},{t:'Usuário',f:()=>dlgPush({k:'newuser',parent:o.id,pg:0,d:{mustChange:true}})},{t:'Pasta Compartilhada',dis:1}]}; }
+function aducCtx(o){ if(!o) return [];
+  if(isCont(o)) return [{t:'Delegar Controle...',dis:1},{t:'Localizar...',dis:1},{sep:1},newMenu(o),{t:'Todas as Tarefas',dis:1},{sep:1},{t:'Exibir',dis:1},{t:'Atualizar',f:()=>{}},{t:'Exportar Lista...',dis:1},{sep:1},...(o.cls==='ou'&&!o.sys?[{t:'Mover...',f:()=>dlgPush({k:'move',id:o.id})},{t:'Recortar',dis:1},{t:'Excluir',f:()=>delObj(o)},{t:'Renomear',f:()=>dlgPush({k:'rename',id:o.id})},{sep:1}]:o.cls==='ou'?[{t:'Excluir',f:()=>delObj(o)},{sep:1}]:[]),{t:'Propriedades',b:1,f:()=>dlgPush({k:'props',id:o.id,tab:0})},{sep:1},{t:'Ajuda',dis:1}];
+  if(o.cls==='user') return [{t:'Copiar...',dis:1},{t:'Adicionar a um grupo...',f:()=>addToGroupFlow([o.id])},{t:'Nomear Mapeamentos...',dis:1},{t:o.disabled?'Habilitar Conta':'Desabilitar Conta',dis:o.sys,f:()=>{ o.disabled=!o.disabled; msg('Serviços de Domínio Active Directory',`O objeto ${o.name} foi ${o.disabled?'desabilitado':'habilitado'}.`,'ℹ️'); }},{t:'Redefinir Senha...',f:()=>dlgPush({k:'resetpw',id:o.id})},{t:'Mover...',dis:o.sys,f:()=>dlgPush({k:'move',id:o.id})},{t:'Abrir Home Page',dis:1},{t:'Enviar Email',dis:1},{sep:1},{t:'Todas as Tarefas',dis:1},{sep:1},{t:'Recortar',dis:1},{t:'Excluir',dis:o.sys,f:()=>delObj(o)},{t:'Renomear',dis:o.sys,f:()=>dlgPush({k:'rename',id:o.id})},{sep:1},{t:'Propriedades',b:1,f:()=>dlgPush({k:'props',id:o.id,tab:0})},{sep:1},{t:'Ajuda',dis:1}];
+  if(o.cls==='group') return [{t:'Adicionar a um grupo...',f:()=>addToGroupFlow([o.id])},{t:'Mover...',dis:o.sys,f:()=>dlgPush({k:'move',id:o.id})},{t:'Enviar Email',dis:1},{sep:1},{t:'Todas as Tarefas',dis:1},{sep:1},{t:'Recortar',dis:1},{t:'Excluir',dis:o.sys,f:()=>delObj(o)},{t:'Renomear',dis:o.sys,f:()=>dlgPush({k:'rename',id:o.id})},{sep:1},{t:'Propriedades',b:1,f:()=>dlgPush({k:'props',id:o.id,tab:0})},{sep:1},{t:'Ajuda',dis:1}];
+  if(o.cls==='computer') return [{t:'Adicionar a um grupo...',f:()=>addToGroupFlow([o.id])},{t:'Desabilitar Conta',dis:o.sys,f:()=>{ o.disabled=!o.disabled; render(); }},{t:'Redefinir Conta',dis:1},{t:'Mover...',dis:o.sys,f:()=>dlgPush({k:'move',id:o.id})},{t:'Gerenciar',dis:1},{sep:1},{t:'Todas as Tarefas',dis:1},{sep:1},{t:'Recortar',dis:1},{t:'Excluir',dis:o.sys,f:()=>delObj(o)},{sep:1},{t:'Propriedades',b:1,f:()=>dlgPush({k:'props',id:o.id,tab:0})},{sep:1},{t:'Ajuda',dis:1}];
+  return []; }
+function delObj(o){ if(o.cls==='ou'&&o.prot){ return msg('Serviços de Domínio Active Directory',`Você não tem privilégios suficientes para excluir ${o.name} ou este objeto está protegido contra exclusão acidental.`,'❌'); }
+  confirmBox('Serviços de Domínio Active Directory',`Tem certeza de que deseja excluir ${typeOf(o)==='Usuário'?'o Usuário':'o objeto'} chamado '${o.name}'?`,()=>{ if(o.cls==='ou'&&kids(o.id).length){ confirmBox('Confirmar Exclusão de Subárvore',`O objeto ${o.name} contém outros objetos. Tem certeza de que deseja excluir o objeto ${o.name} e todos os objetos que ele contém?`,()=>{ rmTree(o.id); render(); }); return; } rmTree(o.id); }); }
+function rmTree(id){ kids(id).forEach(k=>rmTree(k.id)); AD().forEach(g=>{ if(g.members) g.members=g.members.filter(m=>m!==id); }); S.ad=S.ad.filter(o=>o.id!==id); S.gpos.forEach(g=>g.links=g.links.filter(l=>l!==id)); }
+function addToGroupFlow(ids){ dlgPush({k:'select',title:'Selecionar Grupos',types:['group'],cb:sel=>{ sel.forEach(g=>{ const G=obj(g); ids.forEach(i=>{ if(!G.members.includes(i)&&i!==g) G.members.push(i); }); }); msg('Serviços de Domínio Active Directory','A operação Adicionar a um Grupo foi concluída com êxito.','ℹ️'); }}); }
+
+/* ---- DNS ---- */
+CONS.dns={ tree(){ const srv={id:'srv',t:S.host,ic:'🖥️',list:()=>({cols:['Nome'],rows:[{id:'fwd',ic:'📁',cells:['Zonas de Pesquisa Direta']},{id:'rev',ic:'📁',cells:['Zonas de Pesquisa Inversa']},{id:'tp',ic:'📁',cells:['Pontos de Confiança']},{id:'cf',ic:'📁',cells:['Encaminhadores Condicionais']}]}),
+   kids:[{id:'fwd',t:'Zonas de Pesquisa Direta',ic:'📁',kids:S.dnsz.filter(z=>!z.rev).map(zn),list:()=>zlist(false)},{id:'rev',t:'Zonas de Pesquisa Inversa',ic:'📁',kids:S.dnsz.filter(z=>z.rev).map(zn),list:()=>zlist(true)},{id:'tp',t:'Pontos de Confiança',ic:'📁',kids:[],list:()=>({cols:['Nome'],rows:[]})},{id:'cf',t:'Encaminhadores Condicionais',ic:'📁',kids:[],list:()=>({cols:['Nome'],rows:[],empty:'Não há itens a serem mostrados neste modo de exibição.'})}]};
+  return [{id:'root',t:'DNS',ic:'🌐',alwaysOpen:true,kids:[srv],list:()=>({cols:['Nome'],rows:[{id:'srv',ic:'🖥️',cells:[S.host]}]})}]; },
+ status(){ return ''; },
+ actions(n){ if(n.z) return [{t:'Novo Host (A ou AAAA)...',i:'nh'},{t:'Novo Ponteiro (PTR)...',i:'np'},{t:'Novo Alias (CNAME)...',i:'nc'},{sep:1},{t:'Atualizar',i:'ref'},{t:'Propriedades',i:'zp'}]; if(n.id==='fwd'||n.id==='rev') return [{t:'Nova Zona...',i:'nz'},{t:'Atualizar',i:'ref'}]; return [{t:'Atualizar',i:'ref'}]; } };
+function zn(z){ return {id:'z:'+z.name,t:z.name,ic:'📄',z,kids:z.rev?[]:[{id:'zf:'+z.name+':_msdcs',t:'_msdcs',ic:'📁',kids:[],list:()=>({cols:['Nome','Tipo','Dados','Carimbo de data/hora'],rows:[]})},{id:'zf:'+z.name+':_sites',t:'_sites',ic:'📁',kids:[],list:()=>({cols:['Nome'],rows:[]})},{id:'zf:'+z.name+':_tcp',t:'_tcp',ic:'📁',kids:[],list:()=>({cols:['Nome'],rows:[]})},{id:'zf:'+z.name+':_udp',t:'_udp',ic:'📁',kids:[],list:()=>({cols:['Nome'],rows:[]})},{id:'zf:'+z.name+':DomainDnsZones',t:'DomainDnsZones',ic:'📁',kids:[],list:()=>({cols:['Nome'],rows:[]})},{id:'zf:'+z.name+':ForestDnsZones',t:'ForestDnsZones',ic:'📁',kids:[],list:()=>({cols:['Nome'],rows:[]})}],
+  list:()=>({cols:['Nome','Tipo','Dados','Carimbo de data/hora'],rows:[...(z.rev?[]:['_msdcs','_sites','_tcp','_udp','DomainDnsZones','ForestDnsZones'].map(f=>({id:'f'+f,ic:'📁',cells:[f,'','','']}))),{id:'soa',ic:'📄',cells:['(igual à pasta pai)','Início de autoridade (SOA)',`[${z.serial||1}], ${fqdn()}., hostmaster.${DOM}.`,'estático']},{id:'ns',ic:'📄',cells:['(igual à pasta pai)','Servidor de nomes (NS)',fqdn()+'.','estático']},...z.recs.map((r,i)=>({id:'rec'+i,ic:'📄',cells:[r.name,{A:'Host (A)',PTR:'Ponteiro (PTR)',CNAME:'Alias (CNAME)'}[r.type],r.data,r.dyn?now():'estático']}))]}),ctxZ:z}; }
+function zlist(rev){ return {cols:['Nome','Tipo','Status','Status do DNSSEC','Tipo de Chave','Nome da Chave'],rows:S.dnsz.filter(z=>!!z.rev===rev).map(z=>({id:'z:'+z.name,ic:'📄',cells:[z.name,'Integrada ao Active Directory Primária','Executando','Não assinado','','']})),empty:'Não há itens a serem mostrados neste modo de exibição.'}; }
+
+/* ---- DHCP ---- */
+CONS.dhcp={ tree(){ const sv={id:'dsrv',t:fqdn(),ic:S.dhcp.auth?'🖥️':'🔻',list:()=>({cols:['Conteúdo do Servidor DHCP','Status'],rows:[{id:'v4',ic:S.dhcp.auth?'📗':'🔻',cells:['IPv4',S.dhcp.auth?'':'Não autorizado']},{id:'v6',ic:'📗',cells:['IPv6','']}]}),
+   kids:[{id:'v4',t:'IPv4',ic:S.dhcp.auth?'📗':'🔻',kids:[...S.dhcp.scopes.map(scn),{id:'so',t:'Opções de Servidor',ic:'⚙️',kids:[],list:()=>({cols:['Nome da Opção','Fornecedor','Valor'],rows:[]})},{id:'pol',t:'Políticas',ic:'📁',kids:[],list:()=>({cols:['Nome'],rows:[]})},{id:'fil',t:'Filtros',ic:'📁',kids:[],list:()=>({cols:['Nome'],rows:[]})}],list:()=>({cols:['Conteúdo do DHCP','Status','Descrição'],rows:[...S.dhcp.scopes.map(s=>({id:'s:'+s.id,ic:'📂',cells:[`Escopo [${s.id}] ${s.name}`,s.active?'** Ativo **':'** Inativo **',s.desc||'']})),{id:'so',ic:'⚙️',cells:['Opções de Servidor','','']},{id:'pol',ic:'📁',cells:['Políticas','','']},{id:'fil',ic:'📁',cells:['Filtros','','']}],html:S.dhcp.auth?null:`<div class="wb2" style="background:#fff"><h3>Este servidor DHCP não está autorizado</h3><p>O servidor DHCP precisa ser autorizado no Active Directory antes de distribuir endereços. Clique com o botão direito no servidor e escolha <b>Autorizar</b>.</p></div>`})},{id:'v6',t:'IPv6',ic:'📗',kids:[],list:()=>({cols:['Conteúdo do DHCP'],rows:[]})}]};
+  return [{id:'root',t:'DHCP',ic:'🖧',alwaysOpen:true,kids:[sv],list:()=>({cols:['Servidor'],rows:[{id:'dsrv',ic:'🖥️',cells:[fqdn()]}]})}]; },
+ status(n){ return n.id==='dsrv'&&!S.dhcp.auth?'Este servidor DHCP não está autorizado.':''; },
+ actions(n){ if(n.id==='dsrv') return [{t:S.dhcp.auth?'Cancelar autorização':'Autorizar',i:'auth'},{t:'Atualizar',i:'ref'}]; if(n.id==='v4') return [{t:'Novo Escopo...',i:'ns'},{t:'Atualizar',i:'ref'}]; if(n.sc) return [{t:n.sc.active?'Desativar':'Ativar',i:'act'},{t:'Excluir',i:'dels'},{t:'Atualizar',i:'ref'},{t:'Propriedades',i:'sp'}]; if(n.id.startsWith('res:')) return [{t:'Nova Reserva...',i:'nr'}]; if(n.id.startsWith('pool:')) return [{t:'Novo Intervalo de Exclusão...',i:'ne'}]; return [{t:'Atualizar',i:'ref'}]; } };
+function scn(s){ return {id:'s:'+s.id,t:`Escopo [${s.id}] ${s.name}`,ic:s.active?'📂':'📁',sc:s,kids:[
+   {id:'pool:'+s.id,t:'Pool de Endereços',ic:'📋',sc2:s,kids:[],list:()=>({cols:['Endereço IP Inicial','Endereço IP Final','Descrição'],rows:[{id:'p0',ic:'🔵',cells:[s.start,s.end,'Intervalo de endereços para distribuição']},...s.excl.map((e,i)=>({id:'e'+i,ic:'⛔',cells:[e[0],e[1],'Os endereços estão excluídos da distribuição']}))]})},
+   {id:'lease:'+s.id,t:'Concessões de Endereço',ic:'📋',kids:[],list:()=>({cols:['Endereço IP do Cliente','Nome','Concessão Expira em','Tipo','ID Exclusivo'],rows:s.res.map((r,i)=>({id:'l'+i,ic:'💻',cells:[r.ip,r.name,'Reserva (inativa)','DHCP/BOOTP',r.mac.replace(/[-:]/g,'').toLowerCase()]})),empty:'Não há itens a serem mostrados neste modo de exibição.'})},
+   {id:'res:'+s.id,t:'Reservas',ic:'📁',sc2:s,kids:[],list:()=>({cols:['Nome da Reserva'],rows:s.res.map((r,i)=>({id:'rs'+i,ic:'💻',cells:[`[${r.ip}] ${r.name}`]})),empty:'Não há itens a serem mostrados neste modo de exibição.'})},
+   {id:'opt:'+s.id,t:'Opções do Escopo',ic:'⚙️',kids:[],list:()=>({cols:['Nome da Opção','Fornecedor','Valor','Nome da Classe','Política'],rows:[...(s.opts.router?[{id:'o3',ic:'⚙️',cells:['003 Roteador','Padrão',s.opts.router,'Nenhum','']}]:[]),...((s.opts.dns||[]).length?[{id:'o6',ic:'⚙️',cells:['006 Servidores DNS','Padrão',s.opts.dns.join(', '),'Nenhum','']}]:[]),...(s.opts.domain?[{id:'o15',ic:'⚙️',cells:['015 Nome de Domínio DNS','Padrão',s.opts.domain,'Nenhum','']}]:[])],empty:'Não há itens a serem mostrados neste modo de exibição.'})},
+   {id:'spol:'+s.id,t:'Políticas',ic:'📁',kids:[],list:()=>({cols:['Nome'],rows:[]})}],
+  list:()=>({cols:['Conteúdo do Escopo'],rows:['Pool de Endereços','Concessões de Endereço','Reservas','Opções do Escopo','Políticas'].map((t,i)=>({id:['pool:','lease:','res:','opt:','spol:'][i]+s.id,ic:'📁',cells:[t]}))})}; }
+
+/* ---- GPMC ---- */
+CONS.gpmc={ tree(){ if(!S.isDC) return [{id:'root',t:'Gerenciamento de Política de Grupo',ic:'📜',kids:[],list:()=>({cols:['Nome'],rows:[]})}];
+  const linksOf=id=>S.gpos.filter(g=>g.links.includes(id)).map(g=>({id:'lk:'+id+':'+g.id,t:g.name,ic:'📄',lk:{ou:id,g},kids:[],list:()=>gpoScope(g)}));
+  const ouNode=o=>({id:'ou:'+o.id,t:o.name,ic:'🗂️',ou:o,kids:[...linksOf(o.id),...kids(o.id).filter(x=>x.cls==='ou').map(ouNode)],list:()=>linkedList(o.id)});
+  const domN={id:'ou:dom',t:DOM,ic:'🌐',ou:obj('dom'),kids:[...linksOf('dom'),...kids('dom').filter(x=>x.cls==='ou').map(ouNode),{id:'gpos',t:'Objetos de Política de Grupo',ic:'📁',kids:S.gpos.map(g=>({id:'g:'+g.id,t:g.name,ic:'📄',g,kids:[],list:()=>gpoScope(g)})),list:()=>({cols:['Nome','Status do GPO','Filtro WMI','Modificado','Proprietário'],rows:S.gpos.map(g=>({id:'g:'+g.id,ic:'📄',cells:[g.name,'Habilitado','Nenhum',now(),'Admins. do Domínio ('+NB+'\\Admins. do Domínio)']}))})},{id:'wmi',t:'Filtros WMI',ic:'📁',kids:[],list:()=>({cols:['Nome'],rows:[]})},{id:'ini',t:'Objetos de GPO Iniciais',ic:'📁',kids:[],list:()=>({cols:['Nome'],rows:[]})}],list:()=>linkedList('dom')};
+  return [{id:'root',t:'Gerenciamento de Política de Grupo',ic:'📜',alwaysOpen:true,kids:[{id:'for',t:'Floresta: '+DOM,ic:'🌲',kids:[{id:'doms',t:'Domínios',ic:'📁',kids:[domN],list:()=>({cols:['Nome'],rows:[{id:'ou:dom',ic:'🌐',cells:[DOM]}]})},{id:'sites',t:'Sites',ic:'📁',kids:[],list:()=>({cols:['Nome'],rows:[]})},{id:'mod',t:'Modelagem de Política de Grupo',ic:'📁',kids:[],list:()=>({cols:['Nome'],rows:[]})},{id:'res',t:'Resultados de Política de Grupo',ic:'📁',kids:[],list:()=>({cols:['Nome'],rows:[]})}],list:()=>({cols:['Nome'],rows:[{id:'doms',ic:'📁',cells:['Domínios']},{id:'sites',ic:'📁',cells:['Sites']}]})}],list:()=>({cols:['Nome'],rows:[{id:'for',ic:'🌲',cells:['Floresta: '+DOM]}]})}]; },
+ status(){ return ''; },
+ actions(n){ if(n.ou) return [{t:'Criar um GPO neste domínio e vinculá-lo aqui...',i:'cg'},{t:'Vincular um GPO Existente...',i:'lg'},{t:'Bloquear Herança',i:'x'},{t:'Atualizar',i:'ref'}]; if(n.lk||n.g) return [{t:'Editar...',i:'ed'},{t:'Excluir',i:'dl'},{t:'Atualizar',i:'ref'}]; if(n.id==='gpos') return [{t:'Novo',i:'ng'}]; return [{t:'Atualizar',i:'ref'}]; } };
+function linkedList(id){ const L=S.gpos.filter(g=>g.links.includes(id)); return {cols:['Ordem do Vínculo','GPO','Imposto','Link Habilitado','Status do GPO','Filtro WMI','Modificado','Domínio'],rows:L.map((g,i)=>({id:'lk:'+id+':'+g.id,ic:'📄',cells:[String(i+1),g.name,'Não','Sim','Habilitado','Nenhum',now(),DOM]})),empty:'Não há itens a serem mostrados neste modo de exibição.'}; }
+function gpoScope(g){ const L=g.links.map(l=>obj(l)).filter(Boolean); return {html:`<div class="wb2"><h3>${esc(g.name)}</h3><div class="tabs"><button class="on">Escopo</button><button>Detalhes</button><button>Configurações</button><button>Delegação</button></div><div class="tabp"><b>Vínculos</b><table style="width:100%;margin:6px 0 14px;border-collapse:collapse"><tr style="color:#4c607a"><td>Local</td><td>Imposto</td><td>Link Habilitado</td><td>Caminho</td></tr>${L.map(o=>`<tr><td>🗂️ ${esc(o.name)}</td><td>Não</td><td>Sim</td><td>${esc(o.cls==='domain'?DOM:pathOf(o)+'/'+o.name)}</td></tr>`).join('')||'<tr><td colspan=4 style="color:#777">Nenhum vínculo.</td></tr>'}</table><b>Filtragem de Segurança</b><p>As configurações deste GPO só podem ser aplicadas aos seguintes grupos, usuários e computadores:</p><div class="lbox" style="height:50px"><div>👥 Usuários Autenticados</div></div><p style="margin-top:12px;color:#555">Configurações deste GPO: ${Object.values(g.u).filter(x=>x.st&&x.st!=='nc').length} política(s) de usuário definida(s).</p></div></div>`}; }
+
+/* ---- Editor de GPO ---- */
+CONS.gpme={ tree(){ const g=gpo(S.C.gpme&&S.C.gpme.gid); if(!g) return [{id:'r',t:'(nenhum GPO)',kids:[],list:()=>({cols:['Nome'],rows:[]})}];
+  const fol=(p,pre)=>({id:pre+p.id,t:p.t,ic:'📁',pol:p,kids:(p.sub||[]).map(s=>fol(s,pre)),list:()=>polList(g,p)});
+  const empty=(id,t,k)=>({id,t,ic:'📁',kids:k||[],list:()=>({cols:['Nome'],rows:(k||[]).map(x=>({id:x.id,ic:'📁',cells:[x.t]}))})});
+  const pw={id:'c-pw',t:'Política de Senha',ic:'📁',kids:[],list:()=>secList(g,PWP)}, bl={id:'c-bl',t:'Política de Bloqueio de Conta',ic:'📁',kids:[],list:()=>secList(g,BLP)};
+  const comp=empty('c','Configuração do Computador',[empty('c-pol','Políticas',[empty('c-sw','Configurações de Software'),empty('c-win','Configurações do Windows',[empty('c-dns','Política de Resolução de Nomes'),empty('c-scr','Scripts (Inicialização/Desligamento)'),empty('c-sec','Configurações de Segurança',[empty('c-ac','Políticas de Conta',[pw,bl,empty('c-kb','Política Kerberos')]),empty('c-lp','Políticas Locais'),empty('c-ev','Log de Eventos'),empty('c-fw','Firewall do Windows com Segurança Avançada')])]),empty('c-adm','Modelos Administrativos: definições de política (arquivos ADMX) recuperadas do computador local.')]),empty('c-pref','Preferências')]);
+  const user=empty('u','Configuração do Usuário',[empty('u-pol','Políticas',[empty('u-sw','Configurações de Software'),empty('u-win','Configurações do Windows'),{id:'u-adm',t:'Modelos Administrativos: definições de política (arquivos ADMX) recuperadas do computador local.',ic:'📁',kids:UPOL.map(p=>fol(p,'p:')),list:()=>({cols:['Configuração'],rows:UPOL.map(p=>({id:'p:'+p.id,ic:'📁',cells:[p.t]}))})}]),empty('u-pref','Preferências')]);
+  return [{id:'r',t:`${g.name} [${HOST}.${DOM.toUpperCase()}] Política`,ic:'📜',alwaysOpen:true,kids:[comp,user],list:()=>({cols:['Nome'],rows:[{id:'c',ic:'🖥️',cells:['Configuração do Computador']},{id:'u',ic:'👤',cells:['Configuração do Usuário']}]})}]; },
+ status(n,L){ return L.rows?`${L.rows.length} configuração(ões)`:''; } };
+const stTxt={en:'Habilitada',dis:'Desabilitada',nc:'Não configurada'};
+function polList(g,p){ return {cols:['Configuração','Estado','Comentário'],rows:[...(p.sub||[]).map(s=>({id:'p:'+s.id,ic:'📁',cells:[s.t,'','']})),...p.items.map(it=>({id:'pi:'+it[0],ic:'📃',cells:[it[1],stTxt[(g.u[it[0]]||{}).st||'nc'],(g.u[it[0]]||{}).cm||'Não']}))],empty:'Não há itens a serem mostrados neste modo de exibição.'}; }
+function secVal(g,it){ const v=g.pw?g.pw[it[0]]:undefined; if(v===undefined||v===null) return g.pw&&it[0].startsWith('lock')&&it[0]!=='lockThr'?'Não Aplicável':'Não Definido'; if(it[2]==='bool') return v?'Habilitada':'Desabilitada'; return v+' '+it[2]; }
+function secList(g,L){ return {cols:['Política','Configuração de Política'],rows:L.map(it=>({id:'sec:'+it[0],ic:'📃',cells:[it[1],secVal(g,it)]}))}; }
+
+/* ================= menus de contexto ================= */
+function menuHTML(){ const it=(L,pre)=>L.map((x,i)=>x.sep?'<hr>':`<div class="it ${x.dis?'dis':''} ${x.b?'b':''}" ${x.dis||x.sub?'':`data-a="mi" data-i="${pre+i}"`}>${esc(x.t)}${x.sub?'<span class="ar">▶</span><div class="cm sub">'+it(x.sub,pre+i+'.')+'</div>':''}</div>`).join('');
+  return `<div class="cm" style="left:${MENU.x}px;top:${MENU.y}px">${it(MENU.items,'')}</div>`; }
+function showMenu(e,items){ if(!items||!items.length) return; const r=scr.getBoundingClientRect(); MENU={x:Math.min(e.clientX-r.left,r.width-240),y:Math.min(e.clientY-r.top,r.height-Math.min(420,items.length*24+10)),items}; render(); }
+function nodeById(k,id){ const roots=CONS[k].tree(); let f=null; const w=n=>{ if(n.id===id) f=n; (n.kids||[]).forEach(w); }; roots.forEach(w); return f; }
+function ctxFor(k,kind,id){ const c=C(k);
+  if(k==='aduc'){ if(kind==='blank'){ const n=nodeById(k,c.sel); return n&&n.obj?aducCtx(n.obj).filter(x=>!['Mover...','Excluir','Renomear','Recortar'].includes(x.t)):[]; } const o=obj(id); return aducCtx(o); }
+  if(k==='dns'){ const n=kind==='blank'?nodeById(k,c.sel):nodeById(k,id)||nodeById(k,c.sel);
+    if(n&&(n.id==='fwd'||n.id==='rev')) return [{t:'Nova Zona...',f:()=>dlgPush({k:'zonewiz',rev:n.id==='rev',pg:0,d:{}})},{sep:1},{t:'Exibir',dis:1},{t:'Atualizar',f:()=>{}},{t:'Exportar Lista...',dis:1},{sep:1},{t:'Ajuda',dis:1}];
+    if(n&&n.z) return [{t:'Atualizar Arquivo de Dados do Servidor',dis:1},{t:'Recarregar',f:()=>{}},{sep:1},{t:'Novo Host (A ou AAAA)...',f:()=>dlgPush({k:'newhost',zone:n.z.name}),dis:n.z.rev},{t:'Novo Alias (CNAME)...',dis:n.z.rev,f:()=>dlgPush({k:'newcname',zone:n.z.name})},{t:'Novo Servidor de Mensagens (MX)...',dis:1},{t:'Novo Ponteiro (PTR)...',dis:!n.z.rev,f:()=>dlgPush({k:'newptr',zone:n.z.name})},{t:'Novo Domínio...',dis:1},{t:'Novos Outros Registros...',dis:1},{sep:1},{t:'Todas as Tarefas',dis:1},{t:'Exibir',dis:1},{sep:1},{t:'Excluir',f:()=>confirmBox('DNS',`Deseja excluir a zona ${n.z.name} do servidor?`,()=>{ S.dnsz=S.dnsz.filter(z=>z!==n.z); C('dns').sel='srv'; })},{t:'Atualizar',f:()=>{}},{sep:1},{t:'Propriedades',b:1,f:()=>msg('Propriedades de '+n.z.name,`Status: Executando\nTipo: Primária (Integrada ao Active Directory)\nReplicação: Todos os servidores DNS neste domínio\nAtualizações dinâmicas: ${n.z.dyn||'Seguras somente'}`,'ℹ️')},{sep:1},{t:'Ajuda',dis:1}];
+    if(n&&n.id==='srv') return [{t:'Configurar um Servidor DNS...',dis:1},{t:'Nova Zona...',f:()=>dlgPush({k:'zonewiz',rev:false,pg:0,d:{}})},{t:'Definir Envelhecimento/Limpeza para Todas as Zonas...',dis:1},{t:'Limpar Registros de Recursos Obsoletos',dis:1},{t:'Atualizar Arquivos de Dados do Servidor',dis:1},{t:'Limpar Cache',dis:1},{sep:1},{t:'Iniciar Nslookup',dis:1},{sep:1},{t:'Propriedades',b:1,dis:1}];
+    return []; }
+  if(k==='dhcp'){ const n=kind==='blank'?nodeById(k,c.sel):nodeById(k,id)||nodeById(k,c.sel); if(!n) return [];
+    if(n.id==='dsrv') return [{t:'Exibir Estatísticas...',dis:1},{t:'Adicionar/Remover Associações...',dis:1},{sep:1},{t:S.dhcp.auth?'Cancelar autorização':'Autorizar',f:dhcpAuth},{t:'Definir Classes de Usuário...',dis:1},{t:'Definir Classes de Fornecedor...',dis:1},{sep:1},{t:'Fazer Backup...',dis:1},{t:'Restaurar...',dis:1},{sep:1},{t:'Todas as Tarefas',dis:1},{t:'Excluir',dis:1},{t:'Atualizar',f:()=>{}},{sep:1},{t:'Propriedades',b:1,dis:1}];
+    if(n.id==='v4') return [{t:'Exibir Estatísticas...',dis:1},{sep:1},{t:'Novo Escopo...',f:()=>dlgPush({k:'scopewiz',pg:0,d:{len:24,excl:[],days:8,hrs:0,mins:0,cfg:'sim',dns:[],act:'sim'}})},{t:'Novo Superescopo...',dis:1},{t:'Novo Escopo Multicast...',dis:1},{t:'Configurar Failover...',dis:1},{t:'Replicar Escopos de Failover',dis:1},{t:'Definir Opções Predefinidas...',dis:1},{sep:1},{t:'Atualizar',f:()=>{}},{sep:1},{t:'Propriedades',b:1,dis:1}];
+    if(n.sc) return [{t:'Exibir Estatísticas...',dis:1},{t:'Conciliar...',dis:1},{sep:1},{t:n.sc.active?'Desativar':'Ativar',f:()=>{ n.sc.active=!n.sc.active; }},{sep:1},{t:'Excluir',f:()=>confirmBox('DHCP',`Deseja excluir o escopo ${n.sc.id}?`,()=>{ S.dhcp.scopes=S.dhcp.scopes.filter(s=>s!==n.sc); C('dhcp').sel='v4'; })},{t:'Atualizar',f:()=>{}},{sep:1},{t:'Propriedades',b:1,dis:1}];
+    if(n.id.startsWith('res:')) return [{t:'Nova Reserva...',f:()=>dlgPush({k:'newres',scope:n.sc2.id})},{sep:1},{t:'Atualizar',f:()=>{}}];
+    if(n.id.startsWith('pool:')) return [{t:'Novo Intervalo de Exclusão...',f:()=>dlgPush({k:'newexcl',scope:n.sc2.id})},{sep:1},{t:'Atualizar',f:()=>{}}];
+    return [{t:'Atualizar',f:()=>{}}]; }
+  if(k==='gpmc'){ const n=kind==='blank'?nodeById(k,c.sel):nodeById(k,id)||nodeById(k,c.sel); if(!n) return [];
+    if(n.ou) return [{t:'Criar um GPO neste domínio e vinculá-lo aqui...',f:()=>dlgPush({k:'newgpo',ou:n.ou.id})},{t:'Vincular um GPO Existente...',f:()=>dlgPush({k:'linkgpo',ou:n.ou.id})},{t:'Bloquear Herança',dis:1},{t:'Atualização de Política de Grupo...',dis:1},{t:'Assistente de Modelagem de Política de Grupo...',dis:1},{t:'Nova Unidade Organizacional',f:()=>dlgPush({k:'newou',parent:n.ou.id})},{sep:1},{t:'Exibir',dis:1},{t:'Nova Janela a Partir Daqui',dis:1},{sep:1},{t:'Atualizar',f:()=>{}},{t:'Propriedades',dis:1},{sep:1},{t:'Ajuda',dis:1}];
+    if(n.lk) return [{t:'Editar...',b:1,f:()=>editGPO(n.lk.g.id)},{t:'Imposto',dis:1},{t:'Link Habilitado',dis:1},{t:'Salvar Relatório...',dis:1},{sep:1},{t:'Exibir',dis:1},{sep:1},{t:'Excluir',f:()=>confirmBox('Gerenciamento de Política de Grupo',`Deseja excluir este link? Isso não excluirá o próprio GPO.`,()=>{ n.lk.g.links=n.lk.g.links.filter(l=>l!==n.lk.ou); C('gpmc').sel='ou:'+n.lk.ou; })},{t:'Renomear',dis:1},{t:'Atualizar',f:()=>{}},{sep:1},{t:'Ajuda',dis:1}];
+    if(n.g) return [{t:'Editar...',b:1,f:()=>editGPO(n.g.id)},{t:'Status do GPO',dis:1},{t:'Fazer Backup...',dis:1},{sep:1},{t:'Excluir',dis:n.g.sys,f:()=>confirmBox('Gerenciamento de Política de Grupo',`Deseja excluir este GPO e todos os vínculos para ele neste domínio?`,()=>{ S.gpos=S.gpos.filter(x=>x!==n.g); C('gpmc').sel='gpos'; })},{t:'Renomear',dis:1},{t:'Atualizar',f:()=>{}}];
+    if(n.id==='gpos') return [{t:'Novo',f:()=>dlgPush({k:'newgpo',ou:null})},{t:'Fazer Backup de Todos...',dis:1},{sep:1},{t:'Atualizar',f:()=>{}}];
+    return []; }
+  if(k==='gpme'){ const n=nodeById(k,id)||nodeById(k,c.sel); if(id&&(id.startsWith('pi:')||id.startsWith('sec:'))) return [{t:'Editar',b:1,f:()=>openPolicy(id)},{t:'Filtrar',dis:1},{sep:1},{t:'Ajuda',dis:1}]; return [{t:'Exibir',dis:1},{t:'Atualizar',f:()=>{}}]; }
+  if(k==='net') return [{t:'Desabilitar',dis:1},{t:'Status',dis:1},{t:'Diagnosticar',dis:1},{sep:1},{t:'Conexões de Ponte',dis:1},{sep:1},{t:'Criar Atalho',dis:1},{t:'Excluir',dis:1},{t:'Renomear',dis:1},{sep:1},{t:'Propriedades',b:1,f:()=>dlgPush({k:'ethprops'})}];
+  return []; }
+function editGPO(gid){ const g=gpo(gid); S.C.gpme={sel:'r',exp:['u','u-pol','u-adm'],rsel:null,gid,title:'Editor de Gerenciamento de Política de Grupo'}; openWin('gpme'); render(); }
+function openPolicy(id){ const g=gpo(S.C.gpme.gid); if(id.startsWith('pi:')){ const k=id.slice(3); let it=null; const f=L=>L.forEach(p=>{ p.items.forEach(x=>{ if(x[0]===k) it=x; }); f(p.sub||[]); }); f(UPOL); dlgPush({k:'policy',gid:g.id,key:k,item:it}); }
+  else { const k=id.slice(4); const it=[...PWP,...BLP].find(x=>x[0]===k); dlgPush({k:'secpol',gid:g.id,key:k,item:it}); } }
+function dhcpAuth(){ if(!S.isDC) return msg('DHCP','O servidor DHCP não pode ser autorizado porque este computador não está em um domínio do Active Directory.','❌'); S.dhcp.auth=!S.dhcp.auth; S.dhcp.post=S.dhcp.post||S.dhcp.auth; }
+
+/* ================= caixas de diálogo ================= */
+function dlgPush(d){ MENU=null; S.dlg.push(d); render(); }
+function dlgPop(){ S.dlg.pop(); render(); }
+function msg(t,text,ic,cb){ S.dlg.push({k:'msg',t,text,ic,cb}); render(); }
+function confirmBox(t,text,yes){ S.dlg.push({k:'confirm',t,text,yes}); render(); }
+const box=(w,title,body,foot,extra)=>`<div class="dlg" style="left:50%;top:${extra&&extra.top||'8%'};transform:translateX(-50%);width:${w}"><div class="wt">${esc(title)}<button class="x" data-a="dx">✕</button></div><div class="db">${body}</div><div class="df">${foot}</div></div>`;
+const val=id=>{ const e=document.getElementById(id); return e?(e.type==='checkbox'||e.type==='radio'?e.checked:e.value.trim()):''; };
+const okc=(lbl,a,dis)=>`<button class="btnw def" data-a="${a}" ${dis?'disabled':''}>${lbl||'OK'}</button>`;
+const cancel=`<button class="btnw" data-a="dx">Cancelar</button>`;
+const ipInp=(id,v)=>`<input id="${id}" value="${esc(v||'')}" style="width:150px">`;
+function dlgHTML(d){ const H=DLG[d.k]; return H?H(d):''; }
+const DLG={};
+DLG.msg=d=>box('420px',d.t,`<div class="msgi"><span class="ic">${d.ic||'ℹ️'}</span><div style="white-space:pre-wrap">${esc(d.text)}</div></div>`,okc('OK','msgok'),{top:'26%'});
+DLG.confirm=d=>box('440px',d.t,`<div class="msgi"><span class="ic">⚠️</span><div>${esc(d.text)}</div></div>`,`<button class="btnw def" data-a="yes">Sim</button><button class="btnw" data-a="dx">Não</button>`,{top:'26%'});
+/* --- Propriedades do Sistema / renomear --- */
+DLG.sysprop=d=>box('440px','Propriedades do Sistema',`<div class="tabs">${['Nome do Computador','Hardware','Avançado','Remoto'].map((t,i)=>`<button class="${i===0?'on':''}">${t}</button>`).join('')}</div><div class="tabp"><p>O Windows usa as informações a seguir para identificar o computador na rede.</p><div class="f"><label>Descrição do computador:</label><input id="sdesc"></div><p style="color:#555;margin:2px 0 10px 158px">Por exemplo: "Servidor de Produção IIS" ou "Servidor de Contabilidade".</p><div class="f"><label>Nome completo do computador:</label><span>${esc(S.host)}${S.domain?'.'+esc(S.domain):''}</span><label>${S.domain?'Domínio:':'Grupo de trabalho:'}</label><span>${S.domain?esc(S.domain):'WORKGROUP'}</span></div><p style="margin-top:16px">Para renomear este computador ou alterar seu domínio ou grupo de trabalho, clique em Alterar.</p><div style="text-align:right"><button class="btnw" data-a="sysalt">Alterar...</button></div>${S.pendHost?'<p style="color:#b7791f">⚠ As alterações entrarão em vigor depois que você reiniciar este computador.</p>':''}</div>`,`${okc('OK','sysok')}${cancel}<button class="btnw" disabled>Aplicar</button>`);
+DLG.rename2=d=>box('400px','Alterações de Nome/Domínio do Computador',`<p>Você pode alterar o nome e a associação deste computador. As alterações podem afetar o acesso a recursos de rede.</p><label>Nome do computador:</label><br><input id="rnN" data-focus value="${esc(S.pendHost||S.host)}" style="width:100%" ${S.isDC?'disabled':''}><p>Nome completo do computador:<br><span id="rnF">${esc(S.pendHost||S.host)}</span></p><div style="text-align:right"><button class="btnw" disabled>Mais...</button></div><fieldset><legend>Membro de</legend><label class="chk"><input type="radio" disabled ${S.domain?'checked':''}> Domínio:</label><input disabled value="${esc(S.domain||'')}" style="width:100%"><label class="chk"><input type="radio" disabled ${S.domain?'':'checked'}> Grupo de trabalho:</label><input disabled value="WORKGROUP" style="width:100%"></fieldset><div id="rnE" style="color:#c00"></div>${S.isDC?'<p style="color:#c00">O nome de um controlador de domínio não pode ser alterado aqui.</p>':''}`,`${okc('OK','rnok',S.isDC)}${cancel}`);
+DLG.restartq=d=>box('420px','Microsoft Windows',`<div class="msgi"><span class="ic">ℹ️</span><div><b>Você deve reiniciar o computador para aplicar estas alterações</b><p>Antes de reiniciar, salve todos os arquivos abertos e feche todos os programas.</p></div></div>`,`<button class="btnw def" data-a="rsnow">Reiniciar Agora</button><button class="btnw" data-a="rslater">Reiniciar Mais Tarde</button>`,{top:'26%'});
+/* --- rede --- */
+DLG.ethprops=d=>{ const it=[['Cliente para Redes Microsoft',1],['Compartilhamento de Arquivos e Impressoras para Redes Microsoft',1],['Agendador de Pacotes QoS',1],['Protocolo de Multiplexador de Adaptador de Rede da Microsoft',0],['Driver de E/S do Mapeador de Descoberta de Topologia da Camada de Enlace',1],['Protocolo IP Versão 6 (TCP/IPv6)',1],['Respondente de Descoberta de Topologia da Camada de Link',1],['Protocolo IP Versão 4 (TCP/IPv4)',1]]; const sel=d.sel;
+  return box('400px','Propriedades de Ethernet',`<div class="tabs"><button class="on">Rede</button><button>Compartilhamento</button></div><div class="tabp"><p>Conectar-se usando:</p><div style="border:1px solid #ccc;padding:4px 6px;background:#fff">🖧 Microsoft Hyper-V Network Adapter</div><p>Esta conexão usa os seguintes itens:</p><div class="lbox">${it.map((x,i)=>`<div class="${sel===i?'sel':''}" data-a="ethsel" data-i="${i}" ${i===7?'data-dbl="ipv4"':''}><input type="checkbox" ${x[1]?'checked':''} disabled> ${esc(x[0])}</div>`).join('')}</div><div style="display:flex;gap:6px;justify-content:flex-end;margin-top:6px"><button class="btnw" disabled>Instalar...</button><button class="btnw" disabled>Desinstalar</button><button class="btnw" data-a="ethp" ${sel===7?'':'disabled'}>Propriedades</button></div><fieldset><legend>Descrição</legend>${sel===7?'Transmission Control Protocol/Internet Protocol. Protocolo padrão de rede de longa distância que possibilita a comunicação entre diversas redes interconectadas.':'&nbsp;'}</fieldset></div>`,`${okc('OK','dx')}${cancel}`); };
+DLG.ipv4=d=>{ const st=d.st!==undefined?d.st:!!S.ip; return box('420px','Propriedades de Protocolo IP Versão 4 (TCP/IPv4)',`<div class="tabs"><button class="on">Geral</button></div><div class="tabp"><p>As configurações IP podem ser atribuídas automaticamente se a rede oferecer suporte a esse recurso. Caso contrário, você precisa solicitar ao administrador de rede as configurações IP adequadas.</p>
+  <label class="chk"><input type="radio" name="ipm" id="ipA" data-a="ipmode" ${st?'':'checked'}> Obter um endereço IP automaticamente</label><fieldset><legend><label class="chk"><input type="radio" name="ipm" id="ipS" data-a="ipmode" ${st?'checked':''}> Usar o seguinte endereço IP:</label></legend><div class="f"><label>Endereço IP:</label>${ipInp('iIP',S.ip)}<label>Máscara de sub-rede:</label>${ipInp('iM',S.ip?S.mask:'')}<label>Gateway padrão:</label>${ipInp('iG',S.gw)}</div></fieldset>
+  <label class="chk"><input type="radio" disabled ${st?'':'checked'}> Obter o endereço dos servidores DNS automaticamente</label><fieldset><legend><label class="chk"><input type="radio" checked disabled> Usar os seguintes endereços de servidor DNS:</label></legend><div class="f"><label>Servidor DNS preferencial:</label>${ipInp('iD1',S.dns[0])}<label>Servidor DNS alternativo:</label>${ipInp('iD2',S.dns[1])}</div></fieldset><label class="chk"><input type="checkbox"> Validar configurações na saída</label><div id="iE" style="color:#c00;min-height:16px"></div></div>`,`${okc('OK','ipok')}${cancel}`,{top:'3%'}); };
+/* --- assistente de funções --- */
+const FEATS=[['AD-Domain-Services','Serviços de Domínio Active Directory'],['AD-Federation-Services','Serviços de Federação do Active Directory'],['ADLDS','Active Directory Lightweight Directory Services'],['AD-Certificate','Serviços de Certificados do Active Directory'],['DHCP','Servidor DHCP'],['DNS','Servidor DNS'],['Fax','Servidor de Fax'],['FileAndStorage-Services','Serviços de Arquivo e Armazenamento'],['Hyper-V','Hyper-V'],['NPAS','Serviços de Acesso e Diretiva de Rede'],['Print-Services','Serviços de Impressão e Documentos'],['RemoteAccess','Acesso Remoto'],['Remote-Desktop-Services','Serviços de Área de Trabalho Remota'],['Web-Server','Servidor Web (IIS)'],['WDS','Serviços de Implantação do Windows'],['UpdateServices','Windows Server Update Services']];
+const FNAME=Object.fromEntries(FEATS);
+const RFEAT={'AD-Domain-Services':['Gerenciamento de Política de Grupo','Ferramentas de Administração de Servidor Remoto','  Ferramentas de Administração de Funções','    Ferramentas do AD DS e AD LDS','      Módulo Active Directory para Windows PowerShell','      Ferramentas do AD DS','        Centro Administrativo do Active Directory','        Snap-Ins e Ferramentas de Linha de Comando do AD DS'],'DNS':['Ferramentas de Administração de Servidor Remoto','  Ferramentas de Administração de Funções','    Ferramentas de Servidor DNS'],'DHCP':['Ferramentas de Administração de Servidor Remoto','  Ferramentas de Administração de Funções','    Ferramentas de Servidor DHCP'],'Web-Server':['Ferramentas de Gerenciamento do IIS']};
+function wzPages(W){ const p=['Antes de Começar','Tipo de Instalação','Seleção de Servidor','Funções de Servidor','Recursos']; W.sel.forEach(f=>{ if(f==='AD-Domain-Services') p.push('AD DS'); if(f==='DHCP') p.push('Servidor DHCP'); if(f==='DNS') p.push('Servidor DNS'); }); p.push('Confirmação','Resultados'); return p; }
+DLG.rolewiz=d=>{ const P=wzPages(d); const pn=P[d.pg]; let pg='';
+  if(pn==='Antes de Começar') pg=`<h3>Antes de começar</h3><p>Este assistente ajuda a instalar funções, serviços de função ou recursos. Você determina quais deles instalar com base nas necessidades de computação da sua organização, como compartilhar documentos ou hospedar um site.</p><p>Antes de continuar, verifique se as seguintes tarefas foram concluídas:</p><ul><li>A conta de Administrador tem uma senha forte</li><li>As configurações de rede, como endereços IP estáticos, estão definidas</li><li>As atualizações de segurança mais recentes do Windows Update estão instaladas</li></ul>`;
+  else if(pn==='Tipo de Instalação') pg=`<h3>Selecionar tipo de instalação</h3><p>Selecione o tipo de instalação. Você pode instalar funções e recursos em um computador físico ou virtual em execução, ou em um VHD (disco rígido virtual) offline.</p><label class="chk"><input type="radio" checked name="ti"> <b>Instalação baseada em função ou recurso</b></label><p style="margin:0 0 10px 22px;color:#555">Configure um único servidor adicionando funções, serviços de função e recursos.</p><label class="chk"><input type="radio" name="ti" disabled> Instalação de Serviços de Área de Trabalho Remota</label>`;
+  else if(pn==='Seleção de Servidor') pg=`<h3>Selecionar servidor de destino</h3><label class="chk"><input type="radio" checked> Selecionar um servidor do pool de servidores</label><label class="chk"><input type="radio" disabled> Selecionar um disco rígido virtual</label><table style="width:100%;border:1px solid #ccc;margin-top:8px;border-collapse:collapse"><tr style="color:#4c607a"><td style="padding:3px 6px">Nome</td><td>Endereço IP</td><td>Sistema Operacional</td></tr><tr style="background:#cce8ff"><td style="padding:3px 6px">${esc(S.host)}${S.domain?'.'+esc(S.domain):''}</td><td>${esc(ipNow())}</td><td>Microsoft Windows Server 2016 Standard</td></tr></table>`;
+  else if(pn==='Funções de Servidor') pg=`<h3>Selecionar funções de servidor</h3><p>Selecione uma ou mais funções para instalar no servidor selecionado.</p><div style="display:grid;grid-template-columns:1fr 200px;gap:12px"><div class="lbox" style="height:260px">${FEATS.map(f=>{ const ins=has(f[0]); return `<div><label class="chk"><input type="checkbox" data-a="rolechk" data-f="${f[0]}" ${ins||d.sel.includes(f[0])?'checked':''} ${ins?'disabled':''}> ${esc(f[1])}${ins?' (Instalado)':''}</label></div>`; }).join('')}</div><div><b>Descrição</b><p style="color:#444">Selecione uma função para ver a descrição. Os <b>Serviços de Domínio Active Directory (AD DS)</b> armazenam informações sobre objetos na rede e disponibilizam essas informações para usuários e administradores de rede.</p></div></div>`;
+  else if(pn==='Recursos') pg=`<h3>Selecionar recursos</h3><div class="lbox" style="height:260px">${['.NET Framework 3.5 Features','.NET Framework 4.6 Features (Instalado)','Backup do Windows Server','BitLocker Drive Encryption','Cliente Telnet','Gerenciamento de Política de Grupo','Ferramentas de Administração de Servidor Remoto','Windows PowerShell (Instalado)'].map(t=>`<div><label class="chk"><input type="checkbox" ${/Instalado/.test(t)||(/Política de Grupo|Administração de Servidor/.test(t)&&d.sel.length)?'checked':''} disabled> ${esc(t)}</label></div>`).join('')}</div>`;
+  else if(pn==='AD DS') pg=`<h3>Serviços de Domínio Active Directory</h3><p>Os Serviços de Domínio Active Directory (AD DS) armazenam informações sobre usuários, computadores e outros dispositivos na rede. O AD DS ajuda os administradores a gerenciar essas informações com segurança e facilita o compartilhamento de recursos e a colaboração entre usuários.</p><p><b>Itens a observar:</b></p><ul><li>Para ajudar a garantir que os usuários ainda possam fazer logon na rede em caso de interrupção de servidor, instale no mínimo dois controladores de domínio para um domínio.</li><li>O AD DS requer que um servidor DNS esteja instalado na rede. Se você não tiver um servidor DNS instalado, será solicitado que você instale a função de Servidor DNS neste computador.</li></ul>`;
+  else if(pn==='Servidor DHCP') pg=`<h3>Servidor DHCP</h3><p>O protocolo DHCP permite que os servidores atribuam, ou concedam, endereços IP a computadores e outros dispositivos habilitados como clientes DHCP.</p><p><b>Itens a observar:</b></p><ul><li>Você deve configurar pelo menos um endereço IP estático neste computador.</li><li>Antes de instalar o Servidor DHCP, você deve planejar suas sub-redes, escopos e exclusões.</li></ul>`;
+  else if(pn==='Servidor DNS') pg=`<h3>Servidor DNS</h3><p>O DNS (Sistema de Nomes de Domínio) fornece um método padrão para associar nomes a endereços numéricos da Internet. Isso permite que os usuários façam referência a computadores da rede usando nomes fáceis de lembrar em vez de uma longa série de números.</p><p><b>Itens a observar:</b> O Servidor DNS é integrado aos Serviços de Domínio Active Directory. Se você instalar o AD DS, poderá instalar e configurar automaticamente o Servidor DNS.</p>`;
+  else if(pn==='Confirmação') pg=`<h3>Confirmar seleções de instalação</h3><p>Para instalar as seguintes funções, serviços de função ou recursos no servidor selecionado, clique em Instalar.</p><label class="chk"><input type="checkbox"> Reiniciar cada servidor de destino automaticamente, se necessário</label><ul>${d.sel.map(f=>`<li>${esc(FNAME[f])}</li>`).join('')}<li>Ferramentas de Administração de Servidor Remoto</li>${d.sel.includes('AD-Domain-Services')?'<li>Gerenciamento de Política de Grupo</li>':''}</ul>`;
+  else if(pn==='Resultados') pg=`<h3>Progresso da instalação</h3>${d.done?`<p>✔ Instalação bem-sucedida em ${esc(S.host)}.</p><ul>${d.sel.map(f=>`<li>${esc(FNAME[f])}</li>`).join('')}</ul>${d.sel.includes('AD-Domain-Services')?'<p>Configuração necessária. A instalação foi bem-sucedida em '+esc(S.host)+'.<br><button class="lnk" data-a="promo">Promover este servidor a um controlador de domínio</button></p>':''}${d.sel.includes('DHCP')?'<p><button class="lnk" data-a="dhcppost">Concluir configuração do DHCP</button></p>':''}`:`<p>Instalação de recurso. Iniciando instalação...</p><div class="prog"><i style="width:${d.p||5}%"></i></div>`}`;
+  const last=pn==='Resultados';
+  return `<div class="dlg" style="left:8%;top:4%;width:84%;height:86%"><div class="wt">🗄️ Assistente de Adição de Funções e Recursos<button class="x" data-a="dx">✕</button></div><div class="db" style="padding:0;display:flex;flex-direction:column"><div class="wzh"><div><b>${esc(pn)}</b></div><span style="margin-left:auto">SERVIDOR DE DESTINO<br>${esc(S.host)}</span></div><div class="wzw" style="flex:1;min-height:0"><nav>${P.map((s,i)=>`<div class="${i===d.pg?'on':i<d.pg?'dn':''}">${esc(s)}</div>`).join('')}</nav><div class="pg">${pg}</div></div></div><div class="df"><button class="btnw" data-a="wzprev" ${d.pg===0||last?'disabled':''}>&lt; Anterior</button><button class="btnw" data-a="wznext" ${P[d.pg+1]==='Resultados'||last?'disabled':''}>Próximo &gt;</button><button class="btnw def" data-a="wzinst" ${pn==='Confirmação'&&d.sel.length?'':'disabled'}>Instalar</button><button class="btnw" data-a="dx">${last?'Fechar':'Cancelar'}</button></div></div>`; };
+DLG.addfeat=d=>box('460px','Assistente de Adição de Funções e Recursos',`<p style="font-size:14px;color:#1d3c8f">Adicionar recursos necessários para ${esc(FNAME[d.f])}?</p><p>As ferramentas a seguir são necessárias para gerenciar este recurso, mas não precisam ser instaladas no mesmo servidor.</p><div class="lbox" style="height:150px;white-space:pre">${(RFEAT[d.f]||['Ferramentas de Administração de Servidor Remoto']).map(t=>`<div>${esc(t)}</div>`).join('')}</div><label class="chk"><input type="checkbox" checked> Incluir ferramentas de gerenciamento (se aplicável)</label>`,`<button class="btnw def" data-a="featok">Adicionar Recursos</button>${cancel}`,{top:'14%'});
+DLG.staticwarn=d=>box('440px','Assistente de Adição de Funções e Recursos',`<div class="msgi"><span class="ic">⚠️</span><div><b>Resultados da Validação</b><p>A validação detectou problemas no servidor ao qual você está adicionando funções ou recursos.</p><p>Este computador não possui endereços IP estáticos. Recomenda-se configurar um endereço IP estático antes de instalar ${esc(FNAME[d.f])}.</p></div></div>`,`<button class="btnw def" data-a="swcont">Continuar</button>${cancel}`,{top:'18%'});
+/* --- promoção --- */
+const PRS=['Configuração de Implantação','Opções do Controlador de Domínio','Opções de DNS','Opções Adicionais','Caminhos','Examinar Opções','Verificação de Pré-requisitos','Instalação','Resultados'];
+DLG.promo=d=>{ let pg=''; const nb=(d.dom||'').split('.')[0].toUpperCase().slice(0,15);
+  if(d.pg===0) pg=`<h3>Configuração de Implantação</h3><p>Selecione a operação de implantação</p><label class="chk"><input type="radio" name="op" disabled> Adicionar um controlador de domínio a um domínio existente</label><label class="chk"><input type="radio" name="op" disabled> Adicionar um novo domínio a uma floresta existente</label><label class="chk"><input type="radio" name="op" checked> Adicionar uma nova floresta</label><p style="margin-top:14px">Especifique as informações de domínio para esta operação</p><div class="f"><label>Nome do domínio raiz:</label><input id="pDom" data-focus value="${esc(d.dom||'')}" style="width:240px"></div>`;
+  else if(d.pg===1) pg=`<h3>Opções do Controlador de Domínio</h3><div class="f"><label>Nível funcional da floresta:</label><select style="width:200px"><option>Windows Server 2016</option></select><label>Nível funcional do domínio:</label><select style="width:200px"><option>Windows Server 2016</option></select></div><p>Especificar recursos do controlador de domínio</p><label class="chk"><input type="checkbox" checked disabled> Servidor DNS (Sistema de Nomes de Domínio)</label><label class="chk"><input type="checkbox" checked disabled> Catálogo Global (GC)</label><label class="chk"><input type="checkbox" disabled> RODC (Controlador de domínio somente leitura)</label><p style="margin-top:12px">Digite a senha do DSRM (Modo de Restauração dos Serviços de Diretório)</p><div class="f"><label>Senha:</label><input type="password" id="pP1" data-focus value="${esc(d.p1||'')}" style="width:200px"><label>Confirmar senha:</label><input type="password" id="pP2" value="${esc(d.p2||'')}" style="width:200px"></div>`;
+  else if(d.pg===2) pg=`<h3>Opções de DNS</h3><p style="background:#fff8e1;border:1px solid #f0d58a;padding:8px">⚠ Não é possível criar uma delegação para este servidor DNS porque a zona pai autoritativa não pode ser encontrada ou não executa o servidor DNS do Windows. Se você estiver integrando com uma infraestrutura DNS existente, crie manualmente uma delegação... <i>(normal num domínio .local: pode continuar)</i></p><label class="chk"><input type="checkbox" disabled> Criar delegação de DNS</label>`;
+  else if(d.pg===3) pg=`<h3>Opções Adicionais</h3><p>Verifique o nome NetBIOS atribuído ao domínio e altere-o, se necessário</p><div class="f"><label>Nome de domínio NetBIOS:</label><input disabled value="${esc(nb)}" style="width:200px"></div>`;
+  else if(d.pg===4) pg=`<h3>Caminhos</h3><p>Especificar o local do banco de dados do AD DS, dos arquivos de log e do SYSVOL</p><div class="f"><label>Pasta do banco de dados:</label><input disabled value="C:\\Windows\\NTDS"><label>Pasta de arquivos de log:</label><input disabled value="C:\\Windows\\NTDS"><label>Pasta SYSVOL:</label><input disabled value="C:\\Windows\\SYSVOL"></div>`;
+  else if(d.pg===5) pg=`<h3>Examinar Opções</h3><div style="background:#fff;border:1px solid #ccc;padding:10px;line-height:1.7">Configure este servidor como o primeiro controlador de domínio do Active Directory em uma nova floresta.<br>O novo nome de domínio é "${esc(d.dom)}". Este também é o nome da nova floresta.<br>O nome NetBIOS do domínio: ${esc(nb)}<br>Nível Funcional da Floresta: Windows Server 2016<br>Nível Funcional do Domínio: Windows Server 2016<br>Opções Adicionais:<br>&nbsp;&nbsp;Catálogo global: Sim<br>&nbsp;&nbsp;Servidor DNS: Sim<br>&nbsp;&nbsp;Criar delegação de DNS: Não</div><p>Estas configurações podem ser exportadas para um script do Windows PowerShell. <button class="lnk" data-a="pscript">Exibir script</button></p>`;
+  else if(d.pg===6) pg=`<h3>Verificação de Pré-requisitos</h3><p style="background:#e9f7ef;border:1px solid #8fd1a8;padding:8px">✔ Todas as verificações de pré-requisitos foram aprovadas com êxito. Clique em "Instalar" para iniciar a instalação.</p><p>⚠ Os controladores de domínio do Windows Server 2016 têm uma configuração padrão para "Permitir algoritmos de criptografia compatíveis com o Windows NT 4.0"...</p>${S.ip?'':'<p>⚠ Este computador tem pelo menos um adaptador de rede físico sem endereços IP estáticos atribuídos às suas propriedades IP.</p>'}<p>⚠ O servidor será reiniciado automaticamente quando a operação for concluída.</p>`;
+  else pg=`<h3>Instalação</h3><p>Progresso: Configurando o servidor DNS, criando o banco de dados do Active Directory, replicando o esquema...</p><div class="prog"><i style="width:80%"></i></div><p>Você será desconectado. O computador está sendo reiniciado porque os Serviços de Domínio Active Directory foram instalados ou removidos.</p>`;
+  return `<div class="dlg" style="left:8%;top:4%;width:84%;height:86%"><div class="wt">Assistente de Configuração dos Serviços de Domínio Active Directory<button class="x" data-a="dx">✕</button></div><div class="db" style="padding:0;display:flex;flex-direction:column"><div class="wzh"><b>${PRS[d.pg]}</b><span style="margin-left:auto">SERVIDOR DE DESTINO<br>${esc(S.host)}</span></div><div class="wzw" style="flex:1;min-height:0"><nav>${PRS.map((s,i)=>`<div class="${i===d.pg?'on':i<d.pg?'dn':''}">${s}</div>`).join('')}</nav><div class="pg">${pg}<div id="pErr" style="color:#c00;margin-top:8px"></div></div></div></div><div class="df"><button class="btnw" data-a="prprev" ${d.pg===0||d.pg>=7?'disabled':''}>&lt; Anterior</button><button class="btnw" data-a="prnext" ${d.pg>=6?'disabled':''}>Próximo &gt;</button><button class="btnw def" data-a="prinst" ${d.pg===6?'':'disabled'}>Instalar</button><button class="btnw" data-a="dx" ${d.pg>=7?'disabled':''}>Cancelar</button></div></div>`; };
+DLG.pscript=d=>box('640px','Exibir script',`<textarea readonly style="width:100%;height:220px;font:12px Consolas,monospace">#
+# Script do Windows PowerShell para implantação do AD DS
+#
+
+Import-Module ADDSDeployment
+Install-ADDSForest \`
+-CreateDnsDelegation:$false \`
+-DatabasePath "C:\\Windows\\NTDS" \`
+-DomainMode "WinThreshold" \`
+-DomainName "${esc(d.dom)}" \`
+-DomainNetbiosName "${esc(d.dom.split('.')[0].toUpperCase())}" \`
+-ForestMode "WinThreshold" \`
+-InstallDns:$true \`
+-LogPath "C:\\Windows\\NTDS" \`
+-NoRebootOnCompletion:$false \`
+-SysvolPath "C:\\Windows\\SYSVOL" \`
+-Force:$true</textarea>`,`<button class="btnw" data-a="dx">Fechar</button>`);
+/* --- DHCP pós-implantação --- */
+DLG.dhcppost=d=>{ const P=['Descrição','Autorização','Resumo']; let pg='';
+  if(d.pg===0) pg=`<h3>Descrição</h3><p>As seguintes etapas serão executadas para concluir a instalação do servidor DHCP no computador de destino:</p><p>Criar os seguintes grupos de segurança para delegação da administração do Servidor DHCP:<br>– Administradores DHCP<br>– Usuários DHCP</p><p>Autorizar o servidor DHCP no computador de destino (se ingressado no domínio).</p>`;
+  else if(d.pg===1) pg=`<h3>Autorização</h3><p>Especifique as credenciais a serem usadas para autorizar este servidor DHCP no AD DS.</p><label class="chk"><input type="radio" name="au" checked> Usar as credenciais do usuário a seguir</label><div class="f" style="margin-left:22px"><label>Nome de usuário:</label><input disabled value="${esc(S.isDC?NB+'\\Administrador':S.host+'\\Administrador')}"></div><label class="chk"><input type="radio" name="au" disabled> Usar credenciais alternativas</label><label class="chk"><input type="radio" name="au" disabled> Ignorar autorização do AD</label>`;
+  else pg=`<h3>Resumo</h3><p>O status das etapas de configuração pós-instalação é indicado abaixo:</p><p>Criação de grupo de segurança ........ <b style="color:#1f9d55">Concluído</b></p><p>Autorização do servidor DHCP ......... ${d.ok?'<b style="color:#1f9d55">Concluído</b>':'<b style="color:#c00">Falha</b> (o servidor não está em um domínio: promova o servidor antes)'}</p><p>Reinicie o serviço do servidor DHCP no computador de destino para que os grupos de segurança entrem em vigor.</p>`;
+  return `<div class="dlg" style="left:14%;top:8%;width:72%;height:74%"><div class="wt">Assistente de Configuração Pós-Instalação do DHCP<button class="x" data-a="dx">✕</button></div><div class="db" style="padding:0;display:flex;flex-direction:column"><div class="wzw" style="flex:1"><nav>${P.map((s,i)=>`<div class="${i===d.pg?'on':i<d.pg?'dn':''}">${s}</div>`).join('')}</nav><div class="pg">${pg}</div></div></div><div class="df"><button class="btnw" data-a="dpprev" ${d.pg===0||d.pg===2?'disabled':''}>&lt; Anterior</button><button class="btnw" data-a="dpnext" ${d.pg>=1?'disabled':''}>Próximo &gt;</button><button class="btnw def" data-a="dpok" ${d.pg===1?'':'disabled'}>Confirmar</button><button class="btnw" data-a="dx">${d.pg===2?'Fechar':'Cancelar'}</button></div></div>`; };
+/* --- ADUC: novos objetos --- */
+const cnt=id=>{ const o=obj(id); return `Criar em: ${o.cls==='domain'?DOM:pathOf(o)+'/'+o.name}`; };
+DLG.newou=d=>box('420px','Novo Objeto - Unidade Organizacional',`<p>🗂️ ${esc(cnt(d.parent))}</p><label>Nome:</label><br><input id="ouN" data-focus style="width:100%"><label class="chk" style="margin-top:12px"><input type="checkbox" id="ouP" checked> Proteger contêiner contra exclusão acidental</label><div id="E" style="color:#c00;min-height:16px"></div>`,`${okc('OK','ouok')}${cancel}<button class="btnw" disabled>Ajuda</button>`);
+DLG.newuser=d=>{ const u=d.d; let b='';
+  if(d.pg===0) b=`<p>👤 ${esc(cnt(d.parent))}</p><div class="f" style="grid-template-columns:130px 1fr 70px 50px"><label>Nome:</label><input id="uF" data-focus value="${esc(u.first||'')}"><label style="text-align:right">Iniciais:</label><input id="uI" value="${esc(u.ini||'')}"></div><div class="f" style="grid-template-columns:130px 1fr"><label>Sobrenome:</label><input id="uL" value="${esc(u.last||'')}"><label>Nome completo:</label><input id="uN" value="${esc(u.full||'')}"></div><div style="margin-top:10px">Nome de logon do usuário:</div><div style="display:flex;gap:6px"><input id="uS" value="${esc(u.sam||'')}" style="flex:1"><select style="width:150px"><option>@${DOM}</option></select></div><div style="margin-top:8px">Nome de logon do usuário (anterior ao Windows 2000):</div><div style="display:flex;gap:6px"><input disabled value="${NB}\\" style="width:150px"><input id="uP" value="${esc(u.pre||u.sam||'')}" style="flex:1"></div>`;
+  else if(d.pg===1) b=`<p>👤 ${esc(cnt(d.parent))}</p><div class="f"><label>Senha:</label><input type="password" id="uPw" data-focus value="${esc(u.pw||'')}"><label>Confirmar senha:</label><input type="password" id="uPw2" value="${esc(u.pw2||'')}"></div><label class="chk"><input type="checkbox" id="uMC" ${u.mustChange?'checked':''}> O usuário deve alterar a senha no próximo logon</label><label class="chk"><input type="checkbox" id="uCC" ${u.cantChange?'checked':''}> O usuário não pode alterar a senha</label><label class="chk"><input type="checkbox" id="uNE" ${u.neverExp?'checked':''}> A senha nunca expira</label><label class="chk"><input type="checkbox" id="uDis" ${u.disabled?'checked':''}> A conta está desabilitada</label>`;
+  else b=`<p>👤 ${esc(cnt(d.parent))}</p><p>Quando você clicar em Concluir, o seguinte objeto será criado:</p><textarea readonly style="width:100%;height:130px">Nome completo: ${esc(u.full)}\n\nNome de logon do usuário: ${esc(u.sam)}@${DOM}\n${u.mustChange?'\nO usuário deve alterar a senha no próximo logon.':''}${u.cantChange?'\nO usuário não pode alterar a senha.':''}${u.neverExp?'\nA senha nunca expira.':''}${u.disabled?'\nA conta está desabilitada.':''}</textarea>`;
+  return box('460px','Novo Objeto - Usuário',b+'<div id="E" style="color:#c00;min-height:16px"></div>',`<button class="btnw" data-a="nuprev" ${d.pg?'':'disabled'}>&lt; Voltar</button>${d.pg<2?okc('Avançar &gt;','nunext'):okc('Concluir','nufin')}${cancel}`); };
+DLG.newgroup=d=>box('440px','Novo Objeto - Grupo',`<p>👥 ${esc(cnt(d.parent))}</p><label>Nome do grupo:</label><br><input id="gN" data-focus style="width:100%"><div style="margin-top:8px">Nome do grupo (anterior ao Windows 2000):</div><input id="gP" style="width:100%"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><fieldset><legend>Escopo do grupo</legend><label class="chk"><input type="radio" name="gs" id="gsL"> Domínio local</label><label class="chk"><input type="radio" name="gs" id="gsG" checked> Global</label><label class="chk"><input type="radio" name="gs" id="gsU"> Universal</label></fieldset><fieldset><legend>Tipo de grupo</legend><label class="chk"><input type="radio" name="gt" id="gtS" checked> Segurança</label><label class="chk"><input type="radio" name="gt" id="gtD"> Distribuição</label></fieldset></div><div id="E" style="color:#c00;min-height:16px"></div>`,`${okc('OK','ngok')}${cancel}`);
+DLG.newcomp=d=>box('440px','Novo Objeto - Computador',`<p>🖥️ ${esc(cnt(d.parent))}</p><label>Nome do computador:</label><br><input id="cN" data-focus style="width:100%"><div style="margin-top:8px">Nome do computador (anterior ao Windows 2000):</div><input id="cP" style="width:100%"><p style="margin-top:12px">O seguinte usuário ou grupo pode ingressar este computador em um domínio.</p><div style="display:flex;gap:6px"><span>Usuário ou grupo:</span><input disabled value="Padrão: Admins. do Domínio" style="flex:1"><button class="btnw" disabled>Alterar...</button></div><label class="chk"><input type="checkbox"> Atribuir esta conta de computador como um computador anterior ao Windows 2000</label><div id="E" style="color:#c00;min-height:16px"></div>`,`${okc('OK','ncok')}${cancel}`);
+DLG.rename=d=>{ const o=obj(d.id); return box('380px','Renomear',`<label>Novo nome para ${esc(o.name)}:</label><br><input id="rN" data-focus value="${esc(o.name)}" style="width:100%"><div id="E" style="color:#c00;min-height:16px"></div>`,`${okc('OK','renok')}${cancel}`,{top:'22%'}); };
+DLG.resetpw=d=>{ const o=obj(d.id); return box('380px','Redefinir Senha',`<div class="f"><label>Nova senha:</label><input type="password" id="rp1" data-focus><label>Confirmar senha:</label><input type="password" id="rp2"></div><label class="chk"><input type="checkbox" id="rpm" checked> O usuário deve alterar a senha no próximo logon</label><p style="color:#555">Status de Bloqueio da Conta neste Controlador de Domínio: Desbloqueado</p><div id="E" style="color:#c00;min-height:16px"></div>`,`${okc('OK','rpok')}${cancel}`,{top:'18%'}); };
+DLG.move=d=>{ const o=obj(d.id); const tr=(x,dep)=>`<div class="${d.to===x.id?'sel':''}" data-a="mvsel" data-i="${x.id}" style="padding-left:${6+dep*16}px">${icon(x)} ${esc(x.name)}</div>`+kids(x.id).filter(y=>['domain','container','ou'].includes(y.cls)&&y.id!==o.id).map(y=>tr(y,dep+1)).join('');
+  return box('380px','Mover',`<p>Mover objeto para o contêiner:</p><div class="lbox" style="height:240px">${tr(obj('dom'),0)}</div>`,`${okc('OK','mvok',!d.to)}${cancel}`); };
+DLG.select=d=>box('480px',d.title||'Selecionar Usuários, Contatos, Computadores, Contas de Serviço ou Grupos',`<p>Selecionar este tipo de objeto:</p><div style="display:flex;gap:6px"><input disabled value="${d.types.includes('group')&&d.types.length===1?'Grupos ou Objetos internos de segurança':'Usuários, Contas de Serviço, Grupos ou Outros objetos'}" style="flex:1"><button class="btnw" disabled>Tipos de Objeto...</button></div><p>Deste local:</p><div style="display:flex;gap:6px"><input disabled value="${DOM}" style="flex:1"><button class="btnw" disabled>Locais...</button></div><p>Digite os nomes de objeto a serem selecionados (<u>exemplos</u>):</p><div style="display:flex;gap:6px;align-items:flex-start"><div id="selTxt" contenteditable="true" data-focus style="flex:1;min-height:60px;border:1px solid #7a7a7a;background:#fff;padding:3px 5px;user-select:text;outline:none">${d.resolved?d.resolved.map(id=>`<u>${esc(obj(id).name)}${obj(id).cls==='user'?' ('+esc(obj(id).sam)+'@'+DOM+')':''}</u>`).join('; '):esc(d.text||'')}</div><button class="btnw" data-a="selchk">Verificar Nomes</button></div><div id="E" style="color:#c00;min-height:16px;margin-top:6px"></div>`,`<button class="btnw" disabled style="margin-right:auto">Avançado...</button>${okc('OK','selok')}${cancel}`,{top:'14%'});
+/* propriedades */
+DLG.props=d=>{ const o=obj(d.id); let tabs=[], body='';
+  if(o.cls==='user'){ tabs=['Geral','Endereço','Conta','Perfil','Telefones','Organização','Membro de','Discagem','Ambiente','Sessões']; const t=tabs[d.tab];
+    if(t==='Geral') body=`<div style="font-size:24px">👤 <span style="font-size:14px">${esc(o.name)}</span></div><div class="f"><label>Nome:</label><input id="pF" value="${esc(o.first||'')}"><label>Sobrenome:</label><input id="pL" value="${esc(o.last||'')}"><label>Nome para exibição:</label><input id="pD" value="${esc(o.disp||o.name)}"><label>Descrição:</label><input id="pDe" value="${esc(o.desc||'')}"><label>Escritório:</label><input id="pO" value="${esc(o.office||'')}"><label>Telefone:</label><input id="pT" value="${esc(o.tel||'')}"><label>Email:</label><input id="pE" value="${esc(o.mail||'')}"></div>`;
+    else if(t==='Conta') body=`<label>Nome de logon do usuário:</label><div style="display:flex;gap:6px"><input disabled value="${esc(o.sam)}" style="flex:1"><select disabled><option>@${DOM}</option></select></div><label>Nome de logon do usuário (anterior ao Windows 2000):</label><div style="display:flex;gap:6px"><input disabled value="${NB}\\" style="width:110px"><input disabled value="${esc(o.sam)}" style="flex:1"></div><fieldset><legend>Opções de conta:</legend><label class="chk"><input type="checkbox" id="aMC" ${o.mustChange?'checked':''}> O usuário deve alterar a senha no próximo logon</label><label class="chk"><input type="checkbox" id="aCC" ${o.cantChange?'checked':''}> O usuário não pode alterar a senha</label><label class="chk"><input type="checkbox" id="aNE" ${o.neverExp?'checked':''}> A senha nunca expira</label><label class="chk"><input type="checkbox" id="aDis" ${o.disabled?'checked':''}> A conta está desabilitada</label></fieldset><fieldset><legend>A conta expira</legend><label class="chk"><input type="radio" checked> Nunca</label><label class="chk"><input type="radio" disabled> Ao final de:</label></fieldset>`;
+    else if(t==='Membro de') body=memberOfHTML(o);
+    else body=`<p style="color:#777">Esta guia não é usada nesta atividade.</p>`; }
+  else if(o.cls==='group'){ tabs=['Geral','Membros','Membro de','Gerenciado Por']; const t=tabs[d.tab];
+    if(t==='Geral') body=`<div style="font-size:24px">👥 <input id="gName" value="${esc(o.name)}" disabled style="width:80%"></div><div class="f"><label>Nome do grupo (anterior ao Windows 2000):</label><input disabled value="${esc(o.sam||o.name)}"><label>Descrição:</label><input id="gDe" value="${esc(o.desc||'')}"><label>Email:</label><input></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><fieldset><legend>Escopo do grupo</legend>${[['DomainLocal','Domínio local'],['Global','Global'],['Universal','Universal']].map(s=>`<label class="chk"><input type="radio" name="pgs" data-gs="${s[0]}" ${o.scope===s[0]?'checked':''} ${o.sys?'disabled':''}> ${s[1]}</label>`).join('')}</fieldset><fieldset><legend>Tipo de grupo</legend><label class="chk"><input type="radio" name="pgt" id="pgtS" ${o.gtype==='Security'?'checked':''} ${o.sys?'disabled':''}> Segurança</label><label class="chk"><input type="radio" name="pgt" id="pgtD" ${o.gtype!=='Security'?'checked':''} ${o.sys?'disabled':''}> Distribuição</label></fieldset></div>`;
+    else if(t==='Membros') body=`<p>Membros:</p><div class="lbox" style="height:220px"><div style="display:grid;grid-template-columns:1fr 1.4fr;color:#4c607a"><span>Nome</span><span>Pasta dos Serviços de Domínio Active Directory</span></div>${(o.members||[]).map(id=>{ const m=obj(id); return m?`<div class="${d.msel===id?'sel':''}" data-a="msel" data-i="${id}" style="display:grid;grid-template-columns:1fr 1.4fr">${icon(m)} ${esc(m.name)}<span>${esc(pathOf(m)+'')}</span></div>`:''; }).join('')}</div><div style="display:flex;gap:6px;margin-top:8px"><button class="btnw" data-a="madd">Adicionar...</button><button class="btnw" data-a="mrem" ${d.msel?'':'disabled'}>Remover</button></div>`;
+    else if(t==='Membro de') body=memberOfHTML(o);
+    else body=`<p style="color:#777">Esta guia não é usada nesta atividade.</p>`; }
+  else if(o.cls==='ou'||o.cls==='domain'||o.cls==='container'||o.cls==='builtin'){ tabs=o.cls==='ou'?['Geral','Gerenciado Por',...(S.adv?['Objeto','Segurança']:[])]:['Geral']; const t=tabs[d.tab];
+    if(t==='Geral') body=`<div style="font-size:24px">${icon(o)} <span style="font-size:14px">${esc(o.name)}</span></div><div class="f"><label>Descrição:</label><input id="oDe" value="${esc(o.desc||'')}" ${o.cls!=='ou'?'disabled':''}>${o.cls==='ou'?`<label>Rua:</label><input><label>Cidade:</label><input><label>Estado/província:</label><input><label>País/região:</label><select><option></option><option>Brasil</option></select>`:''}</div>`;
+    else if(t==='Objeto') body=`<div class="f"><label>Nome canônico do objeto:</label><input disabled value="${esc(pathOf(o)+'/'+o.name)}"><label>Classe do objeto:</label><input disabled value="Unidade Organizacional"><label>Criado em:</label><input disabled value="${now()}"></div><label class="chk" style="margin-top:16px"><input type="checkbox" id="oProt" ${o.prot?'checked':''}> Proteger objeto contra exclusão acidental</label>`;
+    else body=`<p style="color:#777">Esta guia não é usada nesta atividade.</p>`; }
+  else if(o.cls==='computer'){ tabs=['Geral','Sistema Operacional','Membro de','Delegação','Local','Gerenciado Por','Discagem']; const t=tabs[d.tab];
+    if(t==='Geral') body=`<div style="font-size:24px">🖥️ <span style="font-size:14px">${esc(o.name)}</span></div><div class="f"><label>Nome do computador (anterior ao Windows 2000):</label><input disabled value="${esc(o.name)}"><label>Nome DNS:</label><input disabled value="${o.sys?esc(fqdn()):''}"><label>Tipo de DC:</label><input disabled value="${o.sys?'Controlador de Domínio Gravável':'Estação de trabalho ou servidor'}"><label>Descrição:</label><input id="cDe" value="${esc(o.desc||'')}"></div>`;
+    else if(t==='Membro de') body=memberOfHTML(o);
+    else body=`<p style="color:#777">Esta guia não é usada nesta atividade.</p>`; }
+  return box('470px','Propriedades de '+o.name,`<div class="tabs">${tabs.map((t,i)=>`<button class="${i===d.tab?'on':''}" data-a="ptab" data-i="${i}">${t}</button>`).join('')}</div><div class="tabp" style="min-height:300px">${body}</div>`,`${okc('OK','pok')}${cancel}<button class="btnw" data-a="papply">Aplicar</button><button class="btnw" disabled>Ajuda</button>`,{top:'3%'}); };
+function memberOfHTML(o){ const L=memberOf(o.id); return `<p>Membro de:</p><div class="lbox" style="height:200px"><div style="display:grid;grid-template-columns:1fr 1.4fr;color:#4c607a"><span>Nome</span><span>Pasta dos Serviços de Domínio Active Directory</span></div>${L.map(g=>`<div style="display:grid;grid-template-columns:1fr 1.4fr">👥 ${esc(g.name)}<span>${esc(pathOf(g))}</span></div>`).join('')}</div><div style="display:flex;gap:6px;margin-top:8px"><button class="btnw" data-a="moadd">Adicionar...</button><button class="btnw" disabled>Remover</button></div>${o.cls==='user'?'<p style="margin-top:10px">Grupo primário: Usuários do Domínio</p>':''}`; }
+/* --- DNS --- */
+DLG.zonewiz=d=>{ const P=['Bem-vindo','Tipo de Zona','Escopo de Replicação','Nome da Zona',...(d.rev?['Tipo de Zona de Pesquisa Inversa','ID da Rede']:[]),'Atualização Dinâmica','Concluindo']; const pn=P[d.pg]; const z=d.d; let b='';
+  if(pn==='Bem-vindo') b=`<div style="display:grid;grid-template-columns:120px 1fr;min-height:300px"><div style="background:#1f5aa6"></div><div style="padding:14px 18px;background:#fff"><h3 style="font-weight:700;font-size:16px;color:#000">Bem-vindo ao Assistente para Nova Zona</h3><p>Este assistente ajuda a criar uma nova zona para o servidor DNS.</p><p>Uma zona converte nomes DNS em dados relacionados, como endereços IP ou serviços de rede.</p><p>Para continuar, clique em Avançar.</p></div></div>`;
+  else if(pn==='Tipo de Zona') b=`<div class="wb2"><b>Tipo de Zona</b><br>O servidor DNS dá suporte a vários tipos de zonas e de armazenamento.<p>Selecione o tipo de zona que deseja criar:</p><label class="chk"><input type="radio" name="zt" checked> <b>Zona primária</b></label><p style="margin:0 0 6px 22px;color:#555">Cria uma cópia de uma zona que pode ser atualizada diretamente neste servidor.</p><label class="chk"><input type="radio" name="zt" disabled> Zona secundária</label><label class="chk"><input type="radio" name="zt" disabled> Zona de stub</label><label class="chk" style="margin-top:12px"><input type="checkbox" checked disabled> Armazenar a zona no Active Directory (disponível somente se o servidor DNS for um controlador de domínio gravável)</label></div>`;
+  else if(pn==='Escopo de Replicação') b=`<div class="wb2"><b>Escopo de Replicação de Zona do Active Directory</b><br>Você pode selecionar como deseja que os dados DNS sejam replicados em toda a rede.<p>Selecione como deseja que os dados da zona sejam replicados:</p><label class="chk"><input type="radio" name="rs" disabled> Para todos os servidores DNS executados em controladores de domínio nesta floresta: ${DOM}</label><label class="chk"><input type="radio" name="rs" checked> Para todos os servidores DNS executados em controladores de domínio neste domínio: ${DOM}</label><label class="chk"><input type="radio" name="rs" disabled> Para todos os controladores de domínio neste domínio (para compatibilidade com o Windows 2000): ${DOM}</label></div>`;
+  else if(pn==='Nome da Zona') b=d.rev?`<div class="wb2"><b>Nome da Zona de Pesquisa Inversa</b><br>Uma zona de pesquisa inversa converte endereços IP em nomes DNS.<p>Escolha se você deseja criar uma zona de pesquisa inversa para endereços IPv4 ou IPv6.</p><label class="chk"><input type="radio" name="v" id="zv4" ${z.v6?'':'checked'}> Zona de Pesquisa Inversa IPv4</label><label class="chk"><input type="radio" name="v" id="zv6" ${z.v6?'checked':''}> Zona de Pesquisa Inversa IPv6</label></div>`:`<div class="wb2"><b>Nome da Zona</b><br>Qual é o nome da nova zona?<p>O nome da zona especifica a parte do namespace DNS para a qual este servidor tem autoridade.</p><label>Nome da zona:</label><br><input id="zN" data-focus value="${esc(z.name||'')}" style="width:100%"></div>`;
+  else if(pn==='Tipo de Zona de Pesquisa Inversa') b=`<div class="wb2"><b>Nome da Zona de Pesquisa Inversa</b><br>Para identificar a zona de pesquisa inversa, digite a ID da rede ou o nome da zona.<label class="chk" style="margin-top:12px"><input type="radio" checked> ID da Rede:</label><div style="display:flex;gap:4px;margin-left:22px">${[0,1,2].map(i=>`<input id="zo${i}" ${i===0?'data-focus':''} value="${esc((z.net||[])[i]||'')}" style="width:50px">.`).join('')}</div><p style="margin-left:22px;color:#555">A ID da rede é a parte dos endereços IP que pertence a esta zona. Digite a ID da rede na ordem normal (não invertida).</p><label class="chk"><input type="radio" disabled> Nome da zona de pesquisa inversa:</label><input disabled id="zRN" value="${z.net&&z.net.length===3?z.net.slice().reverse().join('.')+'.in-addr.arpa':''}" style="margin-left:22px;width:70%"></div>`;
+  else if(pn==='ID da Rede') b=`<div class="wb2"><b>Confirme o nome da zona</b><p>Nome da zona que será criada:</p><p style="font-size:14px"><b>${esc((z.net||[]).slice().reverse().join('.'))}.in-addr.arpa</b></p><p style="color:#555">Repare: na zona reversa os octetos ficam ao contrário (30.168.192) e o sufixo é in-addr.arpa.</p></div>`;
+  else if(pn==='Atualização Dinâmica') b=`<div class="wb2"><b>Atualização Dinâmica</b><br>Você pode especificar que esta zona DNS aceite atualizações seguras, não seguras ou nenhuma atualização dinâmica.<p>Selecione o tipo de atualizações dinâmicas que você deseja permitir:</p><label class="chk"><input type="radio" name="du" id="duS" checked> <b>Permitir somente atualizações dinâmicas seguras (recomendado para o Active Directory)</b></label><label class="chk"><input type="radio" name="du" id="duA"> Permitir atualizações dinâmicas seguras e não seguras</label><label class="chk"><input type="radio" name="du" id="duN"> Não permitir atualizações dinâmicas</label></div>`;
+  else b=`<div style="display:grid;grid-template-columns:120px 1fr;min-height:300px"><div style="background:#1f5aa6"></div><div style="padding:14px 18px;background:#fff"><h3 style="font-weight:700;font-size:16px;color:#000">Concluindo o Assistente para Nova Zona</h3><p>Você concluiu com êxito o Assistente para Nova Zona. Você especificou as seguintes configurações:</p><table><tr><td>Nome:</td><td>${esc(d.rev?(z.net||[]).slice().reverse().join('.')+'.in-addr.arpa':z.name)}</td></tr><tr><td>Tipo:</td><td>Primária Integrada ao Active Directory</td></tr><tr><td>Tipo de pesquisa:</td><td>${d.rev?'Inversa':'Direta'}</td></tr></table><p>Para fechar este assistente e criar a nova zona, clique em Concluir.</p></div></div>`;
+  return box('560px','Assistente para Nova Zona',`<div style="margin:-12px -14px">${b}</div><div id="E" style="color:#c00;min-height:16px;margin-top:16px"></div>`,`<button class="btnw" data-a="zprev" ${d.pg?'':'disabled'}>&lt; Voltar</button>${pn==='Concluindo'?okc('Concluir','zfin'):okc('Avançar &gt;','znext')}${cancel}`); };
+DLG.newhost=d=>box('400px','Novo Host',`<label>Nome (usa o nome de domínio pai se deixado em branco):</label><br><input id="hN" data-focus value="${esc(d.n||'')}" style="width:100%"><div style="margin-top:8px">Nome de domínio totalmente qualificado (FQDN):</div><input disabled id="hF" value="${esc((d.n?d.n+'.':'')+d.zone+'.')}" style="width:100%"><div style="margin-top:8px">Endereço IP:</div><input id="hI" value="${esc(d.ip||'')}" style="width:100%"><label class="chk" style="margin-top:10px"><input type="checkbox" id="hP"> Criar registro de ponteiro (PTR) associado</label><label class="chk"><input type="checkbox" disabled> Permitir que qualquer usuário autenticado atualize registros DNS com o mesmo nome de proprietário</label><div id="E" style="color:#c00;min-height:16px"></div>`,`<button class="btnw def" data-a="hadd">Adicionar Host</button><button class="btnw" data-a="dx">${d.added?'Concluído':'Cancelar'}</button>`);
+DLG.newptr=d=>box('420px','Novo Registro de Recurso',`<div class="tabs"><button class="on">Ponteiro (PTR)</button></div><div class="tabp" style="min-height:200px"><label>Endereço IP do host:</label><br><input id="pI" data-focus value="${esc(d.zone.split('.').slice(0,3).reverse().join('.'))}." style="width:100%"><div style="margin-top:8px">Nome de domínio totalmente qualificado (FQDN):</div><input disabled value="${esc(d.zone)}" style="width:100%"><div style="margin-top:8px">Nome do host:</div><div style="display:flex;gap:6px"><input id="pH" style="flex:1"><button class="btnw" disabled>Procurar...</button></div></div><div id="E" style="color:#c00;min-height:16px"></div>`,`${okc('OK','ptrok')}${cancel}`);
+DLG.newcname=d=>box('420px','Novo Registro de Recurso',`<div class="tabs"><button class="on">Alias (CNAME)</button></div><div class="tabp" style="min-height:200px"><label>Nome do alias (usa o domínio pai se deixado em branco):</label><br><input id="aN" data-focus style="width:100%"><div style="margin-top:8px">Nome de domínio totalmente qualificado (FQDN) do host de destino:</div><input id="aT" style="width:100%"></div><div id="E" style="color:#c00;min-height:16px"></div>`,`${okc('OK','cnok')}${cancel}`);
+/* --- DHCP --- */
+DLG.scopewiz=d=>{ const P=['Bem-vindo','Nome do Escopo','Intervalo de Endereços IP','Adicionar Exclusões e Atraso','Duração da Concessão','Configurar Opções DHCP',...(d.d.cfg==='sim'?['Roteador (Gateway Padrão)','Nome de Domínio e Servidores DNS','Servidores WINS','Ativar Escopo']:[]),'Concluindo']; const pn=P[d.pg]; const z=d.d; let b='';
+  const head=(t,s)=>`<div style="background:#fff;padding:10px 16px;border-bottom:1px solid #ddd"><b>${t}</b><div style="margin-left:14px;color:#555">${s}</div></div>`;
+  if(pn==='Bem-vindo') b=`<div style="display:grid;grid-template-columns:120px 1fr;min-height:300px"><div style="background:#1f5aa6"></div><div style="padding:14px 18px;background:#fff"><h3 style="font-weight:700;font-size:16px;color:#000">Bem-vindo ao Assistente para Novos Escopos</h3><p>Este assistente ajuda a configurar um escopo para distribuir endereços IP para computadores em sua rede.</p><p>Para continuar, clique em Avançar.</p></div></div>`;
+  else if(pn==='Nome do Escopo') b=head('Nome do Escopo','Você precisa fornecer um nome para identificar o escopo. Você também tem a opção de fornecer uma descrição.')+`<div style="padding:14px 16px"><div class="f"><label>Nome:</label><input id="sN" data-focus value="${esc(z.name||'')}"><label>Descrição:</label><input id="sD" value="${esc(z.desc||'')}"></div></div>`;
+  else if(pn==='Intervalo de Endereços IP') b=head('Intervalo de Endereços IP','Defina o intervalo de endereços para o escopo identificando um conjunto de endereços IP consecutivos.')+`<div style="padding:14px 16px"><fieldset><legend>Definições de configuração para Servidor DHCP</legend><p>Digite o intervalo de endereços que o escopo distribui.</p><div class="f"><label>Endereço IP inicial:</label>${ipInp('sS',z.start)}<label>Endereço IP final:</label>${ipInp('sE',z.end)}</div></fieldset><fieldset><legend>Definições de configuração que se propagam para o Cliente DHCP</legend><div class="f"><label>Comprimento:</label><input id="sL" value="${esc(z.len||24)}" style="width:50px"><label>Máscara de sub-rede:</label><input id="sM" value="${esc(p2m(+(z.len||24)))}" style="width:150px" disabled></div></fieldset></div>`;
+  else if(pn==='Adicionar Exclusões e Atraso') b=head('Adicionar Exclusões e Atraso','Exclusões são endereços ou um intervalo de endereços que não são distribuídos pelo servidor. Um atraso é a duração de tempo em que o servidor atrasará a transmissão de uma mensagem DHCPOFFER.')+`<div style="padding:14px 16px"><p>Digite o intervalo de endereços IP que você deseja excluir. Se você deseja excluir um único endereço, digite um endereço somente no Endereço IP inicial.</p><div style="display:flex;gap:8px;align-items:flex-end"><div>Endereço IP inicial:<br>${ipInp('xS','')}</div><div>Endereço IP final:<br>${ipInp('xE','')}</div><button class="btnw" data-a="xadd">Adicionar</button></div><p>Intervalo de endereços excluídos:</p><div style="display:flex;gap:8px"><div class="lbox" style="height:90px;flex:1">${z.excl.map((e,i)=>`<div class="${d.xsel===i?'sel':''}" data-a="xsel" data-i="${i}">Endereço ${esc(e[0])} para ${esc(e[1])}</div>`).join('')}</div><button class="btnw" data-a="xrem" ${d.xsel!=null?'':'disabled'}>Remover</button></div><div class="f" style="margin-top:8px"><label>Atraso da sub-rede em milissegundos:</label><input value="0" style="width:50px"></div></div>`;
+  else if(pn==='Duração da Concessão') b=head('Duração da Concessão','A duração da concessão especifica o tempo durante o qual um cliente pode usar um endereço IP desse escopo.')+`<div style="padding:14px 16px"><p>Geralmente, a duração das concessões deve ser igual ao tempo médio durante o qual o computador está conectado à mesma rede física.</p><p>Limitado a:</p><div style="display:flex;gap:10px"><label>Dias:<br><input id="lD" value="${esc(z.days)}" style="width:50px"></label><label>Horas:<br><input id="lH" value="${esc(z.hrs)}" style="width:50px"></label><label>Minutos:<br><input id="lM" value="${esc(z.mins)}" style="width:50px"></label></div></div>`;
+  else if(pn==='Configurar Opções DHCP') b=head('Configurar Opções DHCP','Você precisa configurar as opções DHCP mais comuns antes que os clientes possam usar o escopo.')+`<div style="padding:14px 16px"><p>Quando os clientes obtêm um endereço, eles recebem opções DHCP, como os endereços IP dos roteadores (gateways padrão), servidores DNS e configurações WINS para esse escopo.</p><p>Deseja configurar as opções DHCP para este escopo agora?</p><label class="chk"><input type="radio" name="co" id="coS" ${z.cfg==='sim'?'checked':''} data-a="cfgsel"> Sim, quero configurar essas opções agora</label><label class="chk"><input type="radio" name="co" id="coN" ${z.cfg!=='sim'?'checked':''} data-a="cfgsel"> Não, configurarei essas opções mais tarde</label></div>`;
+  else if(pn==='Roteador (Gateway Padrão)') b=head('Roteador (Gateway Padrão)','Você pode especificar os roteadores ou gateways padrão a serem distribuídos por este escopo.')+`<div style="padding:14px 16px"><p>Para adicionar um endereço IP de um roteador usado pelos clientes, digite o endereço abaixo.</p><div style="display:flex;gap:8px;align-items:flex-start"><div>Endereço IP:<br>${ipInp('rI','')}</div><div style="display:flex;flex-direction:column;gap:4px;margin-top:14px"><button class="btnw" data-a="radd">Adicionar</button><button class="btnw" data-a="rrem" ${z.router?'':'disabled'}>Remover</button></div><div class="lbox" style="height:80px;flex:1;margin-top:14px">${z.router?`<div>${esc(z.router)}</div>`:''}</div></div></div>`;
+  else if(pn==='Nome de Domínio e Servidores DNS') b=head('Nome de Domínio e Servidores DNS','O Sistema de Nomes de Domínio (DNS) mapeia e converte os nomes de domínio usados pelos clientes na sua rede.')+`<div style="padding:14px 16px"><div class="f"><label>Domínio pai:</label><input id="dP" value="${esc(z.domain!==undefined?z.domain:(S.domain||''))}"></div><p>Para configurar clientes de escopo para usar servidores DNS em sua rede, digite os endereços IP desses servidores.</p><div style="display:flex;gap:8px;align-items:flex-start"><div>Nome do servidor:<br><input style="width:130px"><br>Endereço IP:<br>${ipInp('dI','')}</div><div style="display:flex;flex-direction:column;gap:4px;margin-top:30px"><button class="btnw" data-a="dadd">Adicionar</button><button class="btnw" data-a="drem" ${z.dns.length?'':'disabled'}>Remover</button></div><div class="lbox" style="height:90px;flex:1;margin-top:30px">${z.dns.map(x=>`<div>${esc(x)}</div>`).join('')}</div></div></div>`;
+  else if(pn==='Servidores WINS') b=head('Servidores WINS','Os computadores que executam o Windows podem usar servidores WINS para converter nomes de computador NetBIOS em endereços IP.')+`<div style="padding:14px 16px"><p>Não é necessário configurar WINS nesta rede. Clique em Avançar.</p></div>`;
+  else if(pn==='Ativar Escopo') b=head('Ativar Escopo','Os clientes poderão obter concessões de endereço somente se um escopo for ativado.')+`<div style="padding:14px 16px"><p>Deseja ativar este escopo agora?</p><label class="chk"><input type="radio" name="ac" id="acS" ${z.act==='sim'?'checked':''}> Sim, quero ativar este escopo agora</label><label class="chk"><input type="radio" name="ac" id="acN" ${z.act!=='sim'?'checked':''}> Não, ativarei este escopo mais tarde</label></div>`;
+  else b=`<div style="display:grid;grid-template-columns:120px 1fr;min-height:300px"><div style="background:#1f5aa6"></div><div style="padding:14px 18px;background:#fff"><h3 style="font-weight:700;font-size:16px;color:#000">Concluindo o Assistente para Novos Escopos</h3><p>Você concluiu com êxito o Assistente para Novos Escopos.</p><p>Para fechar este assistente, clique em Concluir.</p></div></div>`;
+  return box('580px','Assistente para Novos Escopos',`<div style="margin:-12px -14px">${b}</div><div id="E" style="color:#c00;min-height:16px;margin-top:16px"></div>`,`<button class="btnw" data-a="swprev" ${d.pg?'':'disabled'}>&lt; Voltar</button>${pn==='Concluindo'?okc('Concluir','swfin'):okc('Avançar &gt;','swnext')}${cancel}`); };
+DLG.newres=d=>box('400px','Nova Reserva',`<p>Forneça as informações de um cliente reservado.</p><div class="f"><label>Nome da reserva:</label><input id="rN" data-focus><label>Endereço IP:</label><input id="rI" value="${esc(d.scope.split('.').slice(0,3).join('.'))}."><label>Endereço MAC:</label><input id="rM"><label>Descrição:</label><input id="rD"></div><fieldset><legend>Tipos suportados</legend><label class="chk"><input type="radio" name="rt" checked> Ambos</label><label class="chk"><input type="radio" name="rt"> Somente DHCP</label><label class="chk"><input type="radio" name="rt"> Somente BOOTP</label></fieldset><div id="E" style="color:#c00;min-height:16px"></div>`,`<button class="btnw def" data-a="resadd">Adicionar</button><button class="btnw" data-a="dx">Fechar</button>`);
+DLG.newexcl=d=>box('380px','Adicionar Exclusão',`<p>Digite o intervalo de endereços IP que você deseja excluir. Se você deseja excluir um único endereço, digite um endereço somente no Endereço IP inicial.</p><div class="f"><label>Endereço IP inicial:</label>${ipInp('xS','')}<label>Endereço IP final:</label>${ipInp('xE','')}</div><div id="E" style="color:#c00;min-height:16px"></div>`,`<button class="btnw def" data-a="exadd">Adicionar</button><button class="btnw" data-a="dx">Fechar</button>`);
+/* --- GPO --- */
+DLG.newgpo=d=>box('400px','Novo GPO',`<label>Nome:</label><br><input id="gN" data-focus style="width:100%" value="Novo Objeto de Política de Grupo"><div style="margin-top:10px">GPO Inicial de Origem:</div><select style="width:100%"><option>(nenhum)</option></select><div id="E" style="color:#c00;min-height:16px"></div>`,`${okc('OK','gpook')}${cancel}`,{top:'20%'});
+DLG.linkgpo=d=>box('400px','Selecionar GPO',`<p>Procurar em este domínio: ${DOM}</p><div class="lbox" style="height:180px">${S.gpos.map(g=>`<div class="${d.sel===g.id?'sel':''}" data-a="lgsel" data-i="${g.id}">📄 ${esc(g.name)}</div>`).join('')}</div>`,`${okc('OK','lgok',!d.sel)}${cancel}`);
+DLG.policy=d=>{ const g=gpo(d.gid); const v=g.u[d.key]||{st:'nc'}; const st=d.st||v.st; return box('620px',d.item[1],`<div style="display:grid;grid-template-columns:220px 1fr;gap:10px" class="policy"><div class="rad"><label><input type="radio" name="ps" value="nc" data-a="pst" ${st==='nc'?'checked':''}> Não Configurado</label><label><input type="radio" name="ps" value="en" data-a="pst" ${st==='en'?'checked':''}> Habilitado</label><label><input type="radio" name="ps" value="dis" data-a="pst" ${st==='dis'?'checked':''}> Desabilitado</label></div><div>Comentário:<textarea id="pCm" style="width:100%;height:50px">${esc(v.cm||'')}</textarea>Com suporte em:<div style="background:#fff;border:1px solid #ccc;padding:3px 6px">Pelo menos Windows 2000</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px"><div>Opções:<div style="background:#fff;border:1px solid #ccc;min-height:150px;padding:8px">${d.item[2]==='wall'?`<label>Nome do Papel de Parede:</label><input id="wP" value="${esc(v.path||'')}" style="width:100%" ${st==='en'?'':'disabled'}><p style="color:#555">Exemplo: Usando um caminho local: C:\\windows\\web\\wallpaper\\home.jpg<br>Exemplo: Usando um caminho UNC: \\\\Servidor\\Compartilhamento\\Corp.jpg</p><label>Estilo do papel de parede:</label><select id="wS" ${st==='en'?'':'disabled'}>${['Centralizar','Lado a Lado','Ampliar','Ajustar','Preencher','Estender'].map(s=>`<option ${v.style===s?'selected':''}>${s}</option>`).join('')}</select>`:''}</div></div><div>Ajuda:<div style="background:#fff;border:1px solid #ccc;min-height:150px;padding:8px;white-space:pre-wrap">${esc(PHELP[d.key]||'Esta configuração de política é aplicada aos usuários das OUs vinculadas a este GPO.')}</div></div></div>`,`<button class="btnw" disabled style="margin-right:auto">Configuração Anterior</button><button class="btnw" disabled>Próxima Configuração</button>${okc('OK','polok')}${cancel}<button class="btnw" data-a="polapply">Aplicar</button>`,{top:'4%'}); };
+DLG.secpol=d=>{ const g=gpo(d.gid); const it=d.item; const v=g.pw?g.pw[it[0]]:undefined; const def=v!==undefined&&v!==null; return box('420px','Propriedades de '+it[1],`<div class="tabs"><button class="on">Configuração de Diretiva de Segurança</button><button>Explicação</button></div><div class="tabp" style="min-height:200px"><p style="font-size:14px">📃 ${esc(it[1])}</p><label class="chk"><input type="checkbox" id="spDef" ${def?'checked':''}> Definir esta configuração de política</label>${it[2]==='bool'?`<label class="chk" style="margin-left:22px"><input type="radio" name="sb" id="sbE" ${v?'checked':''}> Habilitado</label><label class="chk" style="margin-left:22px"><input type="radio" name="sb" id="sbD" ${v?'':'checked'}> Desabilitado</label>`:`<div style="margin:10px 0 0 22px">${it[0]==='minLen'?'A senha deve ter pelo menos:':it[0]==='hist'?'Não manter histórico de senha /':it[0].startsWith('lock')?'':'A senha expira em:'}<br><input id="spV" value="${esc(def?v:'')}" style="width:60px"> ${esc(it[2])}</div>`}${g.sys&&g.id==='gpo-ddp'?'':'<p style="color:#b7791f;margin-top:14px">Lembre: política de senha de domínio só vale quando definida num GPO vinculado ao domínio (normalmente a Default Domain Policy).</p>'}<div id="E" style="color:#c00;min-height:16px"></div></div>`,`${okc('OK','secok')}${cancel}<button class="btnw" data-a="secok">Aplicar</button>`,{top:'12%'}); };
+
+/* ================= ações (cliques) ================= */
+function topDlg(){ return S.dlg[S.dlg.length-1]; }
+function err(t){ const e=scr.querySelector('.dlgx:last-child #E')||scr.querySelector('.dlgx:last-child #pErr')||scr.querySelector('.dlgx:last-child #iE')||scr.querySelector('.dlgx:last-child #rnE'); if(e) e.textContent=t; }
+function winErr(title,text){ msg(title,text,'❌'); }
+const A={};
+A.close=el=>{ const w=el.dataset.w2; closeWin(w); render(); };
+A.start=()=>{ START=!START; render(); };
+A.startgo=el=>{ START=false; openWin(el.dataset.w2); render(); };
+A.tool=el=>{ DROP=null; openWin(el.dataset.w2); if(el.dataset.w2==='aduc'&&!C('aduc').exp.includes('dom')) C('aduc').exp.push('dom'); render(); };
+A.task=el=>{ const w=el.dataset.w2; openWin(w); render(); };
+A.noexp=()=>toast('O Explorador de Arquivos não é usado nesta atividade.');
+A.logoff=()=>{ START=false; S.phase='lock'; render(); };
+A.restart=()=>{ START=false; reboot(); };
+A.drop=el=>{ DROP=DROP===el.dataset.d?null:el.dataset.d; render(); };
+A.smgo=el=>{ S.view=el.dataset.v; DROP=null; render(); };
+A.sysprop=()=>dlgPush({k:'sysprop'});
+A.sysalt=()=>dlgPush({k:'rename2'});
+A.sysok=()=>{ const need=!!S.pendHost; dlgPop(); if(need) dlgPush({k:'restartq'}); };
+A.rnok=()=>{ const n=val('rnN'); if(!/^[A-Za-z0-9-]{1,15}$/.test(n)||/^\d+$/.test(n)) return err('O novo nome do computador não é válido. Use até 15 caracteres: letras, números e hífen.'); if(n.toUpperCase()===S.host){ dlgPop(); return; } S.pendHost=n.toUpperCase(); S.dlg.pop(); msg('Alterações de Nome/Domínio do Computador','Você deve reiniciar o computador para aplicar estas alterações.\n\nAntes de reiniciar, salve todos os arquivos abertos e feche todos os programas.','ℹ️'); };
+A.rsnow=()=>{ S.dlg=[]; reboot(); };
+A.rslater=()=>{ S.dlg=[]; render(); };
+A.netc=()=>{ openWin('netc'); render(); };
+A.netsel=()=>{ S.C.netsel=true; render(); };
+A.ethsel=el=>{ topDlg().sel=+el.dataset.i; render(); };
+A.ethp=()=>dlgPush({k:'ipv4'});
+A.ipmode=()=>{ const st=val('ipS'); ['iIP','iM','iG'].forEach(i=>{ const e=document.getElementById(i); e.disabled=!st; }); if(st&&!val('iM')) document.getElementById('iM').value='255.255.255.0'; };
+A.ipok=()=>{ const st=val('ipS'); if(st){ const ip=val('iIP'),m=val('iM'),g=val('iG'); if(!isIP(ip)) return winErr('Microsoft TCP/IP','O endereço IP digitado não é válido.'); if(!maskOk(m)) return winErr('Microsoft TCP/IP','A máscara de sub-rede digitada não é válida.'); if(g&&!isIP(g)) return winErr('Microsoft TCP/IP','O gateway padrão não é válido.'); if(g&&netOf(ip,m)!==netOf(g,m)) return winErr('Microsoft TCP/IP','O gateway padrão não está no mesmo segmento de rede (sub-rede) definido pelo endereço IP e pela máscara de sub-rede.'); S.ip=ip; S.mask=m; S.gw=g; } else { S.ip=null; S.gw=''; }
+  const d1=val('iD1'),d2=val('iD2'); if(d1&&!isIP(d1)||d2&&!isIP(d2)) return winErr('Microsoft TCP/IP','O endereço do servidor DNS não é válido.'); S.dns=[d1,d2].filter(Boolean); S.dlg=[]; render(); };
+A.rolewiz=()=>{ DROP=null; S.dlg.push({k:'rolewiz',pg:0,sel:[]}); render(); };
+A.rolechk=el=>{ const d=topDlg(), f=el.dataset.f; if(el.checked){ el.checked=false; if(f==='Hyper-V') return winErr('Assistente de Adição de Funções e Recursos','A validação falhou: o Hyper-V não pode ser instalado. O processador não tem os recursos de virtualização necessários (numa VM, a virtualização aninhada precisa estar habilitada no host).'); S.dlg.push({k:'addfeat',f}); render(); } else { d.sel=d.sel.filter(x=>x!==f); } };
+A.featok=()=>{ const f=topDlg().f; S.dlg.pop(); if((f==='DNS'||f==='DHCP')&&!S.ip){ S.dlg.push({k:'staticwarn',f}); render(); return; } const W=topDlg(); if(!W.sel.includes(f)) W.sel.push(f); render(); };
+A.swcont=()=>{ const f=topDlg().f; S.dlg.pop(); const W=topDlg(); if(!W.sel.includes(f)) W.sel.push(f); render(); };
+A.wzprev=()=>{ topDlg().pg--; render(); };
+A.wznext=()=>{ topDlg().pg++; render(); };
+A.wzinst=()=>{ const W=topDlg(); W.pg=wzPages(W).length-1; W.p=5; render(); const iv=setInterval(()=>{ W.p+=15; if(W.p>=100){ clearInterval(iv); W.done=true; W.sel.forEach(f=>{ if(!has(f)) S.feats.push(f); }); } if(S.dlg.includes(W)) render(); },350); };
+A.promo=()=>{ DROP=null; if(!has('AD-Domain-Services')) return; S.dlg=[]; S.dlg.push({k:'promo',pg:0,dom:''}); render(); };
+A.prprev=()=>{ const d=topDlg(); savePromo(d); d.pg--; render(); };
+function savePromo(d){ if(d.pg===0&&document.getElementById('pDom')) d.dom=val('pDom'); if(d.pg===1&&document.getElementById('pP1')){ d.p1=document.getElementById('pP1').value; d.p2=document.getElementById('pP2').value; } }
+A.prnext=()=>{ const d=topDlg(); savePromo(d);
+  if(d.pg===0){ if(!d.dom) return err('Especifique o nome do domínio raiz.'); if(!/^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(d.dom)) return err('O nome do domínio não é válido. Use um nome DNS completo, por exemplo: sala304.local'); }
+  if(d.pg===1){ if(!d.p1) return err('Digite a senha do DSRM.'); if(d.p1!==d.p2) return err('As senhas não coincidem.'); if(!pwOk(d.p1)) return err('A senha não atende aos requisitos de complexidade do Windows. Ex.: Senac@2026'); }
+  d.pg++; render(); };
+A.pscript=()=>dlgPush({k:'pscript',dom:topDlg().dom});
+A.prinst=()=>{ const d=topDlg(); d.pg=7; render(); setTimeout(()=>{ d.pg=8; render(); setTimeout(()=>{ reboot('Aplicando configurações do computador',()=>{ S.isDC=true; S.domain=d.dom.toLowerCase(); S.ad=adInit(); S.dns=['127.0.0.1']; S.dnsz=[{name:S.domain,rev:false,recs:[{name:S.host,type:'A',data:ipNow(),dyn:1}],serial:12},{name:'_msdcs.'+S.domain,rev:false,recs:[],serial:3}]; S.gpos=gpoInit(); S.C={}; }); },1400); },1600); };
+A.dhcppost=()=>{ DROP=null; S.dlg=[]; S.dlg.push({k:'dhcppost',pg:0}); render(); };
+A.dpprev=()=>{ topDlg().pg--; render(); };
+A.dpnext=()=>{ topDlg().pg++; render(); };
+A.dpok=()=>{ const d=topDlg(); d.ok=S.isDC; if(S.isDC){ S.dhcp.auth=true; S.dhcp.post=true; if(S.ad&&!findSam('Administradores DHCP')){ S.ad.push({id:nid('g'),cls:'group',name:'Administradores DHCP',sam:'Administradores DHCP',parent:'c-users',scope:'DomainLocal',gtype:'Security',desc:'Os membros que possuem acesso administrativo ao serviço DHCP',members:[],sys:true},{id:nid('g'),cls:'group',name:'Usuários DHCP',sam:'Usuários DHCP',parent:'c-users',scope:'DomainLocal',gtype:'Security',desc:'Os membros que possuem acesso somente leitura ao serviço DHCP',members:[],sys:true}); } } d.pg=2; render(); };
+A.dx=()=>{ S.dlg.pop(); render(); };
+A.msgok=()=>{ const d=S.dlg.pop(); render(); d.cb&&d.cb(); };
+A.yes=()=>{ const d=S.dlg.pop(); d.yes&&d.yes(); render(); };
+/* mmc */
+A.tsel=(el,e)=>{ if(e.target.closest('.ex')) return; const k=el.dataset.c, c=C(k); c.sel=el.dataset.n; c.rsel=null; MENU=null; render(); };
+A.texp=(el)=>{ const k=el.dataset.c, c=C(k), n=el.dataset.n; c.exp=c.exp.includes(n)?c.exp.filter(x=>x!==n):[...c.exp,n]; render(); };
+A.rsel=el=>{ const c=C(el.dataset.c); c.rsel=el.dataset.r; MENU=null; render(); };
+A.mi=el=>{ const path=el.dataset.i.split('.').map(Number); let L=MENU.items, it=null; path.forEach(i=>{ it=L[i]; L=it.sub||[]; }); MENU=null; if(it&&it.f){ it.f(); } render(); };
+A.mmenu=(el,e)=>{ const k=el.dataset.c, m=el.dataset.m; const c=C(k);
+  if(m==='exib'&&k==='aduc') return showMenu(e,[{t:'Adicionar/Remover Colunas...',dis:1},{sep:1},{t:'Ícones Grandes',dis:1},{t:'Detalhes',dis:1},{sep:1},{t:'Usuários, Contatos, Grupos e Computadores como contêineres',dis:1},{t:(S.adv?'✔ ':'')+'Recursos Avançados',f:()=>{ S.adv=!S.adv; }},{sep:1},{t:'Opções de Filtro...',dis:1},{t:'Personalizar...',dis:1}]);
+  if(m==='acao'){ const it=k==='aduc'?(()=>{ const n=nodeById(k,c.rsel)||nodeById(k,c.sel); const o=c.rsel?obj(c.rsel):(n&&n.obj); return aducCtx(o); })():ctxFor(k,'node',c.rsel||c.sel); return showMenu(e,it); }
+  if(m==='arq') return showMenu(e,[{t:'Opções...',dis:1},{sep:1},{t:'Sair',f:()=>closeWin(k)}]);
+  showMenu(e,[{t:'Atualizar',f:()=>{}}]); };
+A.actb=(el,e)=>{ const k=el.dataset.c, i=el.dataset.i, c=C(k); const n=nodeById(k,c.sel);
+  if(k==='aduc'){ const o=n&&n.obj; if(i==='menu') return showMenu(e,[newMenu(o)]); if(i==='del') return delObj(o); if(i==='ren') return dlgPush({k:'rename',id:o.id}); if(i==='props') return dlgPush({k:'props',id:o.id,tab:0}); return render(); }
+  const items=ctxFor(k,'node',c.sel); const map={nz:'Nova Zona...',nh:'Novo Host (A ou AAAA)...',np:'Novo Ponteiro (PTR)...',nc:'Novo Alias (CNAME)...',zp:'Propriedades',auth:S.dhcp.auth?'Cancelar autorização':'Autorizar',ns:'Novo Escopo...',act:n&&n.sc?(n.sc.active?'Desativar':'Ativar'):'',dels:'Excluir',nr:'Nova Reserva...',ne:'Novo Intervalo de Exclusão...',cg:'Criar um GPO neste domínio e vinculá-lo aqui...',lg:'Vincular um GPO Existente...',ed:'Editar...',dl:'Excluir',ng:'Novo'};
+  const it=items.find(x=>x.t===map[i]); if(it&&it.f&&!it.dis){ it.f(); } render(); };
+A.tbb=(el)=>{ const k=el.dataset.c, i=el.dataset.i; const n=nodeById(k,C(k).sel); const o=n&&n.obj; if(!o) return; if(i==='nu') dlgPush({k:'newuser',parent:o.id,pg:0,d:{mustChange:true}}); if(i==='ng') dlgPush({k:'newgroup',parent:o.id}); if(i==='no') dlgPush({k:'newou',parent:o.id}); };
+A.refresh=()=>render();
+/* aduc dialogs */
+A.ouok=()=>{ const d=topDlg(), n=val('ouN'); if(!n) return err('Digite um nome.'); if(/[,+"\\<>;=#\/]/.test(n)) return err('O nome contém caracteres inválidos.'); if(kids(d.parent).some(o=>low(o.name)===low(n))) return winErr('Serviços de Domínio Active Directory',`O Windows não pode criar o objeto ${n} porque: Já existe um objeto com esse nome.`);
+  S.ad.push({id:nid('ou'),cls:'ou',name:n,parent:d.parent,prot:val('ouP'),desc:''}); S.dlg.pop(); const c=C('aduc'); if(!c.exp.includes(d.parent)) c.exp.push(d.parent); render(); };
+function nuSave(d){ const u=d.d; if(d.pg===0){ u.first=val('uF'); u.ini=val('uI'); u.last=val('uL'); u.full=val('uN'); u.sam=val('uS'); u.pre=val('uP'); } if(d.pg===1){ u.pw=document.getElementById('uPw').value; u.pw2=document.getElementById('uPw2').value; u.mustChange=val('uMC'); u.cantChange=val('uCC'); u.neverExp=val('uNE'); u.disabled=val('uDis'); } }
+A.nuprev=()=>{ const d=topDlg(); nuSave(d); d.pg--; render(); };
+A.nunext=()=>{ const d=topDlg(); nuSave(d); const u=d.d;
+  if(d.pg===0){ if(!u.full) return err('Digite o nome completo.'); if(!u.sam) return err('Digite o nome de logon do usuário.'); if(/[\s"\/\\\[\]:;|=,+*?<>]/.test(u.sam)) return winErr('Serviços de Domínio Active Directory','O nome de logon contém um ou mais caracteres inválidos.'); if(findSam(u.sam)) return winErr('Serviços de Domínio Active Directory',`O nome de logon do usuário que você escolheu já está em uso neste domínio. Escolha outro nome de logon e tente novamente.`); if(kids(d.parent).some(o=>low(o.name)===low(u.full))) return winErr('Serviços de Domínio Active Directory',`O Windows não pode criar o objeto ${u.full} porque: Já existe um objeto com esse nome.`); }
+  if(d.pg===1){ if(u.pw!==u.pw2) return winErr('Serviços de Domínio Active Directory','As senhas digitadas não correspondem.'); if(u.mustChange&&u.cantChange) return winErr('Serviços de Domínio Active Directory','Você selecionou "O usuário deve alterar a senha no próximo logon" e "O usuário não pode alterar a senha". Não é possível selecionar as duas opções para o mesmo usuário.');
+    const minL=(gpo('gpo-ddp')||{pw:{minLen:7}}).pw.minLen||7; if(u.pw.length<minL||!pwOk(u.pw)) return winErr('Serviços de Domínio Active Directory',`O Windows não pode definir a senha para ${u.full} porque:\nA senha fornecida não atende aos requisitos de comprimento, complexidade ou histórico do domínio.`); }
+  d.pg++; render(); };
+A.nufin=()=>{ const d=topDlg(), u=d.d; const nidU=nid('u'); const du=findSam('Usuários do Domínio'); if(du) du.members.push(nidU); S.ad.push({id:nidU,cls:'user',name:u.full,parent:d.parent,sam:u.sam,first:u.first,last:u.last,disp:u.full,mustChange:u.mustChange,cantChange:u.cantChange,neverExp:u.neverExp,disabled:u.disabled}); S.dlg.pop(); render(); };
+A.ngok=()=>{ const d=topDlg(), n=val('gN'); if(!n) return err('Digite o nome do grupo.'); if(findSam(n)||kids(d.parent).some(o=>low(o.name)===low(n))) return winErr('Serviços de Domínio Active Directory',`O nome do grupo "${n}" já está em uso. Escolha outro nome.`);
+  S.ad.push({id:nid('g'),cls:'group',name:n,sam:val('gP')||n,parent:d.parent,scope:val('gsL')?'DomainLocal':val('gsU')?'Universal':'Global',gtype:val('gtD')?'Distribution':'Security',members:[],desc:''}); S.dlg.pop(); render(); };
+A.ncok=()=>{ const d=topDlg(), n=val('cN'); if(!n) return err('Digite o nome do computador.'); if(!/^[A-Za-z0-9-]{1,15}$/.test(n)) return winErr('Serviços de Domínio Active Directory','O nome do computador contém caracteres inválidos ou tem mais de 15 caracteres.'); if(findSam(n)) return winErr('Serviços de Domínio Active Directory',`O nome do computador ${n.toUpperCase()} já está em uso.`);
+  const nidC=nid('c'); const dc2=findSam('Computadores do Domínio'); if(dc2) dc2.members.push(nidC); S.ad.push({id:nidC,cls:'computer',name:n.toUpperCase(),sam:n.toUpperCase(),parent:d.parent,desc:''}); S.dlg.pop(); render(); };
+A.renok=()=>{ const d=topDlg(), o=obj(d.id), n=val('rN'); if(!n) return err('Digite um nome.'); if(kids(o.parent).some(x=>x!==o&&low(x.name)===low(n))) return err('Já existe um objeto com esse nome.'); o.name=n; if(o.cls==='user') o.disp=n; S.dlg.pop(); render(); };
+A.rpok=()=>{ const d=topDlg(), o=obj(d.id), a=document.getElementById('rp1').value, b=document.getElementById('rp2').value; if(a!==b) return err('As senhas não correspondem.'); if(!pwOk(a)) return err('A senha não atende aos requisitos de complexidade.'); o.mustChange=val('rpm'); S.dlg.pop(); msg('Serviços de Domínio Active Directory',`A senha para ${o.name} foi alterada.`,'ℹ️'); };
+A.mvsel=el=>{ topDlg().to=el.dataset.i; render(); };
+A.mvok=()=>{ const d=topDlg(), o=obj(d.id), t=obj(d.to); if(o.cls==='ou'&&o.prot) return winErr('Mover',`O Windows não pode mover o objeto ${o.name} porque: Acesso negado. (O objeto está protegido contra exclusão acidental.)`); if(o.cls==='ou'&&t.cls==='container') return winErr('Mover','Uma Unidade Organizacional não pode ficar dentro de um contêiner.'); if(kids(t.id).some(x=>low(x.name)===low(o.name))) return winErr('Mover','Já existe um objeto com esse nome no destino.'); o.parent=t.id; S.dlg.pop(); render(); };
+A.selchk=()=>{ const d=topDlg(); const txt=document.getElementById('selTxt').innerText; const names=txt.split(';').map(s=>s.replace(/\(.*?\)/g,'').trim()).filter(Boolean); const out=[];
+  for(const n of names){ let L=AD().filter(o=>d.types.includes(o.cls)&&(low(o.name)===low(n)||low(o.sam)===low(n))); if(!L.length) L=AD().filter(o=>d.types.includes(o.cls)&&(low(o.name).startsWith(low(n))||low(o.sam).startsWith(low(n)))); if(L.length!==1){ d.text=txt; err(L.length?`Vários nomes encontrados para "${n}". Digite o nome completo.`:`Nome Não Encontrado: Não foi possível encontrar um objeto (${d.types.includes('group')&&d.types.length===1?'Grupo ou Objeto Interno de Segurança':'Usuário, Grupo ou Computador'}) com o nome "${n}".`); return false; } out.push(L[0].id); }
+  d.resolved=out; d.text=''; render(); return true; };
+A.selok=()=>{ const d=topDlg(); if(!d.resolved){ if(!A.selchk()) return; } const r=topDlg().resolved||[]; S.dlg.pop(); d.cb&&d.cb(r); render(); };
+A.ptab=el=>{ const d=topDlg(); propSave(d); d.tab=+el.dataset.i; render(); };
+function propSave(d){ const o=obj(d.id); const g=id=>document.getElementById(id);
+  if(o.cls==='user'){ if(g('pF')){ o.first=val('pF'); o.last=val('pL'); o.disp=val('pD'); o.desc=val('pDe'); o.office=val('pO'); o.tel=val('pT'); o.mail=val('pE'); } if(g('aMC')){ const mc=val('aMC'),cc=val('aCC'); if(mc&&cc){ winErr('Serviços de Domínio Active Directory','Você selecionou "O usuário deve alterar a senha no próximo logon" e "O usuário não pode alterar a senha". Não é possível selecionar as duas opções.'); return false; } o.mustChange=mc; o.cantChange=cc; o.neverExp=val('aNE'); if(!o.sys) o.disabled=val('aDis'); } }
+  if(o.cls==='group'&&g('gDe')){ o.desc=val('gDe'); if(!o.sys){ const r=scr.querySelector('[data-gs]:checked'); if(r) o.scope=r.dataset.gs; o.gtype=val('pgtD')?'Distribution':'Security'; } }
+  if(o.cls==='ou'){ if(g('oDe')) o.desc=val('oDe'); if(g('oProt')) o.prot=val('oProt'); }
+  if(o.cls==='computer'&&g('cDe')) o.desc=val('cDe'); return true; }
+A.pok=()=>{ const d=topDlg(); if(propSave(d)===false) return; S.dlg.pop(); render(); };
+A.papply=()=>{ const d=topDlg(); propSave(d); render(); };
+A.msel=el=>{ topDlg().msel=el.dataset.i; render(); };
+A.mrem=()=>{ const d=topDlg(), o=obj(d.id); confirmBox('Remover membros de grupo',`Deseja remover os membros selecionados do grupo?`,()=>{ o.members=o.members.filter(m=>m!==d.msel); d.msel=null; }); };
+A.madd=()=>{ const d=topDlg(), o=obj(d.id); propSave(d); S.dlg.push({k:'select',types:['user','group','computer'],cb:sel=>{ sel.forEach(id=>{ if(id!==o.id&&!o.members.includes(id)) o.members.push(id); }); }}); render(); };
+A.moadd=()=>{ const d=topDlg(), o=obj(d.id); propSave(d); S.dlg.push({k:'select',title:'Selecionar Grupos',types:['group'],cb:sel=>{ sel.forEach(g=>{ const G=obj(g); if(g!==o.id&&!G.members.includes(o.id)) G.members.push(o.id); }); }}); render(); };
+/* DNS */
+function zSave(d){ const z=d.d; if(document.getElementById('zN')) z.name=val('zN'); if(document.getElementById('zv6')) z.v6=val('zv6'); if(document.getElementById('zo0')) z.net=[0,1,2].map(i=>val('zo'+i)).filter(x=>x!==''); if(document.getElementById('duS')) z.dyn=val('duS')?'Seguras somente':val('duA')?'Não seguras e seguras':'Nenhuma'; }
+A.zprev=()=>{ const d=topDlg(); zSave(d); d.pg--; render(); };
+A.znext=()=>{ const d=topDlg(); zSave(d); const P=['Bem-vindo','Tipo de Zona','Escopo de Replicação','Nome da Zona',...(d.rev?['Tipo de Zona de Pesquisa Inversa','ID da Rede']:[]),'Atualização Dinâmica','Concluindo']; const pn=P[d.pg];
+  if(pn==='Nome da Zona'&&!d.rev){ if(!/^[a-z0-9-]+(\.[a-z0-9-]+)*$/i.test(d.d.name||'')) return err('Digite um nome de zona válido.'); if(S.dnsz.some(z=>z.name===low(d.d.name))) return winErr('Assistente para Nova Zona','A zona já existe.'); }
+  if(pn==='Nome da Zona'&&d.rev&&d.d.v6) return err('Nesta atividade use a Zona de Pesquisa Inversa IPv4.');
+  if(pn==='Tipo de Zona de Pesquisa Inversa'){ const n=d.d.net||[]; if(!n.length||n.some(x=>!/^\d{1,3}$/.test(x)||+x>255)) return err('Digite uma ID de rede válida, por exemplo: 192 . 168 . 30'); const nm=n.slice().reverse().join('.')+'.in-addr.arpa'; if(S.dnsz.some(z=>z.name===nm)) return winErr('Assistente para Nova Zona',`A zona ${nm} já existe.`); }
+  d.pg++; render(); };
+A.zfin=()=>{ const d=topDlg(), z=d.d; const name=d.rev?(z.net.slice().reverse().join('.')+'.in-addr.arpa'):low(z.name); S.dnsz.push({name,rev:d.rev,recs:[],dyn:z.dyn||'Seguras somente',serial:1}); S.dlg.pop(); const c=C('dns'); ['srv',d.rev?'rev':'fwd'].forEach(x=>{ if(!c.exp.includes(x)) c.exp.push(x); }); render(); };
+function addPTR(ip,host){ const o=ip.split('.'); const z=S.dnsz.filter(z=>z.rev).find(z=>{ const p=z.name.replace('.in-addr.arpa','').split('.').reverse(); return p.every((x,i)=>x===o[i]); }); if(!z) return false; const p=z.name.replace('.in-addr.arpa','').split('.').length; const nm=o.slice(p).reverse().join('.'); z.recs=z.recs.filter(r=>!(r.type==='PTR'&&r.name===nm)); z.recs.push({name:nm,type:'PTR',data:host.replace(/\.$/,'')+'.'}); return true; }
+A.hadd=()=>{ const d=topDlg(); const n=val('hN'), ip=val('hI'); d.n=n; d.ip=ip; if(!isIP(ip)) return winErr('Novo Host','O endereço IP do host não é válido.'); if(n&&!/^[a-z0-9-]+$/i.test(n)) return winErr('Novo Host','O nome contém caracteres inválidos.'); const z=S.dnsz.find(x=>x.name===d.zone);
+  if(z.recs.some(r=>r.type==='A'&&low(r.name)===low(n||'(igual à pasta pai)'))) return winErr('DNS','Já existe um registro com esse nome e endereço.');
+  z.recs.push({name:n||'(igual à pasta pai)',type:'A',data:ip}); let warn=''; if(val('hP')){ if(!addPTR(ip,(n?n+'.':'')+d.zone)) warn='\n\nAviso: Não foi possível criar o registro de ponteiro (PTR) associado, provavelmente porque a zona de pesquisa inversa referenciada não pôde ser encontrada.'; }
+  d.added=true; d.n=''; d.ip=''; msg('DNS',`O registro de host ${(n?n+'.':'')+d.zone}. foi criado com êxito.`+warn,warn?'⚠️':'ℹ️'); };
+A.ptrok=()=>{ const d=topDlg(); const ip=val('pI'), h=val('pH'); if(!isIP(ip)) return err('Digite um endereço IP completo, por exemplo 192.168.30.10.'); if(!h) return err('Digite o nome do host (FQDN), por exemplo srv-sala304.sala304.local'); const pre=d.zone.replace('.in-addr.arpa','').split('.').reverse().join('.'); if(!ip.startsWith(pre+'.')) return err(`O endereço precisa pertencer à zona ${d.zone} (${pre}.x).`); addPTR(ip,h); S.dlg.pop(); render(); };
+A.cnok=()=>{ const d=topDlg(); const n=val('aN'), t=val('aT'); if(!n||!t) return err('Preencha o nome do alias e o host de destino.'); S.dnsz.find(z=>z.name===d.zone).recs.push({name:n,type:'CNAME',data:t.replace(/\.$/,'')+'.'}); S.dlg.pop(); render(); };
+/* DHCP */
+function swSave(d){ const z=d.d; const g=id=>document.getElementById(id); if(g('sN')){ z.name=val('sN'); z.desc=val('sD'); } if(g('sS')){ z.start=val('sS'); z.end=val('sE'); z.len=val('sL'); } if(g('lD')){ z.days=val('lD'); z.hrs=val('lH'); z.mins=val('lM'); } if(g('coS')) z.cfg=val('coS')?'sim':'nao'; if(g('dP')) z.domain=val('dP'); if(g('acS')) z.act=val('acS')?'sim':'nao'; }
+A.cfgsel=()=>{ const d=topDlg(); swSave(d); render(); };
+A.swprev=()=>{ const d=topDlg(); swSave(d); d.pg--; render(); };
+A.swnext=()=>{ const d=topDlg(); swSave(d); const z=d.d; const P=['Bem-vindo','Nome do Escopo','Intervalo de Endereços IP','Adicionar Exclusões e Atraso','Duração da Concessão','Configurar Opções DHCP',...(z.cfg==='sim'?['Roteador (Gateway Padrão)','Nome de Domínio e Servidores DNS','Servidores WINS','Ativar Escopo']:[]),'Concluindo']; const pn=P[d.pg];
+  if(pn==='Nome do Escopo'&&!z.name) return winErr('Assistente para Novos Escopos','Você precisa fornecer um nome para o escopo.');
+  if(pn==='Intervalo de Endereços IP'){ if(!isIP(z.start)||!isIP(z.end)) return winErr('Assistente para Novos Escopos','Os endereços IP inicial e final precisam ser válidos.'); const L=+z.len; if(!(L>=8&&L<=30)) return winErr('Assistente para Novos Escopos','O comprimento da máscara de sub-rede é inválido.'); const m=p2m(L); if(netOf(z.start,m)!==netOf(z.end,m)) return winErr('Assistente para Novos Escopos','O endereço IP final precisa estar na mesma sub-rede do endereço inicial.'); if(ip2n(z.end)<ip2n(z.start)) return winErr('Assistente para Novos Escopos','O endereço IP final deve ser maior que o endereço inicial.'); if(S.dhcp.scopes.some(s=>s.id===netOf(z.start,m))) return winErr('Assistente para Novos Escopos','Já existe um escopo para essa sub-rede.'); }
+  if(pn==='Duração da Concessão'&&!(+z.days>=0&&+z.hrs>=0&&+z.mins>=0&&(+z.days+ +z.hrs+ +z.mins)>0)) return winErr('Assistente para Novos Escopos','Duração da concessão inválida.');
+  if(pn==='Nome de Domínio e Servidores DNS'&&!z.dns.length) return winErr('Assistente para Novos Escopos','Adicione pelo menos um servidor DNS (o próprio servidor: 192.168.30.10).');
+  d.pg++; render(); };
+const inScope=(z,ip)=>ip2n(ip)>=ip2n(z.start)&&ip2n(ip)<=ip2n(z.end);
+A.xadd=()=>{ const d=topDlg(), z=d.d; const a=val('xS'); let b=val('xE')||a; if(!isIP(a)||!isIP(b)) return winErr('Assistente para Novos Escopos','O endereço IP é inválido.'); if(!inScope(z,a)||!inScope(z,b)||ip2n(b)<ip2n(a)) return winErr('Assistente para Novos Escopos','O intervalo de exclusão precisa estar dentro do intervalo de endereços do escopo.'); z.excl.push([a,b]); render(); };
+A.xsel=el=>{ topDlg().xsel=+el.dataset.i; render(); };
+A.xrem=()=>{ const d=topDlg(); d.d.excl.splice(d.xsel,1); d.xsel=null; render(); };
+A.radd=()=>{ const d=topDlg(), ip=val('rI'); if(!isIP(ip)) return winErr('Assistente para Novos Escopos','Endereço IP inválido.'); const m=p2m(+d.d.len||24); if(netOf(ip,m)!==netOf(d.d.start,m)) return winErr('Assistente para Novos Escopos','O roteador precisa estar na mesma sub-rede do escopo.'); d.d.router=ip; render(); };
+A.rrem=()=>{ topDlg().d.router=''; render(); };
+A.dadd=()=>{ const d=topDlg(); swSave(d); const ip=val('dI'); if(!isIP(ip)) return winErr('Assistente para Novos Escopos','Endereço IP inválido.'); if(ip!==S.ip&&ip!=='127.0.0.1') return winErr('Assistente para Novos Escopos',`O servidor em ${ip} não é um servidor DNS válido.`); if(ip==='127.0.0.1') return winErr('Assistente para Novos Escopos','Não use 127.0.0.1 aqui: os clientes precisam do IP real do servidor DNS (192.168.30.10).'); if(!d.d.dns.includes(ip)) d.d.dns.push(ip); render(); };
+A.drem=()=>{ const d=topDlg(); swSave(d); d.d.dns.pop(); render(); };
+A.swfin=()=>{ const d=topDlg(), z=d.d; const m=p2m(+z.len||24); S.dhcp.scopes.push({id:netOf(z.start,m),name:z.name,desc:z.desc||'',start:z.start,end:z.end,mask:m,excl:z.excl,lease:[+z.days,+z.hrs,+z.mins],opts:z.cfg==='sim'?{router:z.router||'',dns:z.dns,domain:z.domain||''}:{},active:z.cfg==='sim'&&z.act==='sim',res:[]}); S.dlg.pop(); const c=C('dhcp'); ['dsrv','v4'].forEach(x=>{ if(!c.exp.includes(x)) c.exp.push(x); }); render(); };
+A.resadd=()=>{ const d=topDlg(), s=S.dhcp.scopes.find(x=>x.id===d.scope); const n=val('rN'), ip=val('rI'), mac=val('rM'); if(!n) return winErr('DHCP','Digite o nome da reserva.'); if(!isIP(ip)||!inScope(s,ip)) return winErr('DHCP','O endereço IP especificado não está no intervalo de endereços do escopo.'); if(!/^([0-9a-f]{2}[-:]?){5}[0-9a-f]{2}$/i.test(mac)) return winErr('DHCP','O endereço MAC é inválido. Ex.: 00-15-5D-30-01-50'); if(s.res.some(r=>r.ip===ip)) return winErr('DHCP','Já existe uma reserva para esse endereço IP.'); s.res.push({name:n,ip,mac:mac.toUpperCase(),desc:val('rD')}); S.dlg.pop(); render(); };
+A.exadd=()=>{ const d=topDlg(), s=S.dhcp.scopes.find(x=>x.id===d.scope); const a=val('xS'); const b=val('xE')||a; if(!isIP(a)||!isIP(b)||!inScope(s,a)||!inScope(s,b)) return winErr('DHCP','O intervalo de exclusão precisa estar dentro do intervalo do escopo.'); s.excl.push([a,b]); S.dlg.pop(); render(); };
+/* GPO */
+A.gpook=()=>{ const d=topDlg(), n=val('gN'); if(!n) return err('Digite um nome.'); if(S.gpos.some(g=>low(g.name)===low(n))) return winErr('Gerenciamento de Política de Grupo',`Já existe um GPO com o nome "${n}".`); const g={id:nid('gpo'),name:n,links:d.ou?[d.ou]:[],u:{},pw:null}; S.gpos.push(g); S.dlg.pop(); const c=C('gpmc'); if(d.ou&&!c.exp.includes('ou:'+d.ou)) c.exp.push('ou:'+d.ou); render(); };
+A.lgsel=el=>{ topDlg().sel=el.dataset.i; render(); };
+A.lgok=()=>{ const d=topDlg(); const g=gpo(d.sel); if(!g.links.includes(d.ou)) g.links.push(d.ou); S.dlg.pop(); render(); };
+A.pst=el=>{ const d=topDlg(); d.st=el.value; const w=document.getElementById('wP'), s=document.getElementById('wS'); if(w){ w.disabled=d.st!=='en'; s.disabled=d.st!=='en'; } };
+function polSave(){ const d=topDlg(), g=gpo(d.gid); const st=d.st||(g.u[d.key]||{}).st||'nc'; const v={st,cm:val('pCm')}; if(document.getElementById('wP')){ v.path=val('wP'); v.style=document.getElementById('wS').value; if(st==='en'&&!v.path){ winErr('Papel de parede da área de trabalho','Digite o nome (caminho) do papel de parede.'); return false; } } g.u[d.key]=v; return true; }
+A.polok=()=>{ if(polSave()===false) return; S.dlg.pop(); render(); };
+A.polapply=()=>{ polSave(); render(); };
+A.secok=()=>{ const d=topDlg(), g=gpo(d.gid), it=d.item; if(!g.pw) g.pw={}; if(!val('spDef')){ delete g.pw[it[0]]; } else if(it[2]==='bool'){ g.pw[it[0]]=val('sbE'); } else { const n=val('spV'); if(!/^\d+$/.test(n)) return err('Digite um número.'); if(it[0]==='minLen'&&+n>14) return err('O valor deve estar entre 0 e 14 caracteres.'); g.pw[it[0]]=+n; } S.dlg.pop(); render(); };
+
+/* ================= eventos (delegação) ================= */
+let LASTC=null;
+scr.addEventListener('click',e=>{ const el=e.target.closest('[data-a]');
+  if(el&&['tsel','rsel','ethsel','netsel','msel','mvsel','lgsel','xsel'].includes(el.dataset.a)){ const key=el.dataset.a+'|'+(el.dataset.n||el.dataset.r||el.dataset.i||''); const t=Date.now(); if(LASTC&&LASTC.k===key&&t-LASTC.t<500){ LASTC=null; dbl(el); return; } LASTC={k:key,t}; }
+  if(el&&A[el.dataset.a]){ if(el.tagName==='INPUT'&&el.type==='checkbox'&&el.dataset.a!=='rolechk'){} A[el.dataset.a](el,e); return; }
+  let ch=false; if(MENU&&!e.target.closest('.cm')){ MENU=null; ch=true; } if(DROP&&!e.target.closest('.drop')){ DROP=null; ch=true; } if(START&&!e.target.closest('.startm')){ START=false; ch=true; } if(S.C.netsel&&!e.target.closest('[data-a=netsel]')&&e.target.closest('[data-w=netc]')){ S.C.netsel=false; ch=true; } if(ch) render(); });
+scr.addEventListener('contextmenu',e=>{ e.preventDefault(); const el=e.target.closest('[data-cx]'); if(!el) return; const kind=el.dataset.cx; const win=el.closest('[data-w]'); const k=win&&win.dataset.w;
+  if(kind==='net'){ S.C.netsel=true; return showMenu(e,ctxFor('net')); }
+  if(!k||!CONS[k]) return; const c=C(k);
+  if(kind==='node'){ c.sel=el.dataset.n; c.rsel=null; const n=nodeById(k,c.sel); if(k==='aduc') return showMenu(e,n&&n.obj?aducCtx(n.obj):[]); return showMenu(e,ctxFor(k,'node',c.sel)); }
+  if(kind==='row'){ c.rsel=el.dataset.r; const rid=el.dataset.r; if(k==='aduc') return showMenu(e,aducCtx(obj(rid))); const nn=nodeById(k,rid); if(nn) return showMenu(e,ctxFor(k,'node',rid)); return showMenu(e,ctxFor(k,'row',rid)); }
+  if(kind==='blank'&&!e.target.closest('tr.r')){ c.rsel=null; return showMenu(e,ctxFor(k,'blank')); } });
+function dbl(el){
+  if(el.dataset.a==='netsel') return dlgPush({k:'ethprops'});
+  if(el.dataset.dbl==='ipv4') return dlgPush({k:'ipv4'});
+  if(el.dataset.a==='tsel'){ const k=el.dataset.c,c=C(k),n=el.dataset.n; c.exp=c.exp.includes(n)?c.exp.filter(x=>x!==n):[...c.exp,n]; return render(); }
+  if(el.dataset.a==='rsel'){ const k=el.dataset.c, r=el.dataset.r, c=C(k);
+    if(k==='aduc'){ const o=obj(r); if(!o) return; if(isCont(o)){ c.sel=o.id; if(!c.exp.includes(o.parent)) c.exp.push(o.parent); c.rsel=null; return render(); } return dlgPush({k:'props',id:o.id,tab:0}); }
+    if(k==='gpme'&&(r.startsWith('pi:')||r.startsWith('sec:'))) return openPolicy(r);
+    if(k==='gpmc'&&r.startsWith('lk:')){ const g=r.split(':')[2]; return editGPO(g); }
+    const nn=nodeById(k,r); if(nn){ c.sel=r; if(!c.exp.includes(c.sel)) c.exp.push(c.sel); c.rsel=null; return render(); } }
+  if(el.dataset.a==='mvsel'){ A.mvok(); }
+  if(el.dataset.a==='lgsel'){ A.lgok(); } }
+scr.addEventListener('input',e=>{ const t=e.target; const d=topDlg(); if(!d) return;
+  if(d.k==='newuser'&&['uF','uI','uL'].includes(t.id)){ const f=val('uF'),i=val('uI'),l=val('uL'); document.getElementById('uN').value=[f,i?i+'.':'',l].filter(Boolean).join(' '); }
+  if(d.k==='newuser'&&t.id==='uS'){ document.getElementById('uP').value=t.value.slice(0,20); }
+  if(d.k==='newgroup'&&t.id==='gN'){ document.getElementById('gP').value=t.value; }
+  if(d.k==='newcomp'&&t.id==='cN'){ document.getElementById('cP').value=t.value.toUpperCase(); }
+  if(d.k==='rename2'&&t.id==='rnN'){ document.getElementById('rnF').textContent=t.value; }
+  if(d.k==='newhost'&&t.id==='hN'){ document.getElementById('hF').value=(t.value?t.value+'.':'')+d.zone+'.'; }
+  if(d.k==='scopewiz'&&t.id==='sL'){ const L=+t.value; document.getElementById('sM').value=L>=8&&L<=30?p2m(L):''; }
+  if(d.k==='scopewiz'&&t.id==='sS'&&isIP(t.value)){ }
+  if(d.k==='select'&&t.id==='selTxt'){ d.resolved=null; } });
+scr.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.tagName==='INPUT'){ const b=scr.querySelector('.dlgx:last-child .btnw.def:not([disabled])'); if(b){ e.preventDefault(); b.click(); } } if(e.key==='Escape'&&S.dlg.length){ S.dlg.pop(); render(); } });
+
+/* ================= painel ================= */
+function tick(){ let ch=false; MIS.forEach((M,mi)=>M.steps.forEach((s,si)=>{ const k=mi+'.'+si; let ok=false; try{ ok=!!s.ok(); }catch(e){} if(ok!==!!S.done[k]){ S.done[k]=ok; ch=true; } })); return ch; }
+const sd=(mi,si)=>!!S.done[mi+'.'+si];
+function renderPanel(){ const T=[['mis','Missões'],['arv','Árvore esperada'],['conf','Conferência']];
+  $('#ptabs').innerHTML=T.map(t=>`<button data-pt="${t[0]}" class="${S.tab===t[0]?'on':''}">${t[1]}</button>`).join('');
+  document.querySelectorAll('[data-pt]').forEach(b=>b.onclick=()=>{ S.tab=b.dataset.pt; renderPanel(); save(); });
+  const B=$('#pbody');
+  if(S.tab==='mis'){ const M=MIS[S.mis]; const cu=M.steps.findIndex((s,i)=>!sd(S.mis,i));
+    B.innerHTML=`<div class="mlist">${MIS.map((m,i)=>{ const ok=m.steps.every((s,j)=>sd(i,j)); return `<button data-mi="${i}" class="${i===S.mis?'on':''} ${ok?'ok':''}">${ok?'✔ ':''}${i+1}</button>`; }).join('')}</div><h2 class="mh">Missão ${S.mis+1}: ${M.t}</h2><p class="intro">${M.intro}</p>
+      ${M.steps.map((s,i)=>{ const dn=sd(S.mis,i), c=i===cu, op=c||S.open[S.mis+'.'+i]; return `<div class="step ${dn?'done':''} ${c?'cur':''}"><div class="sh" data-op="${i}"><span class="n">${dn?'✔':i+1}</span><b>${s.t}</b></div>${op?`<div class="sb"><p>${s.h}</p></div>`:''}</div>`; }).join('')}
+      ${cu===-1?`<div class="done-box">✔ Missão concluída! ${S.mis<MIS.length-1?'<button class="btn pri" id="nx" style="margin-left:8px">Próxima missão →</button>':'Configuração completa. Veja a aba Conferência. 🎉'}</div>`:''}
+      <p style="font-size:.8rem;color:var(--muted);margin-top:12px">Senha do Administrador: <b>Senac@2026</b>. Dica: quase tudo nos consoles funciona com o <b>botão direito</b>. Os passos se marcam sozinhos.</p>`;
+    B.querySelectorAll('[data-mi]').forEach(b=>b.onclick=()=>{ S.mis=+b.dataset.mi; renderPanel(); save(); });
+    B.querySelectorAll('[data-op]').forEach(b=>b.onclick=()=>{ const k=S.mis+'.'+b.dataset.op; S.open[k]=!S.open[k]; renderPanel(); });
+    const nx=$('#nx'); if(nx) nx.onclick=()=>{ S.mis++; renderPanel(); save(); }; }
+  else if(S.tab==='arv') B.innerHTML=`<h2 class="mh">Como o servidor deve ficar</h2><p class="intro">Servidor <b>SRV-SALA304</b> · IP <b>192.168.30.10/24</b> · gateway 192.168.30.1 · domínio <b>sala304.local</b> (NetBIOS SALA304).</p>
+   <div class="tree-exp">🌐 sala304.local
+ ├─ 📁 Builtin, Computers, Users...  (padrão)
+ ├─ 🗂️ Domain Controllers
+ │   └─ 🖥️ SRV-SALA304
+ └─ 🗂️ SALA304
+     ├─ 🗂️ Alunos
+     │   ├─ 👤 Ana Souza    (ana.souza)
+     │   ├─ 👤 Bruno Lima   (bruno.lima)
+     │   └─ 👤 Carla Dias   (carla.dias)
+     ├─ 🗂️ Computadores
+     │   ├─ 🖥️ PC-304-01
+     │   ├─ 🖥️ PC-304-02
+     │   └─ 🖥️ PC-304-03
+     ├─ 🗂️ Grupos
+     │   ├─ 👥 GG_Alunos       (Global, Segurança)
+     │   └─ 👥 GG_Professores  (Global, Segurança)
+     └─ 🗂️ Professores
+         └─ 👤 Maicon Kuzer (maicon.kuzer)</div>
+   <h3 style="font-size:1rem;margin:14px 0 6px">DNS</h3><div class="tree-exp">Zona direta  sala304.local
+   impressora      Host (A)        192.168.30.50
+Zona inversa 30.168.192.in-addr.arpa
+   10              Ponteiro (PTR)  srv-sala304.sala304.local
+   50              Ponteiro (PTR)  impressora.sala304.local</div>
+   <h3 style="font-size:1rem;margin:14px 0 6px">DHCP</h3><div class="tree-exp">Escopo [192.168.30.0] Sala 304
+   Intervalo   192.168.30.100 - 192.168.30.200 (/24)
+   Exclusão    192.168.30.100 - 192.168.30.109
+   003 Roteador          192.168.30.1
+   006 Servidores DNS    192.168.30.10
+   015 Nome de Domínio   sala304.local
+   Reserva     PC-PROFESSOR 192.168.30.150  00-15-5D-30-01-50</div>
+   <h3 style="font-size:1rem;margin:14px 0 6px">GPO</h3><div class="tree-exp">GPO_Alunos  → vinculada à OU Alunos
+   Painel de Controle: Proibir acesso ......... Habilitado
+   Sistema: Impedir prompt de comando ......... Habilitado
+   Área de Trabalho: Papel de parede .......... Habilitado
+Default Domain Policy
+   Comprimento mínimo da senha ................ 8</div>`;
+  else { const all=[]; MIS.forEach((M,mi)=>M.steps.forEach((s,si)=>all.push([M.t,s.t,sd(mi,si)]))); const ok=all.filter(x=>x[2]).length; const pct=Math.round(ok*100/all.length);
+    B.innerHTML=`<h2 class="mh">Conferência da configuração</h2><p class="intro">O simulador confere o estado do servidor agora. Se algo foi apagado ou ficou no lugar errado, o item volta a ficar vermelho.</p><div class="score">${pct}%</div><p style="margin:0 0 10px;color:var(--muted)">${ok} de ${all.length} itens corretos</p><ul class="chkl">${all.map(x=>`<li class="${x[2]?'ok':'no'}">${x[2]?'✔':'✖'} ${esc(x[1])} <span style="color:var(--muted)">· ${esc(x[0])}</span></li>`).join('')}</ul>`; } }
+
+let rsT=null; $('#bReset').onclick=()=>{ const b=$('#bReset'); if(!rsT){ b.textContent='⚠ Clique de novo para apagar tudo'; rsT=setTimeout(()=>{ rsT=null; b.textContent='↺ Recomeçar'; },4000); return; } clearTimeout(rsT); rsT=null; b.textContent='↺ Recomeçar'; try{ localStorage.removeItem(LS); }catch(e){} S=novo(); MENU=null; DROP=null; render(); };
+if(S.phase==='reboot') S.phase='lock';
+render();
+})();
+</script>
+</body>
+</html>
