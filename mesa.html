@@ -223,7 +223,7 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--rule);font-fa
 <div class="wrap">
   <nav class="site-nav">
     <a class="site-brand" href="/"><img src="/logo-icon.png" alt="">Deck e Dados</a>
-    <div class="site-links"><span id="conta">Verificando login…</span><a href="/mesa.html">Minhas mesas</a><a href="/">Voltar ao site</a></div>
+    <div class="site-links"><span id="conta">Verificando login…</span><a href="/mesa.html">Minhas mesas</a><a href="/marvel.html">Marvel RPG</a><a href="/">Voltar ao site</a></div>
   </nav>
   <div id="app"><p class="empty">Carregando…</p></div>
   <footer>
@@ -238,7 +238,7 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--rule);font-fa
 (function(){
 const SUPABASE_URL="https://baoquuhwoqftboziight.supabase.co";
 const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhb3F1dWh3b3FmdGJvemlpZ2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0NTE1MjcsImV4cCI6MjEwMzAyNzUyN30.5ut-Gd9OWdy99sX2YnUQPimssfYCbtn0cLjBRERXO-w";
-const SISTEMAS=['D&D 5e','Tormenta20','Ordem Paranormal','Call of Cthulhu','Vampiro: A Máscara','Pathfinder','3D&T','GURPS','Sistema próprio'];
+const SISTEMAS=['D&D 5e','Tormenta20','Ordem Paranormal','Call of Cthulhu','Vampiro: A Máscara','Marvel Multiverse','Pathfinder','3D&T','GURPS','Sistema próprio'];
 const PAGE=120;
 
 const $=s=>document.querySelector(s);
@@ -311,7 +311,7 @@ async function lobby(){
     <form class="card" id="fCriar">
       <h2>🎲 Criar uma mesa</h2>
       <label class="f">Nome da campanha<input name="nome" required maxlength="80" placeholder="Ex.: A Maldição de Strahd"></label>
-      <label class="f">Sistema<input name="sistema" list="sistemas" maxlength="60" placeholder="D&D 5e, Tormenta20…"></label>
+      <label class="f">Sistema<input name="sistema" list="sistemas" maxlength="60" placeholder="D&D 5e, Tormenta20…" value="${esc((params.get('sistema')||'').slice(0,60))}"></label>
       <datalist id="sistemas">${SISTEMAS.map(s=>`<option value="${esc(s)}">`).join('')}</datalist>
       <label class="f">Premissa (o que os jogadores precisam saber)<textarea name="descricao" maxlength="2000" rows="3" placeholder="Cidade, época, tom da história, ritmo esperado de respostas…"></textarea></label>
       <button class="btn">Criar mesa</button><p class="err" id="eCriar"></p>
@@ -330,6 +330,7 @@ async function lobby(){
     <div><b>4. Todos jogam no seu tempo</b>e veem o que é novo assim que voltam.</div>
   </div>`;
   if(!me) return;
+  if(params.get('sistema')&&!conv) setTimeout(()=>{ const f=$('#fCriar'); if(f){ f.scrollIntoView({block:'center'}); f.nome.focus(); } },50);
   $('#fCriar').onsubmit=async e=>{ e.preventDefault(); const f=e.target, b=f.querySelector('button'); b.disabled=true; $('#eCriar').textContent='';
     const {data,error}=await sb.rpc('rpg_criar_mesa',{p_nome:f.nome.value.trim(),p_sistema:f.sistema.value.trim(),p_descricao:f.descricao.value.trim()});
     b.disabled=false; if(error) return $('#eCriar').textContent=errMsg(error); location.href='?m='+data; };
@@ -742,6 +743,44 @@ SYS.tdt={ nome:'3D&T Alpha', match:/3d&t|3dt|3d & t/i, resumo:c=>c.conceito||'',
   {t:'História',help:()=>'Conte a história do personagem.',campos:[{k:'hist',l:'História',area:1}],checks:()=>[]}
  ]};
 
+/* ===== Marvel Multiverse RPG (d616) ===== */
+const MMR_AT=[['MEL','Combate (Melee)'],['AGI','Agilidade'],['RES','Resiliência'],['VIG','Vigilância'],['EGO','Ego'],['LOG','Lógica']];
+const MMR_HER=['Black Panther (Pantera Negra)','Hulk (Bruce Banner / Hero Hulk / Monster Hulk)','Groot','Iron Man (Homem de Ferro)','Loki','Luna Snow','Magik','Magneto','Namor','Rocket Raccoon','Scarlet Witch (Feiticeira Escarlate)','Spider-Man (Homem-Aranha)','Outro herói oficial (outro PDF ou livro)'];
+const mrank=c=>{ const r=n0(c.rank); return r!==null&&r>=1&&r<=6?r:null; };
+const mcriado=c=>/criado/i.test(c.tipo||'');
+const mat=(c,k)=>n0((c.at||{})[k]);
+const mpadrao=(c,fn)=>mcriado(c)?fn(c):null; /* perfis oficiais trazem os números prontos: só conferimos as contas de quem cria o herói */
+SYS.marvel={ nome:'Marvel Multiverse RPG', match:/marvel|multiverse|d616/i,
+ resumo:c=>[c.codinome||c.heroi,mrank(c)?'Rank '+mrank(c):''].filter(Boolean).join(' · '), pv:c=>c.vida,
+ passos:[
+  {t:'Herói e Rank',help:c=>`Você pode jogar com um <b>herói oficial</b> ou <b>criar o seu</b>.<br>• <b>Herói oficial:</b> baixe a ficha gratuita na <a href="/marvel.html" target="_blank" rel="noopener">página Marvel do Deck e Dados</a> (os links levam ao site da Marvel) e copie os números dela para cá, como o próprio livro manda fazer.<br>• <b>Herói criado:</b> siga os passos e a ficha confere as contas.<br>O <b>Rank</b> (1 a 6) mede o nível de poder: 1 é gente comum, 6 é cósmico. <b>Combine o Rank com o mestre</b>: heróis muito acima do grupo desequilibram a campanha.${/Hulk/.test(c.heroi||'')?'<br><b>Hulk:</b> a ficha oficial traz três formas (Bruce Banner, Hero Hulk e Monster Hulk). Anote a forma em que você começa e use o campo de poderes para as outras.':''}`,
+   campos:[{k:'tipo',l:'Tipo de ficha',sel:['Herói oficial (ficha da Marvel)','Herói criado por mim']},{k:'heroi',l:'Herói oficial (se for o caso)',sel:MMR_HER},{k:'codinome',l:'Codinome'},{k:'identidade',l:'Nome verdadeiro'},{k:'rank',l:'Rank',sel:['1','2','3','4','5','6']},{k:'link',l:'Link da ficha oficial (PDF)',ml:300}],
+   checks:c=>[['Tipo de ficha',!!c.tipo],['Rank',!!mrank(c)],...(c.tipo&&!mcriado(c)?[['Herói oficial escolhido',!!c.heroi]]:[['Codinome',!!(c.codinome||'').trim()]])]},
+  {t:'Origem e ocupação',help:()=>'A <b>origem</b> explica de onde vêm os poderes (ex.: Mutante, Alta Tecnologia, Treinamento Especial, Alienígena, Mística). A <b>ocupação</b> é o que o herói faz quando não está de uniforme. As duas dão traços e às vezes tags.<br>Herói oficial: copie origem e ocupação da ficha.',
+   campos:[{k:'origem',l:'Origem'},{k:'ocupacao',l:'Ocupação'}],
+   checks:c=>[['Origem',!!(c.origem||'').trim()],['Ocupação',!!(c.ocupacao||'').trim()]]},
+  {t:'Habilidades (M.A.R.V.E.L.)',help:c=>{ const r=mrank(c); return `As seis habilidades formam a palavra MARVEL: <b>Melee</b> (combate corpo a corpo), <b>Agilidade</b>, <b>Resiliência</b>, <b>Vigilância</b>, <b>Ego</b> e <b>Lógica</b>. Zero é a média de uma pessoa comum; humanos vão de −3 a +3.<br>• <b>Herói criado:</b> você tem <b>5 pontos por Rank</b> para distribuir, e nenhuma habilidade passa de <b>Rank + 3</b>.${r?` No Rank ${r}: <b>${5*r} pontos</b>, máximo <b>${r+3}</b> em cada.`:''}<br>• <b>Herói oficial:</b> copie os valores da coluna de habilidades da ficha.`; },
+   campos:[{attrs:'at',l:'Valores das habilidades',lista:MMR_AT}],
+   checks:c=>{ const v=MMR_AT.map(([k])=>mat(c,k)); const cheio=!v.includes(null), r=mrank(c); const out=[['As 6 habilidades preenchidas',cheio]];
+     if(mcriado(c)){ const s=cheio?v.reduce((a,b)=>a+b,0):null; out.push([`Pontos usados: ${s===null?'—':s}${r?' de '+5*r:''}`,!!r&&s===5*r,'5 pontos por Rank'],[`Nenhuma acima de ${r?r+3:'Rank + 3'}`,!!r&&cheio&&v.every(x=>x<=r+3),'limite: Rank + 3']); }
+     return out; }},
+  {t:'Contas da ficha',help:c=>`${mcriado(c)?'Calcule os valores:':'<b>Herói oficial:</b> copie os números da ficha (poderes e traços já estão somados nela). As contas abaixo são a regra básica, para quem cria o herói:'}<br>• <b>Defesa</b> de cada habilidade = 10 + a habilidade.<br>• <b>Vida</b> = Resiliência × 30 (mínimo 10).<br>• <b>Foco</b> = Vigilância × 30 (mínimo 10).<br>• <b>Iniciativa</b> = Vigilância.<br>• <b>Karma</b> = Rank.<br>• <b>Multiplicador de dano</b> = Rank. Dano = dado Marvel × multiplicador + a habilidade usada no ataque.<br>• <b>Deslocamento:</b> correr começa em 5.`,
+   campos:[...MMR_AT.map(([k,l])=>({k:'def'+k,l:'Defesa de '+l.replace(/ \(Melee\)/,''),calc:c=>mpadrao(c,c=>mat(c,k)===null?null:10+mat(c,k)),dica:`10 + ${k}`})),
+     {k:'vida',l:'Vida',calc:c=>mpadrao(c,c=>mat(c,'RES')===null?null:Math.max(10,mat(c,'RES')*30)),dica:'Resiliência × 30 (mín. 10)'},
+     {k:'foco',l:'Foco',calc:c=>mpadrao(c,c=>mat(c,'VIG')===null?null:Math.max(10,mat(c,'VIG')*30)),dica:'Vigilância × 30 (mín. 10)'},
+     {k:'inic',l:'Iniciativa',calc:c=>mpadrao(c,c=>mat(c,'VIG')),dica:'= Vigilância'},
+     {k:'karma',l:'Karma',calc:c=>mpadrao(c,mrank),dica:'= Rank'},
+     {k:'mult',l:'Multiplicador de dano',calc:c=>mpadrao(c,mrank),dica:'= Rank'},
+     {k:'rdVida',l:'Redução de dano (Vida)',n:1},{k:'rdFoco',l:'Redução de dano (Foco)',n:1},{k:'desloc',l:'Deslocamento',d:'Correr 5'}],
+   checks:c=>mcriado(c)?SYS.marvel.passos[3].campos.filter(f=>f.calc&&f.calc(c)!==null).map(f=>[f.l,eqN(c[f.k],f.calc(c)),f.dica]):[['Vida anotada',n0(c.vida)!==null],['Foco anotado',n0(c.foco)!==null],['Karma anotado',n0(c.karma)!==null]]},
+  {t:'Poderes',help:()=>'Anote os <b>conjuntos de poderes</b> e cada poder com o custo em <b>Foco</b> e o efeito. Herói oficial: copie a lista da ficha. Herói criado: escolha os poderes no livro, respeitando a quantidade do seu Rank e os pré-requisitos.<br><small>Na mesa: role <b>3d6</b>, o dado do meio é o <b>dado Marvel</b>. Se ele cair em 1, vira <b>M</b>, vale 6 e, se a ação der certo, é um sucesso fantástico.</small>',
+   campos:[{k:'conjuntos',l:'Conjuntos de poderes'},{k:'poderes',l:'Poderes (nome, custo em Foco, efeito)',area:1}],
+   checks:c=>[['Poderes anotados',!!(c.poderes||'').trim()]]},
+  {t:'Traços, tags e história',help:()=>'<b>Traços</b> são vantagens (ex.: Destemido, Reflexos de Combate). <b>Tags</b> descrevem o herói e podem trazer complicações (ex.: Identidade Secreta, Famoso). Termine com a história e a personalidade.',
+   campos:[{k:'tracos',l:'Traços',area:1},{k:'tags',l:'Tags',area:1},{k:'hist',l:'História e personalidade',area:1}],
+   checks:c=>[['Traços',!!(c.tracos||'').trim()]]}
+ ]};
+
 /* ===== Livre ===== */
 SYS.livre={ nome:'Ficha livre', match:/$^/, resumo:c=>c.conceito||'', pv:c=>c.pvmax,
  passos:[{t:'Ficha',help:()=>'Esta mesa usa um sistema sem modelo pronto. Preencha do jeito que o mestre pedir.',campos:[{k:'conceito',l:'Conceito'},{k:'nivel',l:'Nível ou experiência'},{k:'pvmax',l:'PV máximos',n:1},{k:'atributos',l:'Atributos',area:1},{k:'pericias',l:'Perícias e habilidades',area:1},{k:'equip',l:'Equipamento',area:1},{k:'hist',l:'História',area:1}],checks:()=>[]}]};
@@ -766,7 +805,7 @@ function ficha(uid,passo){
     if(f.sel){ const op=optsOf(f); return `<label class="f">${esc(f.l)}<select data-k="${f.k}" ${dis}><option value="">—</option>${op.map(s=>`<option ${s===v?'selected':''}>${esc(s)}</option>`).join('')}${v&&!op.includes(v)?`<option selected>${esc(v)}</option>`:''}</select></label>`; }
     if(f.area) return `<label class="f full">${esc(f.l)}<textarea data-k="${f.k}" maxlength="1500" style="min-height:70px" ${dis}>${esc(v)}</textarea></label>`;
     if(f.calc){ const e=f.calc(c), ok=f.txt?String(v).trim()===String(e):eqN(v,e); return `<label class="f">${esc(f.l)}<span class="calcrow"><input data-k="${f.k}" ${f.txt?'':'type="number"'} value="${esc(v)}" ${dis}><b data-cm="${f.k}" class="${v===''||e===null?'':ok?'okm':'warn'}" title="${esc(f.dica)}">${v===''||e===null?'':ok?'✔':'⚠'}</b></span><small class="dica">${esc(f.dica)}</small></label>`; }
-    return `<label class="f">${esc(f.l)}<input data-k="${f.k}" ${f.n?'type="number"':'maxlength="80"'} value="${esc(v)}" ${dis}></label>`;
+    return `<label class="f">${esc(f.l)}<input data-k="${f.k}" ${f.n?'type="number"':`maxlength="${f.ml||80}"`} value="${esc(v)}" ${dis}></label>`;
   }
   const ajuda=new Set(); let todasAjudas=!x.ficha&&pode;
   function desenhar(){
