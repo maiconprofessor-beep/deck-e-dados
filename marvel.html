@@ -81,6 +81,11 @@ section{margin-top:48px}
 .cta{margin-top:48px;border:1px solid var(--red-dim);border-radius:12px;padding:24px;background:linear-gradient(135deg,rgba(217,72,59,.12),rgba(27,58,55,.6));display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
 .cta p{margin:0;color:var(--ink-2);max-width:60ch}
 .ut-demo{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;max-width:560px}.ut-demo span{padding:10px 6px;text-align:center;font-family:var(--ui);font-size:.8rem;border-radius:4px;line-height:1.35}.ut-demo .w{background:#f1ede2;color:#2b2216}.ut-demo .g{background:#3f9b5a;color:#fff}.ut-demo .y{background:#e8c440;color:#2b2216}.ut-demo .r{background:#c8372d;color:#fff}
+.h3c{font-family:var(--display);font-size:1.3rem;margin:34px 0 6px}
+.busca{width:100%;max-width:420px;font:inherit;font-family:var(--ui);font-size:.95rem;color:var(--ink);background:rgba(10,24,23,.6);border:1px solid var(--rule);border-radius:6px;padding:9px 11px;margin-bottom:12px}
+.cmf{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px}
+.cmf a{display:block;padding:8px 12px;border:1px solid var(--rule);border-radius:6px;font-family:var(--ui);font-size:.85rem;text-decoration:none;background:rgba(27,58,55,.5)}
+.cmf a:hover{border-color:var(--gold);color:var(--gold)}
 /* dedicatória */
 .dedic{margin:64px auto 0;max-width:640px;text-align:center;padding:30px 24px;border-top:1px solid var(--gold-dim);border-bottom:1px solid var(--gold-dim)}
 .dedic .star{color:var(--gold);font-size:1.2rem;letter-spacing:.6em;display:block;margin-bottom:12px}
@@ -140,6 +145,12 @@ footer{margin-top:28px;padding-top:18px;border-top:1px solid var(--rule);font-fa
     </div>
     <p class="note" style="margin-top:14px">O jogo está fora de catálogo desde os anos 90 e não tem PDF oficial gratuito. Na Mesa do Deck e Dados você tem a <b>ficha FASERIP</b> (Vida e Karma calculados sozinhos) e a <b>Tabela Universal</b> automática: escolha o atributo, role e a mesa toda vê a cor.</p>
     <a class="btn ghost" href="/mesa.html?sistema=Marvel%20Super%20Heroes%20(FASERIP)">🎲 Criar mesa FASERIP</a>
+
+    <h3 class="h3c">Fichas FASERIP prontas, escritas pelos fãs</h3>
+    <p class="sub">A comunidade <b>Classic Marvel Forever</b> mantém mais de mil fichas no formato do jogo clássico. Abra a ficha do herói no site deles, copie o bloco e cole no <b>📋 Colar e pronto</b> da ficha FASERIP na Mesa: atributos, Vida, Karma, poderes e talentos são preenchidos sozinhos.</p>
+    <input id="cmfBusca" class="busca" placeholder="Buscar herói ou vilão…" aria-label="Buscar personagem">
+    <div class="cmf" id="cmf"></div>
+    <p class="note" style="margin-top:12px">As fichas são dos fãs do Classic Marvel Forever e ficam no site deles. <a href="https://classicmarvelforever.com/cast_list/all.htm" target="_blank" rel="noopener">Ver a lista completa (mais de mil personagens) ↗</a></p>
   </section>
 
   <div class="cta">
@@ -197,6 +208,11 @@ footer{margin-top:28px;padding-top:18px;border-top:1px solid var(--rule);font-fa
   const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   document.getElementById('heroes').innerHTML=HEROES.map(([n,d,c,dest])=>`<article class="hero${dest?' destaque':''}" style="--c:${c}"><span class="ini" aria-hidden="true">${esc(n.charAt(0))}</span><h3>${esc(n)}</h3><p>${esc(d)}</p><a href="${RIVALS}" target="_blank" rel="noopener">Baixar ficha oficial ↗</a></article>`).join('');
   document.getElementById('kits-list').innerHTML=KITS.map(([t,d,f,dt])=>`<article class="kit"><span class="meta">PDF · atualizado em ${esc(dt)}</span><h3>${esc(t)}</h3><p>${esc(d)}</p><a href="${CDN+f}" target="_blank" rel="noopener">Abrir no site da Marvel ↗</a></article>`).join('');
+  const CMF=[['Hulk','hulk'],['Homem-Aranha (Spider-Man)','spiderman'],['Homem de Ferro (Iron Man)','ironman_current'],['Homem de Ferro: Hulkbuster','ironman_hulkbuster'],['Capitão América','captain_america'],['Thor','thor'],['Wolverine','wolverine'],['Viúva Negra (Black Widow)','black_widow2'],['Gavião Arqueiro (Hawkeye)','hawkeye'],['Pantera Negra (Black Panther)','black_panther'],['Feiticeira Escarlate (Scarlet Witch)','scarlet_witch'],['Visão (Vision)','vision'],['Doutor Estranho (Doctor Strange)','doctor_strange'],['Demolidor (Daredevil)','daredevil'],['Justiceiro (Punisher)','punisher'],['Tempestade (Storm)','storm'],['Ciclope (Cyclops)','cyclops'],['Jean Grey / Fênix','phoenix_jean'],['Fênix Negra (Dark Phoenix)','phoenix_dark'],['Vampira (Rogue)','rogue'],['Gambit','gambit'],['Colossus','colossus'],['Noturno (Nightcrawler)','nightcrawler'],['Fera (Beast)','beast'],['Homem de Gelo (Iceman)','iceman'],['Professor X','professor_xavier'],['Senhor Fantástico (Mister Fantastic)','mister_fantastic'],['Mulher Invisível (Invisible Woman)','invisible_woman'],['Tocha Humana (Human Torch)','human_torch2'],['Coisa (Thing)','thing'],['Surfista Prateado (Silver Surfer)','silver_surfer'],['Motoqueiro Fantasma (Johnny Blaze)','ghost_rider_johnny'],['Motoqueiro Fantasma (Daniel Ketch)','ghost_rider_daniel'],['Capitão Marvel (Mar-Vell)','captain_mar-vell'],['Ms. Marvel','ms_marvel2'],['Mulher-Hulk (She-Hulk)','she_hulk'],['Homem-Formiga (Ant-Man)','antman2'],['Vespa (Wasp)','wasp'],['Luke Cage','cage'],['Punho de Ferro (Iron Fist)','iron_fist'],['Namor','namor'],['Deadpool','deadpool'],['Magneto','magneto'],['Doutor Destino (Doctor Doom)','doctor_doom'],['Galactus','galactus'],['Thanos','thanos'],['Loki','loki'],['Venom','venom'],['Duende Verde (Green Goblin)','green_goblin1'],['Caveira Vermelha (Red Skull)','red_skull'],['Abominável (Abomination)','abomination'],['Ultron','ultron1'],['Rei do Crime (Kingpin)','kingpin'],['Doutor Octopus','doctor_octopus']];
+  const lista=document.getElementById('cmf'), busca=document.getElementById('cmfBusca');
+  const norm=t=>t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const desenhaCmf=()=>{ const q=norm(busca.value||''); lista.innerHTML=CMF.filter(h=>!q||norm(h[0]).includes(q)).map(([n,u])=>`<a href="https://classicmarvelforever.com/cast/${u}.htm" target="_blank" rel="noopener">${esc(n)} ↗</a>`).join('')||'<p class="note">Não está nesta lista: procure na lista completa abaixo.</p>'; };
+  busca.oninput=desenhaCmf; desenhaCmf();
 })();
 </script>
 </body>

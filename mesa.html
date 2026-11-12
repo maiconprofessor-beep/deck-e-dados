@@ -833,17 +833,49 @@ SYS.marvel={ nome:'Marvel Multiverse RPG', match:{test:s=>/multiverse|d616/i.tes
 /* ===== Marvel Super Heroes (TSR, 1984) · FASERIP ===== */
 /* [nome, nome no livro, valor, verde a partir de, amarelo a partir de, vermelho a partir de] */
 const FR=[['Shift 0','Shift 0',0,66,95,100],['Fraco','Feeble',2,61,91,100],['Pobre','Poor',4,56,86,100],['Típico','Typical',6,51,81,98],['Bom','Good',10,46,76,98],['Excelente','Excellent',20,41,71,95],['Notável','Remarkable',30,36,66,95],['Incrível','Incredible',40,31,61,91],['Espantoso','Amazing',50,26,56,91],['Monstruoso','Monstrous',75,21,51,86],['Inalcançável','Unearthly',100,16,46,86],['Shift X','Shift X',150,11,41,81],['Shift Y','Shift Y',200,7,41,81],['Shift Z','Shift Z',500,4,36,76],['Classe 1000','Class 1000',1000,2,36,76]];
+const CMF_HER=[['Hulk','hulk'],['Homem-Aranha (Spider-Man)','spiderman'],['Homem de Ferro (Iron Man)','ironman_current'],['Homem de Ferro: Hulkbuster','ironman_hulkbuster'],['Capitão América','captain_america'],['Thor','thor'],['Wolverine','wolverine'],['Viúva Negra (Black Widow)','black_widow2'],['Gavião Arqueiro (Hawkeye)','hawkeye'],['Pantera Negra (Black Panther)','black_panther'],['Feiticeira Escarlate (Scarlet Witch)','scarlet_witch'],['Visão (Vision)','vision'],['Doutor Estranho (Doctor Strange)','doctor_strange'],['Demolidor (Daredevil)','daredevil'],['Justiceiro (Punisher)','punisher'],['Tempestade (Storm)','storm'],['Ciclope (Cyclops)','cyclops'],['Jean Grey / Fênix','phoenix_jean'],['Fênix Negra (Dark Phoenix)','phoenix_dark'],['Vampira (Rogue)','rogue'],['Gambit','gambit'],['Colossus','colossus'],['Noturno (Nightcrawler)','nightcrawler'],['Fera (Beast)','beast'],['Homem de Gelo (Iceman)','iceman'],['Professor X','professor_xavier'],['Senhor Fantástico (Mister Fantastic)','mister_fantastic'],['Mulher Invisível (Invisible Woman)','invisible_woman'],['Tocha Humana (Human Torch)','human_torch2'],['Coisa (Thing)','thing'],['Surfista Prateado (Silver Surfer)','silver_surfer'],['Motoqueiro Fantasma (Johnny Blaze)','ghost_rider_johnny'],['Motoqueiro Fantasma (Daniel Ketch)','ghost_rider_daniel'],['Capitão Marvel (Mar-Vell)','captain_mar-vell'],['Ms. Marvel','ms_marvel2'],['Mulher-Hulk (She-Hulk)','she_hulk'],['Homem-Formiga (Ant-Man)','antman2'],['Vespa (Wasp)','wasp'],['Luke Cage','cage'],['Punho de Ferro (Iron Fist)','iron_fist'],['Namor','namor'],['Deadpool','deadpool'],['Magneto','magneto'],['Doutor Destino (Doctor Doom)','doctor_doom'],['Galactus','galactus'],['Thanos','thanos'],['Loki','loki'],['Venom','venom'],['Duende Verde (Green Goblin)','green_goblin1'],['Caveira Vermelha (Red Skull)','red_skull'],['Abominável (Abomination)','abomination'],['Ultron','ultron1'],['Rei do Crime (Kingpin)','kingpin'],['Doutor Octopus','doctor_octopus']];
+const CMF_URL=u=>`https://classicmarvelforever.com/cast/${u}.htm`;
+/* "colar e pronto": lê o bloco de ficha colado (inglês ou português, abreviado ou por extenso) */
+const FR_ALIAS=[[0,'sh0|shift ?0|s0'],[1,'fe|fb|feeble|fraco'],[2,'pr|poor|pobre'],[3,'ty|typ|typical|t[ií]pico'],[4,'gd|good|bom'],[5,'ex|excellent|excelente'],[6,'rm|remarkable|not[aá]vel'],[7,'in|incredible|incr[ií]vel'],[8,'am|amazing|espantoso'],[9,'mn|mo|monstrous|monstruoso'],[10,'un|unearthly|inalcan[çc][aá]vel'],[11,'shx|shift ?x'],[12,'shy|shift ?y'],[13,'shz|shift ?z'],[14,'cl ?1000|class ?1000|classe ?1000']];
+const FR_TOK='(?:'+FR_ALIAS.map(a=>a[1]).join('|')+')';
+const frDoTok=t=>{ t=String(t||'').toLowerCase().trim(); const a=FR_ALIAS.find(([,re])=>new RegExp('^(?:'+re+')$','i').test(t)); return a?a[0]:-1; };
+const frDoNum=n=>n<=0?0:n<=2?1:n<=4?2:n<=7?3:n<=15?4:n<=25?5:n<=35?6:n<=45?7:n<=62?8:n<=87?9:n<=125?10:n<=175?11:n<=350?12:n<=999?13:14;
+const frRot=(i,n)=>`${FR[i][0]} (${n??FR[i][2]})`;
+function colarFaserip(c,txt){ const T=String(txt||''); if(!T.trim()) return 0; let achou=0;
+  const fim=T.search(/\b(health|vida|karma)\b/i); const zona=fim>0?T.slice(0,fim):T;
+  const NOMES=[['aF','fighting|luta|f'],['aA','agility|agilidade|a'],['aS','strength|for[çc]a|s'],['aE','endurance|vigor|e'],['aR','reason|racioc[ií]nio|r'],['aI','intuition|intui[çc][ãa]o|i'],['aP','psyche|psique|p']];
+  const re=new RegExp('(?:^|[\\s|,;])('+NOMES.map(n=>n[1]).join('|')+')[ \\t]*[:=\\-.]?[ \\t]*('+FR_TOK+')?[ \\t]*\\(?[ \\t]*(\\d{1,4})?[ \\t]*\\)?(?=$|[\\s|,;])','gim');
+  const got={}; let m; while((m=re.exec(zona))){ if(!m[2]&&!m[3]) continue; const k=NOMES.find(n=>new RegExp('^(?:'+n[1]+')$','i').test(m[1])); if(!k||got[k[0]]) continue;
+    let i=m[2]?frDoTok(m[2]):-1; const n=m[3]?+m[3]:null; if(i<0&&n!==null) i=frDoNum(n); if(i<0) continue; got[k[0]]=frRot(i,n); }
+  if(Object.keys(got).length<7){ const toks=[...zona.matchAll(new RegExp('\\b('+FR_TOK+')\\b\\s*(?:\\(\\s*(\\d{1,4})\\s*\\))?','gi'))].map(x=>[frDoTok(x[1]),x[2]?+x[2]:null]).filter(x=>x[0]>=0);
+    if(toks.length>=7) NOMES.forEach(([k],j)=>{ if(!got[k]) got[k]=frRot(toks[j][0],toks[j][1]); }); }
+  Object.assign(c,got); achou+=Object.keys(got).length;
+  const num=(re)=>{ const x=T.match(re); return x?x[1]:null; };
+  const h=num(/\b(?:health|vida)\b\s*[:=\-]?\s*(\d+)/i); if(h){ c.vida=h; achou++; }
+  const k=num(/\bkarma\b\s*[:=\-]?\s*(\d+)/i); if(k){ c.karma=k; achou++; }
+  const rr=T.match(new RegExp('\\b(?:resources|recursos)\\b\\s*[:=\\-]?\\s*('+FR_TOK+')?\\s*\\(?\\s*(\\d{1,4})?','i'));
+  if(rr&&(rr[1]||rr[2])){ let i=rr[1]?frDoTok(rr[1]):-1; if(i<0&&rr[2]) i=frDoNum(+rr[2]); if(i>=0){ c.recursos=frRot(i,rr[2]?+rr[2]:null); achou++; } }
+  const po=num(/\b(?:popularity|popularidade)\b\s*[:=\-]?\s*(-?\d+)/i); if(po!==null){ c.popularidade=po; achou++; }
+  const nm=num(/\b(?:real name|nome verdadeiro|identidade)\b\s*[:=\-]\s*([^\n]+)/i); if(nm){ c.identidade=nm.trim().slice(0,80); achou++; }
+  const SEC={poderes:'(?:known )?powers|poderes',talentos:'talents|talentos',contatos:'contacts|contatos'};
+  const cab=new RegExp('^\\s*(?:'+Object.values(SEC).join('|')+'|background|hist[óo]ria|history|equipment|equipamento|limitations|limita[çc][õo]es)\\s*:?','gim');
+  const heads=[...T.matchAll(cab)].map(x=>({i:x.index,len:x[0].length,t:x[0]}));
+  heads.forEach((hd,j)=>{ const key=Object.keys(SEC).find(k=>new RegExp('^\\s*(?:'+SEC[k]+')\\s*:?$','i').test(hd.t)); if(!key) return; const corpo=T.slice(hd.i+hd.len,j+1<heads.length?heads[j+1].i:undefined).trim(); if(corpo){ c[key]=corpo.slice(0,1500); achou++; } });
+  return achou; }
 const FR_OPT=FR.slice(1).map(r=>`${r[0]} (${r[2]})`);
 const FR_AT=[['aF','Luta (Fighting)'],['aA','Agilidade (Agility)'],['aS','Força (Strength)'],['aE','Vigor (Endurance)'],['aR','Raciocínio (Reason)'],['aI','Intuição (Intuition)'],['aP','Psique (Psyche)']];
 const frIdx=v=>{ const m=String(v||'').match(/^(.+?) \(/); return m?FR.findIndex(r=>r[0]===m[1]):-1; };
-const frVal=v=>{ const i=frIdx(v); return i<0?null:FR[i][2]; };
+const frVal=v=>{ const i=frIdx(v); if(i<0) return null; const m=String(v).match(/\((\d+)\)\s*$/); return m?+m[1]:FR[i][2]; };
 const frCor=(col,d)=>{ const r=FR[col]; if(!r) return null; return d>=r[5]?['vermelho','Vermelho: sucesso excepcional','red']:d>=r[4]?['amarelo','Amarelo: sucesso','yellow']:d>=r[3]?['verde','Verde: sucesso parcial','green']:['branco','Branco: falhou','white']; };
 const frSoma=(c,ks)=>{ const v=ks.map(k=>frVal(c[k])); return v.includes(null)?null:v.reduce((a,b)=>a+b,0); };
 SYS.faserip={ nome:'Marvel Super Heroes (1984 · FASERIP)', match:/super.?her|faserip|1984|tsr/i,
  resumo:c=>[c.codinome,c.origem].filter(Boolean).join(' · '), pv:c=>c.vida,
  passos:[
-  {t:'Herói',help:()=>'O clássico da TSR. Você pode jogar com um <b>herói do livro</b> (copie os níveis da ficha dele) ou <b>criar o seu</b>: descreva o herói e os poderes ao mestre, e combinem os níveis juntos (o livro também traz tabelas de criação aleatória).<br>A <b>origem</b> diz de onde vêm os poderes: Humano Alterado, Mutante, Maravilha Tecnológica, Robô ou Alienígena.',
-   campos:[{k:'codinome',l:'Codinome'},{k:'identidade',l:'Nome verdadeiro'},{k:'origem',l:'Origem',sel:['Humano Alterado','Mutante','Maravilha Tecnológica','Robô','Alienígena','Humano normal']},{k:'tipo',l:'Ficha',sel:['Herói do livro','Herói criado com o mestre']}],
+  {t:'Herói',help:()=>'O clássico da TSR. Você pode jogar com um <b>herói pronto</b> (escolha na lista, abra a ficha e use o <b>Colar e pronto</b>) ou <b>criar o seu</b>: descreva o herói e os poderes ao mestre, e combinem os níveis juntos (o livro também traz tabelas de criação aleatória).<br>A <b>origem</b> diz de onde vêm os poderes: Humano Alterado, Mutante, Maravilha Tecnológica, Robô ou Alienígena.',
+   campos:[{k:'heroiCmf',l:'Herói pronto (fichas dos fãs)',sel:CMF_HER.map(h=>h[0])},{html:(c,pode)=>{ const h=CMF_HER.find(x=>x[0]===c.heroiCmf);
+      return `<div class="mbox${h?' ok':''}">${h?`<b>${esc(h[0])}</b>: abra a ficha no <b>Classic Marvel Forever</b>, selecione o bloco da ficha (dos atributos até os contatos), copie e cole no quadro abaixo.<br><a class="btn small" href="${CMF_URL(h[1])}" target="_blank" rel="noopener">📄 Abrir a ficha de ${esc(h[0].split(' (')[0])}</a> `:'Escolha um herói na lista para abrir a ficha dele, ou '}<a href="https://classicmarvelforever.com/cast_list/all.htm" target="_blank" rel="noopener">veja todos os personagens (mais de mil)</a>.<br><small>Fichas escritas pelos fãs do Classic Marvel Forever; ficam no site deles.</small></div>
+      ${pode?`<label class="f full" style="margin-top:8px">📋 Colar e pronto: cole aqui o texto da ficha<textarea id="fCola" style="min-height:90px" placeholder="F  IN (40)\nA  GD (10)\nS  UN (100)\n…\nHealth: 240   Karma: 14\nPowers: …"></textarea></label><button type="button" class="btn small" data-acao="colarFaserip">✨ Preencher a ficha com o texto colado</button> <span class="muted" id="fColaMsg" style="font-family:var(--ui);font-size:.8rem"></span>`:''}`; }},
+     {k:'codinome',l:'Codinome'},{k:'identidade',l:'Nome verdadeiro'},{k:'origem',l:'Origem',sel:['Humano Alterado','Mutante','Maravilha Tecnológica','Robô','Alienígena','Humano normal']},{k:'tipo',l:'Ficha',sel:['Herói pronto (livro ou fãs)','Herói criado com o mestre']}],
    checks:c=>[['Codinome',!!(c.codinome||'').trim()],['Origem',!!c.origem]]},
   {t:'Atributos (F.A.S.E.R.I.P.)',help:()=>`Os sete atributos usam <b>níveis com nome</b>, do mais fraco ao cósmico: ${FR.slice(1,11).map(r=>`<b>${r[0]}</b> (${r[1]}, ${r[2]})`).join(' · ')}… até Shift X, Y, Z e Classe 1000.<br>• <b>Luta</b>: combate corpo a corpo · <b>Agilidade</b>: esquiva, mira, acrobacia · <b>Força</b>: levantar e bater · <b>Vigor</b>: aguentar dano e veneno<br>• <b>Raciocínio</b>: conhecimento · <b>Intuição</b>: percepção e reflexo · <b>Psique</b>: força de vontade e magia<br>Gente comum é <b>Típico (6)</b>. Herói de rua tem atributos entre Bom e Notável; o Hulk tem Força no nível dos monstros.`,
    campos:FR_AT.map(([k,l])=>({k,l,sel:FR_OPT})),
@@ -915,7 +947,9 @@ function ficha(uid,passo,prIdx,usarIdx){
       B.querySelector('#fAjudaTodas').onclick=()=>{ coletar(); todasAjudas=!todasAjudas; ajuda.clear(); desenhar(); };
       B.querySelectorAll('[data-ajuda]').forEach(b=>b.onclick=()=>{ coletar(); const i=+b.dataset.ajuda; if(todasAjudas){ todasAjudas=false; T.passos.forEach((_,j)=>j!==i&&ajuda.add(j)); } else if(ajuda.has(i)) ajuda.delete(i); else ajuda.add(i); desenhar(); });
     }
-    B.querySelectorAll('select[data-k]').forEach(s=>s.onchange=()=>{ coletar(); desenhar(); });
+    B.querySelectorAll('select[data-k]').forEach(s=>s.onchange=()=>{ coletar(); if(s.dataset.k==='heroiCmf'&&s.value&&!(c.codinome||'').trim()){ c.codinome=s.value.split(' (')[0].split(' / ')[0]; if(!(x._nome??x.personagem??'').trim()) x._nome=c.codinome; } desenhar(); });
+    B.querySelectorAll('[data-acao]').forEach(b=>b.onclick=()=>{ coletar(); const t=(B.querySelector('#fCola')||{}).value||''; const n=colarFaserip(c,t);
+      desenhar(); const msg=ov.querySelector('#fColaMsg'); if(msg) msg.textContent=n?`✔ ${n} campo(s) preenchido(s). Confira os passos abaixo.`:'Não reconheci a ficha. Cole o bloco com os atributos (F, A, S, E, R, I, P).'; });
     B.querySelectorAll('input,textarea').forEach(i=>{ if(i.id==='fNome'||i.id==='fPa') return; i.addEventListener('input',()=>{ coletar(); conferir(); }); });
     B.querySelectorAll('[data-rolar]').forEach(rb=>rb.onclick=()=>rolarNaMesa(T.passos[+rb.dataset.rolar].campos.find(f=>f.rolar).rolar,rb));
     conferir(); if(dlg) dlg.scrollTop=top;
