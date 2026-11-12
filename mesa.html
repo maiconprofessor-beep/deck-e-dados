@@ -197,6 +197,17 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:none}
 .gen{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
 .utbox{border:1px solid var(--gold-dim);border-radius:8px;padding:8px 10px;margin:8px 0;font-family:var(--ui);font-size:.85rem}.utbox .crow{margin-top:6px}.utbox .muted{font-size:.75rem}
 .ut{font-family:var(--ui);font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:4px;white-space:nowrap}.ut-white{background:#f1ede2;color:#2b2216}.ut-green{background:#3f9b5a;color:#fff}.ut-yellow{background:#e8c440;color:#2b2216}.ut-red{background:#c8372d;color:#fff}
+.utview{margin-top:8px;font-family:var(--ui)}
+.utcol{display:flex;align-items:center;gap:8px}.utlab{font-size:.72rem;color:var(--ink-2);min-width:74px}
+.utbar{display:flex;flex:1;gap:2px;max-width:420px}.ut-c{min-width:50px;white-space:nowrap;text-align:center;font-size:.72rem;padding:6px 2px;border-radius:3px;opacity:.55}
+.ut-c.hit{opacity:1;outline:3px solid var(--gold);outline-offset:1px;font-size:.9rem;transform:scale(1.06)}
+.utview details{margin-top:6px}.utview summary{cursor:pointer;font-size:.75rem;color:var(--gold)}
+.uttab{border-collapse:separate;border-spacing:2px;font-size:.7rem;margin-top:6px;width:100%;max-width:520px}
+.uttab th{text-align:left;font-weight:600;color:var(--ink-2);padding:2px 6px;white-space:nowrap}.uttab th small{opacity:.7}
+.uttab td{text-align:center;padding:3px 2px;border-radius:2px;opacity:.5}.uttab tr.on td{opacity:.9}.uttab tr.on th{color:var(--gold)}
+.uttab td.hit{opacity:1;outline:3px solid var(--gold);font-size:.85rem}
+.prontas{display:flex;flex-direction:column;gap:6px}.pr{display:flex;align-items:center;gap:6px}.pr>div{flex:1;min-width:0}.pr b{display:block;font-size:.95rem}.pr small{font-family:var(--ui);font-size:.72rem;color:var(--ink-2)}
+.fpronta{margin:8px 0;padding:8px 10px;border:1px dashed var(--gold);border-radius:8px;font-family:var(--ui);font-size:.85rem}.fpronta select{margin-left:6px}
 .mbox{grid-column:1/-1;border:1px dashed var(--gold-dim);border-radius:8px;padding:10px 14px;font-family:var(--ui);font-size:.88rem;color:var(--ink-2);line-height:1.5}.mbox.ok{border-style:solid;border-color:var(--gold);color:var(--ink)}.mbox .btn{margin-top:8px}
 .calcrow{display:flex;gap:6px;align-items:center}
 .calcrow b{width:22px;text-align:center}.calcrow b.okm{color:var(--ok)}.calcrow b.warn{color:var(--gold)}
@@ -430,7 +441,8 @@ function postHTML(p){
   else if(p.tipo==='rolagem'){ const r=p.rolagem||{}; const ds=(r.dados||[]).map(d=>`<span class="d ${d===r.faces?'max':d===1?'min':''}">${d}</span>`).join('');
     const ut=r.faces===100&&(r.dados||[]).length===1&&!r.mod?String(p.texto||'').match(/^\[Coluna: (.+?)\]/):null; const utc=ut?frCor(FR.findIndex(x=>x[0]===ut[1]),r.total):null;
     const crit=utc?` <span class="ut ut-${utc[2]}">${utc[1]}</span>`:r.faces===20&&(r.dados||[]).length===1?(r.dados[0]===20?' <span class="chip ok">20 natural!</span>':r.dados[0]===1?' <span class="chip red">1 natural</span>':''):'';
-    h=`<div class="p-roll"><span class="tot">${esc(r.total)}</span><div>${w}<div><b>${esc(per)}</b> rolou <code>${esc(r.expr)}</code>${p.texto?` · ${esc(p.texto)}`:''}${crit}</div><div class="by" style="margin:2px 0 0">dados:<span class="dice">${ds}</span>${r.mod?` ${r.mod>0?'+':''}${esc(r.mod)}`:''} · ${t}</div></div></div>`; }
+    const utCol=utc?FR.findIndex(x=>x[0]===ut[1]):-1;
+    h=`<div class="p-roll"><span class="tot">${esc(r.total)}</span><div style="flex:1;min-width:0">${w}<div><b>${esc(per)}</b> rolou <code>${esc(r.expr)}</code>${p.texto?` · ${esc(p.texto)}`:''}${crit}</div><div class="by" style="margin:2px 0 0">dados:<span class="dice">${ds}</span>${r.mod?` ${r.mod>0?'+':''}${esc(r.mod)}`:''} · ${t}</div>${utCol>=0?utTabela(utCol,r.total,p.id):''}</div></div>`; }
   return `<div class="post ${p.para_id?'whisper':''}" data-id="${p.id}">${tools}${h}</div>`;
 }
 function renderFeed(){
@@ -455,6 +467,14 @@ async function carregarAnteriores(){
 const TABS_MESTRE=[['narracao','📜 Narração'],['cena','🎬 Nova cena'],['fala','💬 Fala de NPC'],['rolar','🎲 Rolar dados'],['sussurro','🤫 Sussurro'],['ooc','☕ Fora do jogo']];
 const TABS_JOG=[['acao','🎭 Ação'],['fala','💬 Fala'],['rolar','🎲 Rolar dados'],['sussurro','🤫 Sussurro ao mestre'],['ooc','☕ Fora do jogo']];
 const draftKey=()=>'mesa.rascunho.'+S.mesa.id;
+/* Tabela Universal desenhada: a faixa da coluna rolada com o "quadradinho" marcado, e a tabela completa (abre e fecha) */
+function utFaixas(col){ const r=FR[col]; return [['white',1,r[3]-1],['green',r[3],r[4]-1],['yellow',r[4],r[5]-1],['red',r[5],100]].filter(f=>f[2]>=f[1]); }
+const utTxt=f=>f[1]===f[2]?String(f[1]).padStart(2,'0'):`${String(f[1]).padStart(2,'0')}–${f[2]}`;
+function utTabela(col,d,id){
+  const faixa=utFaixas(col).map(f=>{ const hit=d>=f[1]&&d<=f[2]; return `<span class="ut-c ut-${f[0]}${hit?' hit':''}" style="flex:${f[2]-f[1]+1}">${hit?`<b>${d}</b>`:utTxt(f)}</span>`; }).join('');
+  const linhas=FR.map((r,i)=>`<tr class="${i===col?'on':''}"><th>${esc(r[0])} <small>${r[2]}</small></th>${[['white',1,r[3]-1],['green',r[3],r[4]-1],['yellow',r[4],r[5]-1],['red',r[5],100]].map(f=>{ const vazio=f[2]<f[1], hit=i===col&&d>=f[1]&&d<=f[2]; return `<td class="ut-${f[0]}${hit?' hit':''}">${vazio?'—':hit?`<b>${d}</b>`:utTxt(f)}</td>`; }).join('')}</tr>`).join('');
+  return `<div class="utview"><div class="utcol"><span class="utlab">${esc(FR[col][0])}</span><div class="utbar">${faixa}</div></div>
+    <details><summary>Ver a Tabela Universal completa</summary><table class="uttab"><thead><tr><th>Coluna</th><th>Branco</th><th>Verde</th><th>Amarelo</th><th>Vermelho</th></tr></thead><tbody>${linhas}</tbody></table></details></div>`; }
 function utOpts(){ const o=lerFicha(membro(me.id)||{}), c=o.c||{}; const meus=(o.sys==='faserip'||(!o.sys&&sysDaMesa()==='faserip'))?FR_AT.filter(([k])=>frIdx(c[k])>=0).map(([k,l])=>`<option value="${frIdx(c[k])}|${esc(l.split(' (')[0])}">${esc(l.split(' (')[0])}: ${esc(c[k])}</option>`):[];
   return (meus.length?`<optgroup label="Meus atributos">${meus.join('')}</optgroup>`:'')+`<optgroup label="Nível (poder, outro valor)">${FR.map((r,i)=>`<option value="${i}|" ${!meus.length&&i===3?'selected':''}>${esc(r[0])} (${r[2]})</option>`).join('')}</optgroup>`; }
 async function rolarUt(){ const [i,at]=$('#utCol').value.split('|'); const col=Math.max(0,Math.min(FR.length-1,+i+(+$('#utCs').value))); const cs=+$('#utCs').value;
@@ -549,6 +569,13 @@ function renderSide(){
       return `<div class="pcl">${avatar(x.user_id,x.personagem)}<div><b>${esc(x.personagem||nomeJog(x.user_id))}</b><small>${x.user_id===m.mestre_id?'Mestre':esc(nomeJog(x.user_id))}${x.user_id!==m.mestre_id&&resumoFicha(x)?' · '+esc(resumoFicha(x)):''}${x.user_id!==m.mestre_id&&(mestre||x.user_id===me.id)?(!x.ficha?' · <span style="color:var(--red)">sem ficha</span>':(pendencias(lerFicha(x))?` · <span style="color:var(--gold)">⚠ ${pendencias(lerFicha(x))} a conferir</span>`:' · <span style="color:var(--ok)">✔ ficha conferida</span>')):''}${pv!==null?` · PV ${esc(x.pv_atual??x.pv_max)}/${esc(x.pv_max)}`:''}</small>${pv!==null?`<div class="hp"><i class="${pv<=25?'low':''}" style="width:${pv}%"></i></div>`:''}</div>
         ${x.user_id!==m.mestre_id||x.user_id===me.id?`<button class="btn ghost small" data-ficha="${esc(x.user_id)}">${x.user_id===me.id||mestre?'Ficha ✎':'Ficha'}</button>`:''}</div>`; }).join('')}</div>
   </section>
+  ${(souMestre()||(m.prontas||[]).length)?`<section>
+    <h3>📚 Fichas prontas ${souMestre()?'<button class="btn ghost small" id="bProntaNova">+ Nova</button>':''}</h3>
+    ${(m.prontas||[]).length?`<div class="prontas">${m.prontas.map((p,i)=>{ const dono=S.membros.find(x=>x.user_id!==m.mestre_id&&(x.personagem||'').trim().toLowerCase()===(p.nome||'').trim().toLowerCase());
+      return `<div class="pr"><div><b>${esc(p.nome)}</b><small>${esc((SYS[p.sys]||{}).nome||'')}${dono?' · em uso por '+esc(nomeJog(dono.user_id)):''}</small></div>${souMestre()?`<button class="btn ghost small" data-pr-ed="${i}" title="Editar">✎</button><button class="btn ghost small" data-pr-del="${i}" title="Apagar">🗑</button>`:(!dono&&membro(me.id)?`<button class="btn small" data-pr-usar="${i}">Usar</button>`:'')}</div>`; }).join('')}</div>`
+      :'<p class="muted" style="font-size:.9rem;margin:0">Cadastre os personagens prontos (ex.: os heróis do livro). Os jogadores só escolhem um e a ficha vem preenchida.</p>'}
+    ${m.prontas===undefined&&souMestre()?'<p class="err" style="font-size:.78rem">Para salvar fichas prontas, rode o arquivo <code>sql/mesa_prontas.sql</code> no Supabase.</p>':''}
+  </section>`:''}
   ${mestre?`<section>
     <h3>🔑 Convite</h3>
     <div class="code">${esc(m.codigo)}</div>
@@ -564,6 +591,10 @@ function renderSide(){
     </div>
   </section>`:`<section><h3>🚪 Mesa</h3><button class="btn ghost small" id="bSair">Sair desta mesa</button></section>`}`;
   s.querySelectorAll('[data-ficha]').forEach(b=>b.onclick=()=>ficha(b.dataset.ficha));
+  if($('#bProntaNova')) $('#bProntaNova').onclick=()=>ficha(null,0,-1);
+  s.querySelectorAll('[data-pr-ed]').forEach(b=>b.onclick=()=>ficha(null,0,+b.dataset.prEd));
+  s.querySelectorAll('[data-pr-usar]').forEach(b=>b.onclick=()=>ficha(me.id,0,null,+b.dataset.prUsar));
+  s.querySelectorAll('[data-pr-del]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.prDel, p=m.prontas[i]; confirmar(`Apagar a ficha pronta <b>${esc(p.nome)}</b>? Quem já usou continua com a própria ficha.`,async()=>{ await salvarProntas(m.prontas.filter((_,j)=>j!==i)); },'Apagar'); });
   $('#bZap').onclick=()=>{ const ult=[...S.posts].reverse().find(p=>['narracao','cena'].includes(p.tipo)&&!p.para_id);
     const quem=jog.filter(j=>ag.includes(j.user_id)).map(j=>j.personagem||nomeJog(j.user_id));
     const txt=`🎲 *${m.nome}*\n${ult?String(ult.texto).slice(0,180)+(String(ult.texto).length>180?'…':''):'Tem novidade na mesa!'}\n${quem.length?`\n⏳ Esperando: ${quem.join(', ')}\n`:''}\nResponda aqui: ${location.origin}${location.pathname}?m=${m.id}`;
@@ -834,14 +865,23 @@ const sysDaMesa=()=>{ const s=(S.mesa&&S.mesa.sistema)||''; for(const [k,f] of O
 function lerFicha(x){ const t=(x&&x.ficha)||''; if(t.startsWith('{"_ficha"')){ try{ const o=JSON.parse(t); o.c=o.c||{}; return o; }catch(e){} } return {_ficha:2, sys:null, c:t?{hist:t}:{}}; }
 function pendencias(o){ const T=SYS[o.sys||sysDaMesa()]; if(!T) return 0; let n=0; T.passos.forEach(p=>{ try{ p.checks(o.c).forEach(ch=>{ if(!ch[1]) n++; }); }catch(e){} }); return n; }
 function resumoFicha(x){ if(!x.ficha) return ''; const o=lerFicha(x), T=SYS[o.sys||sysDaMesa()]; try{ return T&&T.resumo?T.resumo(o.c):''; }catch(e){ return ''; } }
-function ficha(uid,passo){
-  const x=membro(uid); if(!x) return; const pode=uid===me.id||souMestre()||S.obs; const dis=pode?'':'disabled';
+async function salvarProntas(lista){ const t=JSON.stringify(lista); if(t.length>150000) throw new Error('São fichas demais para uma mesa. Apague algumas.');
+  const {error}=await sb.from('rpg_mesas').update({prontas:lista}).eq('id',S.mesa.id);
+  if(error) throw new Error(/prontas/.test(errMsg(error))?'Falta rodar o arquivo sql/mesa_prontas.sql no Supabase.':errMsg(error));
+  S.mesa.prontas=lista; renderSide(); }
+/* ficha(uid) = ficha do jogador · ficha(null,0,i) = mestre edita a ficha pronta i (-1 = nova) · ficha(uid,0,null,i) = jogador começa pela ficha pronta i */
+function ficha(uid,passo,prIdx,usarIdx){
+  const modoPronta=uid===null; const prontas=S.mesa.prontas||[];
+  const x=modoPronta?(prIdx>=0?{personagem:prontas[prIdx].nome,ficha:JSON.stringify({_ficha:2,sys:prontas[prIdx].sys,c:prontas[prIdx].c})}:{personagem:'',ficha:''}):membro(uid); if(!x) return;
+  const pode=modoPronta?souMestre():(uid===me.id||souMestre()||S.obs); const dis=pode?'':'disabled';
   const o=lerFicha(x); let sys=(o.sys&&SYS[o.sys])?o.sys:sysDaMesa(); let c=o.c;
-  const ov=dialog(`<h2 style="margin-bottom:6px">${esc(x.personagem||nomeJog(uid))}</h2><div id="fBody"></div>`, pode?salvar:null, 'Salvar ficha');
+  const usar=i=>{ const p=prontas[i]; if(!p) return; sys=SYS[p.sys]?p.sys:sys; c=JSON.parse(JSON.stringify(p.c||{})); x._nome=p.nome; };
+  if(!modoPronta&&usarIdx!==undefined) usar(usarIdx);
+  const ov=dialog(`<h2 style="margin-bottom:6px">${modoPronta?(prIdx>=0?'📚 Editar ficha pronta':'📚 Nova ficha pronta'):esc(x.personagem||nomeJog(uid))}</h2>${modoPronta?'<p class="muted" style="font-family:var(--ui);font-size:.85rem;margin-top:0">Preencha como uma ficha normal. Ela fica na lista da mesa e qualquer jogador pode escolher.</p>':''}<div id="fBody"></div>`, pode?salvar:null, modoPronta?'Salvar ficha pronta':'Salvar ficha');
   ov.querySelector('.dlg').style.width='min(820px,100%)';
   const optsOf=f=>typeof f.sel==='function'?f.sel(c):f.sel;
   function campo(f){
-    if(f.rolar){ if(!pode||(f.rolar.quando&&!f.rolar.quando(c))) return ''; return `<div class="gen"><button type="button" class="btn ghost small" data-rolar="${SYS[sys].passos.findIndex(p=>p.campos.includes(f))}">🎲 Rolar na mesa (todos veem os dados)</button><span class="muted" id="genMsg" style="font-family:var(--ui);font-size:.8rem"></span></div>`; }
+    if(f.rolar){ if(!pode||modoPronta||(f.rolar.quando&&!f.rolar.quando(c))) return ''; return `<div class="gen"><button type="button" class="btn ghost small" data-rolar="${SYS[sys].passos.findIndex(p=>p.campos.includes(f))}">🎲 Rolar na mesa (todos veem os dados)</button><span class="muted" id="genMsg" style="font-family:var(--ui);font-size:.8rem"></span></div>`; }
     if(f.html) return `<div class="full">${f.html(c,pode)}</div>`;
     if(f.attrs) return `<div class="fsub">${esc(f.l)}</div><div class="attrs">${f.lista.map(([k,l])=>`<label class="attr"><span>${esc(l)}</span><input data-g="${f.attrs}" data-gk="${esc(k)}" type="number" value="${esc((c[f.attrs]||{})[k]??'')}" ${dis}></label>`).join('')}</div>`;
     if(f.dots){ const g=c[f.dots]||{}; const row=([k,l])=>`<label class="dotrow"><span>${esc(l)}</span><input data-g="${f.dots}" data-gk="${esc(k)}" type="number" min="${f.min??1}" max="${f.max}" value="${esc(g[k]??'')}" ${dis}><em data-dot>${'●'.repeat(Math.max(0,Math.min(f.max,n0(g[k])||0)))}${'○'.repeat(Math.max(0,f.max-Math.min(f.max,n0(g[k])||0)))}</em></label>`;
@@ -859,7 +899,8 @@ function ficha(uid,passo){
     ov.querySelector('#fBody').innerHTML=`
       <div class="fhead">${pode?`<select id="fSys" aria-label="Modelo de ficha">${Object.entries(SYS).map(([k,f])=>`<option value="${k}" ${k===sys?'selected':''}>${esc(f.nome)}${k===sysDaMesa()?' (sistema da mesa)':''}</option>`).join('')}</select>`:`<span class="muted" style="font-family:var(--ui);font-size:.85rem">${esc(T.nome)} · jogador: ${esc(nomeJog(uid))}</span>`}
         <label class="f" style="margin:0;flex:1;min-width:180px"><span class="sr">Nome</span><input id="fNome" maxlength="60" value="${esc(x._nome??x.personagem)}" placeholder="Nome do personagem" ${dis}></label>
-        <label class="f" style="margin:0;width:110px">PV atuais<input id="fPa" type="number" value="${esc(x._pa??x.pv_atual??'')}" ${dis}></label></div>
+        ${modoPronta?'':`<label class="f" style="margin:0;width:110px">PV atuais<input id="fPa" type="number" value="${esc(x._pa??x.pv_atual??'')}" ${dis}></label>`}</div>
+      ${!modoPronta&&pode&&prontas.length?`<div class="fpronta"><label>📚 Começar por uma ficha pronta <select id="fPronta"><option value="">— escolher —</option>${prontas.map((p,i)=>`<option value="${i}">${esc(p.nome)}</option>`).join('')}</select></label></div>`:''}
       <div class="ftop"><ol class="fsteps" id="fSteps"></ol>
         ${pode?`<button type="button" class="btn ghost small" id="fAjudaTodas">${todasAjudas?'🙈 Esconder ajudas':'💡 Mostrar todas as ajudas'}</button>`:''}<span class="muted" id="fProg" style="font-family:var(--ui);font-size:.8rem"></span></div>
       ${T.passos.map((P,i)=>`<section class="fsec" id="fSec${i}">
@@ -870,6 +911,7 @@ function ficha(uid,passo){
     const B=ov.querySelector('#fBody');
     if(pode){
       B.querySelector('#fSys').onchange=e=>{ coletar(); if(Object.keys(c).length>1&&!confirm('Trocar o modelo apaga o que foi preenchido nesta ficha. Continuar?')){ e.target.value=sys; return; } sys=e.target.value; c={}; desenhar(); };
+      if(B.querySelector('#fPronta')) B.querySelector('#fPronta').onchange=e=>{ const i=e.target.value; if(i==='') return; coletar(); if(Object.keys(c).length>1&&!confirm('A ficha pronta vai substituir o que você já preencheu. Continuar?')){ e.target.value=''; return; } usar(+i); desenhar(); };
       B.querySelector('#fAjudaTodas').onclick=()=>{ coletar(); todasAjudas=!todasAjudas; ajuda.clear(); desenhar(); };
       B.querySelectorAll('[data-ajuda]').forEach(b=>b.onclick=()=>{ coletar(); const i=+b.dataset.ajuda; if(todasAjudas){ todasAjudas=false; T.passos.forEach((_,j)=>j!==i&&ajuda.add(j)); } else if(ajuda.has(i)) ajuda.delete(i); else ajuda.add(i); desenhar(); });
     }
@@ -906,6 +948,8 @@ function ficha(uid,passo){
     }catch(e){ msg.textContent=errMsg(e); btn.disabled=false; } }
   async function salvar(ovl){ coletar(); const T=SYS[sys]; const n=v=>v===''||v===undefined||v===null||isNaN(+v)?null:Math.trunc(+v);
     const nome=(x._nome??x.personagem??'').trim(); if(!nome) throw new Error('Dê um nome ao personagem (no topo da ficha).');
+    if(modoPronta){ const p={nome,sys,c}; if(JSON.stringify(p).length>6000) throw new Error('A ficha ficou grande demais. Encurte os textos.');
+      const lista=[...prontas]; if(prIdx>=0) lista[prIdx]=p; else lista.push(p); await salvarProntas(lista); toast('Ficha pronta salva! ✔'); return; }
     const pvm=n(T.pv(c)); const pa=x._pa!==undefined?n(x._pa):x.pv_atual;
     const v={personagem:nome,ficha:JSON.stringify({_ficha:2,sys,c}),pv_max:pvm,pv_atual:pa===null&&pvm!==null?pvm:pa};
     if(v.ficha.length>6000) throw new Error('A ficha ficou grande demais. Encurte os textos.');
