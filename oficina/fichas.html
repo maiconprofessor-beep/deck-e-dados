@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editor de Fichas · Oficina Deck e Dados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--ui:#1f2a37;--acc:#2f7d4f}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:14px "Segoe UI",system-ui,Arial,sans-serif;color:#1f1f1f;background:#e9ecef;min-height:100vh}
+header{background:linear-gradient(135deg,#1d3b2a,#2f7d4f);color:#fff;padding:14px 22px}
+header h1{margin:0;font-size:20px}header small{opacity:.85}
+.wrap{display:flex;gap:26px;padding:20px 22px;max-width:1150px;margin:0 auto;align-items:flex-start;flex-wrap:wrap}
+.panel{flex:1;min-width:320px;background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:16px 18px}
+.panel h3{margin:14px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:#2f7d4f}
+.panel h3:first-child{margin-top:0}
+.f{display:flex;flex-direction:column;gap:3px;margin-bottom:9px}
+.f label{font-size:12px;color:#555;font-weight:600}
+.f input[type=text],.f textarea,.f select{font:inherit;border:1px solid #c8c8c8;border-radius:5px;padding:6px 8px;width:100%}
+.f textarea{min-height:58px;resize:vertical}
+.row{display:flex;gap:10px}.row .f{flex:1}
+.colors{display:flex;gap:6px;flex-wrap:wrap}
+.colors button{width:34px;height:34px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #bbb;cursor:pointer}
+.colors button.on{box-shadow:0 0 0 3px #2f7d4f}
+.btn{height:36px;padding:0 14px;border-radius:6px;border:1px solid #8a8886;background:#fff;cursor:pointer;font:inherit;font-weight:600}
+.btn:hover{background:#f3f3f3}.btn.pri{background:#2f7d4f;border-color:#2f7d4f;color:#fff}.btn.pri:hover{background:#276a43}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.sl{display:flex;align-items:center;gap:8px;font-size:12px;color:#555}.sl input{flex:1}
+.hint{font-size:12px;color:#666;line-height:1.45;background:#f6f8f6;border-left:3px solid #2f7d4f;padding:7px 10px;margin:8px 0}
+.stage{display:flex;flex-direction:column;align-items:center;gap:12px}
+.scaler{width:calc(63mm*1.55);height:calc(88mm*1.55)}
+.scaler .card{transform:scale(1.55);transform-origin:0 0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#323130;color:#fff;padding:10px 18px;border-radius:4px;opacity:0;transition:.25s;pointer-events:none;z-index:50}
+.toast.on{opacity:1;transform:translateX(-50%)}
+footer{text-align:center;color:#888;font-size:11.5px;padding:4px 0 20px}
+
+/* ================= CARTA (medidas reais) ================= */
+.card{width:63mm;height:88mm;border-radius:3.2mm;background:#151515;padding:2.6mm;position:relative;font-family:"Crimson Text",Georgia,"Times New Roman",serif;color:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.frame{height:100%;border-radius:1.6mm;padding:1.5mm 1.7mm 1.2mm;display:flex;flex-direction:column;gap:1mm;background:var(--fr);box-shadow:inset 0 0 0 .25mm rgba(0,0,0,.45),inset 0 0 3mm rgba(0,0,0,.25);position:relative}
+.bar{background:var(--bar);border-radius:1.4mm/2.4mm;box-shadow:0 .3mm .6mm rgba(0,0,0,.45),inset 0 0 0 .25mm rgba(0,0,0,.5);display:flex;align-items:center;padding:0 2mm;min-height:5.6mm}
+.name{font-family:Cinzel,Georgia,serif;font-weight:700;font-size:3.6mm;letter-spacing:.1mm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.tokenTag{font-family:Cinzel,Georgia,serif;font-size:2.1mm;font-weight:700;opacity:.65;letter-spacing:.2mm}
+.art{height:41mm;border-radius:.6mm;overflow:hidden;position:relative;background:#222;box-shadow:0 0 0 .35mm rgba(0,0,0,.65),0 0 0 .7mm rgba(255,255,255,.25);cursor:grab}
+.art.drag{cursor:grabbing}
+.art img,.art svg{position:absolute;left:50%;top:50%;width:100%;height:100%;object-fit:cover;transform-origin:center;user-select:none;-webkit-user-drag:none}
+.type{font-family:Cinzel,Georgia,serif;font-weight:600;font-size:2.75mm}
+.sym{width:3.6mm;height:3.6mm;flex-shrink:0;margin-left:1mm}
+.text{flex:1;background:var(--box);border-radius:.6mm;box-shadow:inset 0 0 0 .25mm rgba(0,0,0,.45),inset 0 0 2mm rgba(120,90,40,.25);padding:2mm 2.4mm 4.2mm;font-size:3.05mm;line-height:1.22;display:flex;flex-direction:column;justify-content:center;gap:1.3mm;overflow:hidden}
+.text .ab{white-space:pre-wrap}
+.text .fl{font-style:italic;white-space:pre-wrap}
+.text .rule{height:.25mm;background:rgba(0,0,0,.25);margin:0 4mm}
+.pt{position:absolute;right:1.2mm;bottom:2.3mm;background:var(--bar);border-radius:1.2mm;box-shadow:0 .3mm .7mm rgba(0,0,0,.55),inset 0 0 0 .3mm rgba(0,0,0,.6);font-family:Cinzel,Georgia,serif;font-weight:700;font-size:3.9mm;padding:.4mm 2.2mm;min-width:11mm;text-align:center}
+.foot{display:flex;justify-content:space-between;align-items:flex-end;font-family:"Segoe UI",Arial,sans-serif;font-size:1.65mm;color:#eee;padding:0 .4mm;line-height:1.2;min-height:3mm}
+.foot b{font-weight:600}
+
+/* cores de moldura */
+.c-g{--fr:linear-gradient(160deg,#3f7a4a,#24502f 60%,#1a3d24);--bar:linear-gradient(#eef3e4,#cfdcbf);--box:linear-gradient(#f3efd9,#e4dcbd)}
+.c-gw{--fr:linear-gradient(100deg,#24502f 0%,#3f7a4a 44%,#d9d1b6 56%,#ebe5d1 100%);--bar:linear-gradient(90deg,#dfeacf,#eef3e4 45%,#f7f3e6 55%,#fbf8ef);--box:linear-gradient(90deg,#ecefdc,#f5f2e2 50%,#fbf9f1)}
+.c-gw .foot{color:#fff;text-shadow:0 0 .6mm #000}
+.c-w{--fr:linear-gradient(160deg,#e9e3cf,#cfc6aa 60%,#b8ae8d);--bar:linear-gradient(#fbf8ef,#e7e0cb);--box:linear-gradient(#fbf9f1,#ece6d3)}
+.c-u{--fr:linear-gradient(160deg,#3d74a8,#24507c 60%,#173a5d);--bar:linear-gradient(#e7f0f7,#c4d6e6);--box:linear-gradient(#eef3f7,#d7e2ec)}
+.c-b{--fr:linear-gradient(160deg,#4a4646,#2b2828 60%,#1b1919);--bar:linear-gradient(#e3dfdc,#bdb6b0);--box:linear-gradient(#e9e5e2,#d1cbc6)}
+.c-r{--fr:linear-gradient(160deg,#b4543a,#8a3424 60%,#652316);--bar:linear-gradient(#f6e6dc,#e2c3b0);--box:linear-gradient(#f7ece4,#e8d4c6)}
+.c-m{--fr:linear-gradient(160deg,#c9a447,#a07f2c 60%,#7a5e1b);--bar:linear-gradient(#f8f0d8,#e6d3a2);--box:linear-gradient(#faf3df,#ecdcb3)}
+.c-a{--fr:linear-gradient(160deg,#9aa3ab,#7a838b 60%,#5f676e);--bar:linear-gradient(#f0f2f4,#cfd4d8);--box:linear-gradient(#f3f4f5,#dde0e3)}
+.c-w .foot,.c-a .foot,.c-m .foot{color:#222}
+
+/* ===== FULL ART ===== */
+.frame.full{padding:.75mm;display:block;gap:0}
+.fa{position:relative;height:100%;border-radius:1.1mm;overflow:hidden;background:#222}
+.fa .art{position:absolute;inset:0;height:auto;border-radius:0;box-shadow:none}
+.fa .top{position:absolute;left:1.3mm;right:1.3mm;top:1.3mm;opacity:.93}
+.fa .bottom{position:absolute;left:1.3mm;right:1.3mm;bottom:4.4mm;display:flex;flex-direction:column;gap:.9mm}
+.fa .bottom .bar{opacity:.93}
+.fa .text{flex:none;max-height:25mm;background:rgba(250,246,234,.74);backdrop-filter:blur(.8mm);-webkit-backdrop-filter:blur(.8mm);box-shadow:inset 0 0 0 .25mm rgba(0,0,0,.35);padding:1.6mm 2.2mm 1.8mm;justify-content:flex-start}
+.fa .text:empty{display:none}
+.fa .foot{position:absolute;left:1.4mm;bottom:.7mm;color:#fff;text-shadow:0 0 .6mm #000,0 0 1.2mm #000}
+.fa .pt{right:1.1mm;bottom:1.6mm}
+.fa .shade{position:absolute;left:0;right:0;bottom:0;height:22mm;background:linear-gradient(transparent,rgba(0,0,0,.45));pointer-events:none}
+.style-sw{display:flex;gap:6px}.style-sw button{flex:1}.style-sw button.on{background:#2f7d4f;border-color:#2f7d4f;color:#fff}
+#print{display:none}
+@media print{
+  @page{size:A4;margin:8mm}
+  body{background:#fff}
+  header,.wrap,footer,.toast{display:none!important}
+  #print{display:grid;grid-template-columns:repeat(3,63mm);gap:2mm;justify-content:center}
+  #print .card{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<a href="./" style="position:fixed;bottom:14px;left:14px;z-index:9999;background:#1b1f28;color:#e8eaf0;border:1px solid #323949;border-radius:8px;padding:6px 12px;font:600 13px system-ui,sans-serif;text-decoration:none" class="volta-oficina">← Oficina</a><style>@media print{.volta-oficina{display:none!important}}</style>
+<header><h1>🐇 Editor de Fichas</h1><small>Monte fichas (tokens) para seu jogo de cartas — tamanho real 63 × 88 mm, pronto para imprimir</small></header>
+<div class="wrap">
+  <div class="stage">
+    <div class="scaler"><div class="card c-g" id="card"></div></div>
+    <div class="btns"><button class="btn pri" id="bPrint1">🖨 Imprimir 1 carta</button><button class="btn" id="bPrint9">🖨 Folha A4 (9 cartas)</button></div>
+    <div style="font-size:12px;color:#666;max-width:330px;text-align:center">Arraste a ilustração para reposicionar. Na impressão, escolha "Tamanho real / 100%" e ative "Gráficos de fundo".</div>
+  </div>
+  <div class="panel">
+    <h3>Estilo</h3>
+    <div class="style-sw"><button class="btn" data-st="full">🖼 Full Art</button><button class="btn" data-st="classic">🃏 Clássico</button></div>
+    <h3>Ilustração</h3>
+    <div class="btns"><button class="btn pri" id="bImg">🖼 Inserir imagem</button><button class="btn" id="bDef">🐇 Usar o coelho padrão</button><input type="file" id="file" accept="image/*" hidden></div>
+    <div class="sl" style="margin-top:10px">Zoom <input type="range" id="zoom" min="50" max="300" value="100"><span id="zv">100%</span></div>
+    <div class="hint">Use imagens que você tenha direito de usar: fotos e desenhos seus ou dos alunos, ou imagens com licença livre. Para uso em aula, peça para cada aluno desenhar ou fotografar o próprio "bicho" da ficha!</div>
+    <h3>Texto da carta</h3>
+    <div class="row"><div class="f"><label>Nome</label><input type="text" id="nm" maxlength="32"></div><div class="f" style="max-width:90px"><label>Poder/Res.</label><input type="text" id="pt" maxlength="7"></div></div>
+    <div class="f"><label>Linha de tipo</label><input type="text" id="ty" maxlength="48"></div>
+    <div class="f"><label>Habilidade (opcional)</label><textarea id="ab" maxlength="220"></textarea></div>
+    <div class="f"><label>Frase de efeito (itálico)</label><textarea id="fl" maxlength="160"></textarea></div>
+    <div class="row"><div class="f"><label>Ilustração por</label><input type="text" id="ar" maxlength="40"></div><div class="f"><label>Rodapé</label><input type="text" id="ft" maxlength="40"></div></div>
+    <h3>Cor da moldura</h3>
+    <div class="colors" id="colors"></div>
+    <h3 style="margin-top:16px">Pronto</h3>
+    <div class="btns"><button class="btn" id="bReset">↺ Voltar ao padrão</button></div>
+  </div>
+</div>
+<footer>Criado por Prof. Maicon Kuzer · Senac — moldura original, inspirada em jogos de cartas colecionáveis</footer>
+<div id="print"></div>
+<div class="toast" id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),2600);}
+/* ---------- coelho original (SVG) ---------- */
+const RABBIT_SRC=`<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7d9a0"/><stop offset=".55" stop-color="#f3e7c4"/><stop offset="1" stop-color="#dfe9c4"/></linearGradient>
+<linearGradient id="fur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b98455"/><stop offset="1" stop-color="#8e5f37"/></linearGradient>
+<radialGradient id="sun" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff6d8"/><stop offset="1" stop-color="#fff6d8" stop-opacity="0"/></radialGradient></defs>
+<rect width="300" height="200" fill="url(#sky)"/>
+<circle cx="236" cy="52" r="46" fill="url(#sun)"/><circle cx="236" cy="52" r="15" fill="#fff1c4"/>
+<path d="M0 118 Q40 92 85 108 T170 100 T300 96 V200 H0Z" fill="#a9c27e"/>
+<path d="M0 138 Q60 116 120 130 T240 124 T300 128 V200 H0Z" fill="#88aa5e"/>
+<path d="M0 160 Q70 146 150 156 T300 150 V200 H0Z" fill="#6f9548"/>
+<g fill="#5d843b">${[...Array(16)].map((_,i)=>{const x=10+i*19,y=176+(i%3)*6;return`<path d="M${x} ${y} l3 -12 l2 12 l4 -9 l1 9z"/>`;}).join('')}</g>
+<g>${[[40,168,'#f4f1e6'],[62,180,'#f2c4d0'],[250,172,'#f4f1e6'],[272,184,'#f6df7a'],[226,186,'#f2c4d0']].map(([x,y,c])=>`<g transform="translate(${x} ${y})"><circle r="2.2" cx="-2.4" fill="${c}"/><circle r="2.2" cx="2.4" fill="${c}"/><circle r="2.2" cy="-2.4" fill="${c}"/><circle r="2.2" cy="2.4" fill="${c}"/><circle r="1.6" fill="#e8b23a"/></g>`).join('')}</g>
+<ellipse cx="150" cy="186" rx="52" ry="8" fill="#4f7531" opacity=".45"/>
+<!-- rabo -->
+<circle cx="194" cy="166" r="12" fill="#f3e6d2"/><circle cx="197" cy="162" r="7" fill="#fff"/>
+<!-- corpo -->
+<path d="M110 182 Q100 130 138 116 Q178 104 196 138 Q208 166 192 184 Z" fill="url(#fur)"/>
+<path d="M126 182 Q122 146 146 136 Q166 132 170 158 Q172 176 164 184 Z" fill="#ead2ad"/>
+<!-- patas -->
+<ellipse cx="132" cy="184" rx="15" ry="6.5" fill="#a87447"/><ellipse cx="168" cy="184" rx="15" ry="6.5" fill="#a87447"/>
+<path d="M120 182 h24 M156 182 h24" stroke="#7b5230" stroke-width="1" opacity=".5"/>
+<ellipse cx="141" cy="164" rx="6" ry="9" fill="#c99566"/><ellipse cx="160" cy="164" rx="6" ry="9" fill="#c99566"/>
+<!-- orelha de pé -->
+<path d="M157 82 Q150 40 162 14 Q170 2 176 14 Q184 42 170 84 Z" fill="url(#fur)"/>
+<path d="M161 76 Q157 42 165 22 Q169 15 172 22 Q177 44 167 77 Z" fill="#e9a9a1"/>
+<!-- orelha caída -->
+<path d="M126 84 Q112 58 88 52 Q74 50 76 60 Q82 74 118 92 Z" fill="#a8774a"/>
+<path d="M120 84 Q108 64 90 58 Q82 57 84 62 Q90 72 116 88 Z" fill="#e3a59c"/>
+<!-- cabeça -->
+<ellipse cx="146" cy="104" rx="34" ry="29" fill="url(#fur)"/>
+<ellipse cx="146" cy="118" rx="22" ry="14" fill="#ecd7b5"/>
+<!-- olhos meio fechados (cara de "tô nem aí") -->
+<g><ellipse cx="132" cy="100" rx="6.5" ry="7" fill="#fff"/><circle cx="133.5" cy="102.5" r="3.6" fill="#2a1a10"/><circle cx="134.6" cy="101.6" r="1" fill="#fff"/>
+<path d="M124.5 100.6 Q132 92 139.5 100.6 L139.5 96 Q132 88 124.5 96Z" fill="#9a6a40"/><path d="M124.5 100.6 Q132 98 139.5 100.6" stroke="#4a2e18" stroke-width="1.3" fill="none"/></g>
+<g><ellipse cx="160" cy="100" rx="6.5" ry="7" fill="#fff"/><circle cx="161.5" cy="102.5" r="3.6" fill="#2a1a10"/><circle cx="162.6" cy="101.6" r="1" fill="#fff"/>
+<path d="M152.5 100.6 Q160 92 167.5 100.6 L167.5 96 Q160 88 152.5 96Z" fill="#9a6a40"/><path d="M152.5 100.6 Q160 98 167.5 100.6" stroke="#4a2e18" stroke-width="1.3" fill="none"/></g>
+<path d="M125 91 l12 2 M155 93 l12 -2" stroke="#5a3a1f" stroke-width="1.6" stroke-linecap="round"/>
+<!-- nariz, boca, bigodes -->
+<path d="M142.5 112 h7 l-3.5 4z" fill="#d9707a"/>
+<path d="M146 116 v3 M139 121 Q146 119 153 121" stroke="#4a2e18" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+<g stroke="#5a3a1f" stroke-width=".8" opacity=".7" stroke-linecap="round"><path d="M136 116 L114 112 M136 119 L113 120 M156 116 L178 112 M156 119 L179 120"/></g>
+<ellipse cx="127" cy="113" rx="5" ry="3" fill="#e8a39a" opacity=".45"/><ellipse cx="165" cy="113" rx="5" ry="3" fill="#e8a39a" opacity=".45"/>
+<!-- folha de capim na boca -->
+<path d="M150 121 Q170 118 188 128" stroke="#6f9548" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M184 125 l7 4 l-8 0z" fill="#6f9548"/>
+</svg>`;
+const RABBIT_TALL=()=>{let inner=RABBIT().replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'');
+inner=inner.replace(/<rect width="300" height="200"/,'<rect y="-70" width="300" height="420"').replace(/V200 H0Z"/g,'V420 H0Z"');
+return`<svg viewBox="0 0 300 420" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+<g transform="translate(0 50)">${inner}</g>
+<g fill="#5d843b">${[...Array(22)].map((_,i)=>{const x=6+i*14,y=275+(i%5)*28;return`<path d="M${x} ${y} l3 -12 l2 12 l4 -9 l1 9z"/>`;}).join('')}</g>
+<g>${[[30,300,'#f4f1e6'],[96,330,'#f2c4d0'],[160,395,'#f6df7a'],[230,310,'#f4f1e6'],[270,360,'#f2c4d0'],[60,385,'#f6df7a']].map(([x,y,c])=>`<g transform="translate(${x} ${y})"><circle r="2.6" cx="-2.8" fill="${c}"/><circle r="2.6" cx="2.8" fill="${c}"/><circle r="2.6" cy="-2.8" fill="${c}"/><circle r="2.6" cy="2.8" fill="${c}"/><circle r="1.8" fill="#e8b23a"/></g>`).join('')}</g>
+<g fill="#fff" opacity=".6"><ellipse cx="70" cy="34" rx="24" ry="6"/><ellipse cx="86" cy="30" rx="14" ry="6"/><ellipse cx="222" cy="20" rx="20" ry="5"/></g></svg>`;};
+let RID=0;const RABBIT=()=>{const k='r'+(++RID);return RABBIT_SRC.replace(/id="(sky|fur|sun)"/g,(m,a)=>`id="${a}${k}"`).replace(/url\(#(sky|fur|sun)\)/g,(m,a)=>`url(#${a}${k})`);};
+/* ---------- estado ---------- */
+const DEF={nm:'Coelho',ty:'Criatura Ficha — Coelho',ab:'',fl:'Pequeno, rápido e sempre com cara de quem já viu de tudo.',pt:'1/1',ar:'Ilustração: Maicon Kuzer',ft:'Ficha · Turma Senac',style:'full',color:'gw',img:'',zoom:100,dx:0,dy:0};
+const KEY='editorFichas_v3';let st=Object.assign({},DEF);
+try{const s=JSON.parse(localStorage.getItem(KEY));if(s)st=Object.assign({},DEF,s);}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){try{const t={...st,img:''};localStorage.setItem(KEY,JSON.stringify(t));}catch(_){} }};
+const COLORS=[['gw','linear-gradient(90deg,#2f6b3c 50%,#e3dcc4 50%)','Verde e branco'],['g','#2f6b3c','Verde'],['w','#e3dcc4','Branco'],['u','#2f6496','Azul'],['b','#2b2828','Preto'],['r','#9c3d29','Vermelho'],['m','#b8933a','Dourado (multicolor)'],['a','#8a939b','Incolor (artefato)']];
+const SUN=`<svg class="sym" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#f4efdc" stroke="#9c8a55" stroke-width="1.2"/><circle cx="10" cy="10" r="3.2" fill="#d9b54a"/><g stroke="#d9b54a" stroke-width="1.3" stroke-linecap="round"><path d="M10 3.2v2M10 14.8v2M3.2 10h2M14.8 10h2M5.2 5.2l1.4 1.4M13.4 13.4l1.4 1.4M5.2 14.8l1.4-1.4M13.4 6.6l1.4-1.4"/></g></svg>`;
+const SYMS=()=>st.color==='gw'?LEAF+SUN:st.color==='w'?SUN:LEAF;
+const LEAF=`<svg class="sym" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#1d3b2a" stroke="#c9b273" stroke-width="1.2"/><path d="M6 13 Q6 6 14 5 Q14 12 7 13.5 M7 13 L12 8" fill="#cfe7a8" stroke="#1d3b2a" stroke-width=".8"/></svg>`;
+function cardHTML(){
+  const hasAb=st.ab.trim(),hasFl=st.fl.trim();
+  if(st.style==='full'){const art=st.img?`<img src="${st.img}" alt="">`:RABBIT_TALL();
+    return`<div class="frame full"><div class="fa"><div class="art" data-art>${art}</div><div class="shade"></div>
+     <div class="bar top"><span class="name">${esc(st.nm)}</span><span class="tokenTag">FICHA</span></div>
+     <div class="bottom"><div class="bar"><span class="type" style="flex:1">${esc(st.ty)}</span>${SYMS()}</div>
+      ${hasAb||hasFl?`<div class="text">${hasAb?`<div class="ab">${esc(st.ab)}</div>`:''}${hasAb&&hasFl?'<div class="rule"></div>':''}${hasFl?`<div class="fl">${esc(st.fl)}</div>`:''}</div>`:''}</div>
+     <div class="foot"><span><b>${esc(st.ar)}</b><br>${esc(st.ft)}</span></div>${st.pt.trim()?`<div class="pt">${esc(st.pt)}</div>`:''}</div></div>`;}
+  const art=st.img?`<img src="${st.img}" alt="">`:RABBIT();
+  return`<div class="frame"><div class="bar"><span class="name">${esc(st.nm)}</span><span class="tokenTag">FICHA</span></div>
+   <div class="art" data-art>${art}</div>
+   <div class="bar"><span class="type" style="flex:1">${esc(st.ty)}</span>${SYMS()}</div>
+   <div class="text">${hasAb?`<div class="ab">${esc(st.ab)}</div>`:''}${hasAb&&hasFl?'<div class="rule"></div>':''}${hasFl?`<div class="fl">${esc(st.fl)}</div>`:''}</div>
+   <div class="foot"><span><b>${esc(st.ar)}</b><br>${esc(st.ft)}</span><span></span></div>
+   ${st.pt.trim()?`<div class="pt">${esc(st.pt)}</div>`:''}</div>`;
+}
+function fit(root){const t=root.querySelector('.text');if(!t)return;let f=3.05;t.style.fontSize=f+'mm';while(t.scrollHeight>t.clientHeight+1&&f>2.0){f-=0.1;t.style.fontSize=f.toFixed(2)+'mm';}}
+function applyArt(root){fit(root);const el=root.querySelector('[data-art] img, [data-art] svg');if(el)el.style.transform=`translate(calc(-50% + ${st.dx}%), calc(-50% + ${st.dy}%)) scale(${st.zoom/100})`;}
+function render(){
+  const c=$('#card');c.className='card c-'+st.color;c.innerHTML=cardHTML();applyArt(c);bindDrag();
+  $('#zoom').value=st.zoom;$('#zv').textContent=st.zoom+'%';
+  $$('#colors button').forEach(b=>b.classList.toggle('on',b.dataset.c===st.color));$$('[data-st]').forEach(b=>b.classList.toggle('on',b.dataset.st===st.style));save();
+}
+$('#colors').innerHTML=COLORS.map(c=>`<button data-c="${c[0]}" title="${c[2]}" style="background:${c[1]}"></button>`).join('');
+$$('#colors button').forEach(b=>b.onclick=()=>{st.color=b.dataset.c;render();});
+$$('[data-st]').forEach(b=>b.onclick=()=>{st.style=b.dataset.st;st.zoom=100;st.dx=0;st.dy=0;render();});
+['nm','ty','ab','fl','pt','ar','ft'].forEach(k=>{const e=$('#'+k);e.value=st[k];e.oninput=()=>{st[k]=e.value;render();};});
+$('#zoom').oninput=e=>{st.zoom=+e.target.value;$('#zv').textContent=st.zoom+'%';applyArt($('#card'));save();};
+$('#bImg').onclick=()=>{$('#file').value='';$('#file').click();};
+$('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{
+  const k=Math.min(1,900/Math.max(im.width,im.height));const cv=document.createElement('canvas');cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+  st.img=cv.toDataURL('image/jpeg',0.88);st.zoom=100;st.dx=0;st.dy=0;render();toast('Imagem inserida! Arraste para ajustar e use o zoom.');};im.src=r.result;};r.readAsDataURL(f);};
+$('#bDef').onclick=()=>{st.img='';st.zoom=100;st.dx=0;st.dy=0;render();};
+$('#bReset').onclick=()=>{st=Object.assign({},DEF);['nm','ty','ab','fl','pt','ar','ft'].forEach(k=>$('#'+k).value=st[k]);render();toast('Ficha voltou ao padrão');};
+function bindDrag(){const a=$('#card [data-art]');let d=null;
+  a.onpointerdown=e=>{d={x:e.clientX,y:e.clientY,dx:st.dx,dy:st.dy};a.setPointerCapture(e.pointerId);a.classList.add('drag');};
+  a.onpointermove=e=>{if(!d)return;const r=a.getBoundingClientRect();st.dx=d.dx+(e.clientX-d.x)/r.width*100;st.dy=d.dy+(e.clientY-d.y)/r.height*100;applyArt($('#card'));};
+  a.onpointerup=()=>{if(d){d=null;a.classList.remove('drag');save();}};}
+function doPrint(n){
+  $('#print').innerHTML=[...Array(n)].map(()=>`<div class="card c-${st.color}">${cardHTML()}</div>`).join('');
+  $$('#print .card').forEach(applyArt);
+  try{window.print();}catch(e){toast('A impressão não está disponível aqui. Abra o arquivo baixado no navegador e use Ctrl+P.');}
+}
+$('#bPrint1').onclick=()=>doPrint(1);$('#bPrint9').onclick=()=>doPrint(9);
+render();
+</script>
+</body>
+</html>
