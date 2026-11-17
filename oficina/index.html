@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Oficina · Deck e Dados</title>
-<meta name="description" content="Oficina do Deck e Dados: crie fichas, cartas de personagem e dials customizados para seus jogos de cartas e miniaturas.">
+<meta name="description" content="Oficina do Deck e Dados: crie fichas de criaturas personalizadas para seus card games, direto no navegador.">
 <style>
 :root{--bg:#12141a;--pn:#1b1f28;--pn2:#232836;--ln:#323949;--tx:#e8eaf0;--mu:#9aa3b5;--ac:#f2a93b;--ac2:#4fb3a9}
 *{box-sizing:border-box}
@@ -18,8 +18,8 @@ main{max-width:1150px;margin:0 auto;padding:34px 22px}
 h1{font-size:38px;line-height:1.1;margin:0 0 12px}
 h1 em{font-style:normal;color:var(--ac)}
 .lead{color:var(--mu);font-size:16px;line-height:1.6;margin:0}
-.hero svg{width:100%;height:auto}
-.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.hero svg{width:100%;max-width:340px;height:auto;justify-self:center}
+.tools{display:grid;grid-template-columns:minmax(0,420px);justify-content:center;gap:18px}
 .tool{background:var(--pn);border:1px solid var(--ln);border-radius:16px;overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;transition:.15s}
 .tool:hover{border-color:var(--ac);transform:translateY(-3px)}
 .tool .art{height:170px;background:var(--pn2);display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--ln)}
@@ -47,21 +47,10 @@ footer{color:var(--mu);font-size:12px;text-align:center;padding:26px;line-height
 <main>
   <section class="hero">
     <div>
-      <h1>Crie suas <em>fichas</em>, <em>cartas</em> e <em>dials</em></h1>
-      <p class="lead">Ferramentas gratuitas da comunidade Deck e Dados para criar fichas de criaturas, cartas de personagem de miniaturas e dials customizados. Tudo funciona direto no navegador: envie sua arte, edite, baixe em PNG ou imprima no tamanho real.</p>
+      <h1>Crie suas <em>fichas</em></h1>
+      <p class="lead">Ferramenta gratuita da comunidade Deck e Dados para criar fichas de criaturas. Tudo funciona direto no navegador: envie sua arte, edite, baixe em PNG ou imprima.</p>
     </div>
-    <svg viewBox="0 0 420 260">
-      <rect x="40" y="40" width="150" height="200" rx="14" fill="#4fb3a9" transform="rotate(-12 115 140)"/>
-      <rect x="48" y="50" width="134" height="180" rx="10" fill="#f6f3ec" transform="rotate(-12 115 140)"/>
-      <rect x="150" y="30" width="230" height="160" rx="16" fill="#2b3a55"/>
-      <rect x="160" y="40" width="210" height="140" rx="10" fill="#f6f3ec"/>
-      <rect x="160" y="40" width="210" height="28" rx="10" fill="#2b3a55"/><circle cx="352" cy="54" r="18" fill="#f2a93b" stroke="#fff" stroke-width="3"/>
-      <rect x="170" y="78" width="70" height="62" rx="6" fill="#8796b0"/>
-      <g fill="#e2574c"><rect x="170" y="150" width="20" height="10" rx="2"/><rect x="194" y="150" width="20" height="10" rx="2"/></g>
-      <g fill="#3b82f6"><rect x="170" y="164" width="20" height="10" rx="2"/></g>
-      <g fill="#fff" stroke="#999"><rect x="218" y="150" width="20" height="10" rx="2"/><rect x="242" y="150" width="20" height="10" rx="2"/><rect x="194" y="164" width="20" height="10" rx="2"/><rect x="218" y="164" width="20" height="10" rx="2"/></g>
-      <circle cx="330" cy="210" r="44" fill="#1b1f28" stroke="#f2a93b" stroke-width="5"/><circle cx="330" cy="210" r="30" fill="none" stroke="#4fb3a9" stroke-width="10" stroke-dasharray="12 6"/>
-    </svg>
+    <svg viewBox="0 0 260 220" aria-hidden="true"><g transform="translate(30 40) rotate(-10 50 70)"><rect width="100" height="140" rx="8" fill="#c2662d"/><rect x="5" y="5" width="90" height="130" rx="5" fill="#eef5ee"/><rect x="5" y="5" width="90" height="100" rx="5" fill="#f1c08f"/><rect x="10" y="10" width="80" height="14" rx="3" fill="#fff" opacity=".9"/><rect x="10" y="108" width="80" height="10" rx="2" fill="#c2662d"/><rect x="66" y="122" width="26" height="12" rx="3" fill="#fff" stroke="#c2662d"/></g><g transform="translate(120 30) rotate(8 50 70)"><rect width="100" height="140" rx="8" fill="#2f7d4f"/><rect x="5" y="5" width="90" height="130" rx="5" fill="#eef5ee"/><rect x="5" y="5" width="90" height="100" rx="5" fill="#9cc6a6"/><rect x="10" y="10" width="80" height="14" rx="3" fill="#fff" opacity=".9"/><rect x="10" y="108" width="80" height="10" rx="2" fill="#2f7d4f"/><rect x="66" y="122" width="26" height="12" rx="3" fill="#fff" stroke="#2f7d4f"/></g></svg>
   </section>
 
   <section class="tools">
@@ -72,25 +61,11 @@ footer{color:var(--mu);font-size:12px;text-align:center;padding:26px;line-height
         <ul><li>Envie e enquadre sua arte</li><li>Escolha as cores da moldura</li><li>Baixe em PNG ou imprima</li></ul>
         <span class="go">Abrir editor →</span></div>
     </a>
-    <a class="tool" href="forja.html">
-      <div class="art"><svg viewBox="0 0 140 100"><rect width="140" height="100" rx="8" fill="#2b3a55"/><rect x="4" y="4" width="132" height="92" rx="6" fill="#f6f3ec"/><rect x="4" y="4" width="132" height="16" rx="6" fill="#2b3a55"/><circle cx="124" cy="13" r="9" fill="#f2a93b"/><rect x="9" y="25" width="44" height="40" rx="4" fill="#8796b0"/><rect x="58" y="27" width="70" height="5" rx="2" fill="#e2574c"/><rect x="58" y="37" width="60" height="5" rx="2" fill="#3b82f6"/><rect x="58" y="47" width="66" height="5" rx="2" fill="#22c55e"/><rect x="9" y="70" width="122" height="22" rx="4" fill="#23262e"/></svg></div>
-      <div class="body"><span class="tag b">Miniaturas</span><h2>Forja de Cartas</h2>
-        <p>Cartas de personagem com poderes coloridos e dial clique a clique. Inclui dial longo e objeto especial.</p>
-        <ul><li>3 modelos de carta</li><li>Galeria pessoal e importação em .json</li><li>PNG e impressão em tamanho real</li></ul>
-        <span class="go">Abrir forja →</span></div>
-    </a>
-    <a class="tool" href="dial.html">
-      <div class="art"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="56" fill="#1b1f28" stroke="#f2a93b" stroke-width="4"/><g stroke="#12141a" stroke-width="2"><path d="M60 60L60 6A54 54 0 0 1 106.8 33Z" fill="#e2574c"/><path d="M60 60L106.8 33A54 54 0 0 1 106.8 87Z" fill="#3b82f6"/><path d="M60 60L106.8 87A54 54 0 0 1 60 114Z" fill="#22c55e"/><path d="M60 60L60 114A54 54 0 0 1 13.2 87Z" fill="#fff"/><path d="M60 60L13.2 87A54 54 0 0 1 13.2 33Z" fill="#a855f7"/><path d="M60 60L13.2 33A54 54 0 0 1 60 6Z" fill="#f59e0b"/></g><circle cx="60" cy="60" r="16" fill="#1b1f28"/></svg></div>
-      <div class="body"><span class="tag b">Miniaturas</span><h2>Editor de Dial</h2>
-        <p>Pinte cada clique com as cores que quiser e imprima o disco redondo com a tampa da janela para montar a peça.</p>
-        <ul><li>Legenda de cores personalizável</li><li>Teste girando o dial na tela</li><li>Folha de impressão com disco e tampa</li></ul>
-        <span class="go">Abrir editor →</span></div>
-    </a>
   </section>
 
   <section class="info">
     <div><b>Sem cadastro</b>Tudo roda no seu navegador. Seus trabalhos ficam salvos no próprio aparelho.</div>
-    <div><b>Compartilhe</b>Exporte a carta em .json e mande para um amigo importar na Forja.</div>
+    <div><b>Baixe ou imprima</b>Salve sua ficha em PNG para compartilhar ou imprima para usar na mesa.</div>
     <div><b>Use artes suas</b>Envie apenas imagens que você criou ou que tem permissão de usar.</div>
   </section>
 </main>
